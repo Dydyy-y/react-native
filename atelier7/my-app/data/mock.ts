@@ -1,0 +1,48 @@
+const mock = {
+  credentials: {
+    email: "juju@gmail.com",
+    motDePasse: "juju",
+  },
+  user: {
+    id: "1",
+    prenom: "Juju",
+    nom: "Dupont",
+    email: "juju@gmail.com",
+    telephone: "06 12 34 56 78",
+    adresse: "20 rue des noyers Plopsheim",
+  },
+  comptes: [
+    {
+      id: "1",
+      type: "Compte courant",
+      solde: 2450.8,
+      iban: "FR76 3000 6000 0112 3456 7890 189",
+      numero: "FR76-...-7890",
+    },
+    {
+      id: "2",
+      type: "Livret A",
+      solde: 8120.0,
+      iban: "FR76 3000 6000 0198 7654 3210 456",
+      numero: "FR76-...-3210",
+    },
+  ],
+  virements: [
+    { id: "v1", beneficiaire: "Marie Martin", montant: -120.0, date: "2026-03-05", motif: "Loyer", compteId: "1" },
+    { id: "v2", beneficiaire: "Paul Bernard", montant: -45.5, date: "2026-03-03", motif: "Restaurant", compteId: "1" },
+    { id: "v3", beneficiaire: "Électricité SA", montant: -89.0, date: "2026-03-01", motif: "Facture énergie", compteId: "1" },
+    { id: "v4", beneficiaire: "Sophie Leblanc", montant: 200.0, date: "2026-02-28", motif: "Remboursement", compteId: "1" },
+    { id: "v5", beneficiaire: "Netflix", montant: -15.99, date: "2026-02-25", motif: "Abonnement", compteId: "2" },
+  ],
+  beneficiaires: [
+    { id: "b1", nom: "Marie Martin", iban: "FR76 1234 5678 9012 3456 7890 123" },
+    { id: "b2", nom: "Paul Bernard", iban: "FR76 9876 5432 1098 7654 3210 987" },
+    { id: "b3", nom: "Sophie Leblanc", iban: "FR76 1111 2222 3333 4444 5555 666" },
+  ],
+  cartes: [
+    { id: "c1", type: "Visa Classic", numero: "**** **** **** 4512", expiration: "2028-03", statut: "active", plafond: 1000, compteId: "1" },
+    { id: "c2", type: "Mastercard Gold", numero: "**** **** **** 7823", expiration: "2027-11", statut: "bloquée", plafond: 3000, compteId: "1" },
+  ],
+};
+
+export default mock;
