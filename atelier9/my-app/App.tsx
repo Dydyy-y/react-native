@@ -1,8 +1,19 @@
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SessionProvider } from './src/contexts/SessionContext/SessionProvider';
+import { SplashScreenController } from './src/components/SplashScreenController';
 
 export default function App() {
+  return (
+    <SessionProvider>
+      <SplashScreenController />
+      <HomeScreen />
+    </SessionProvider>
+  );
+}
+
+function HomeScreen() {
   const [count, setCount] = useState(0);
 
   return (
