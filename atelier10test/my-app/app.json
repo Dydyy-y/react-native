@@ -13,10 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "Cette application utilise la caméra pour scanner les QR codes des produits."
-      }
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -24,17 +21,10 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "permissions": ["android.permission.CAMERA"]
+      "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
-    },
-    "scheme": "my-app",
-    "experiments": {
-      "typedRoutes": true
-    },
-    "plugins": ["expo-router", "expo-camera"]
+      "favicon": "./assets/favicon.png"
+    }
   }
 }
