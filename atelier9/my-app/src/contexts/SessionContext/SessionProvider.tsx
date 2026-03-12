@@ -9,7 +9,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     // En attendant le vrai appel AsyncStorage
     setTimeout(() => {
       setIsLoading(false);
-    }, 6000);
+    }, 2000);
   }, []);
 
   const login = () => {};
