@@ -1,27 +1,12 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 const ScannerView = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedId, setScannedId] = useState<string | null>(null);
-  const [torchEnabled, setTorchEnabled] = useState(false);
-  const [zoom, setZoom] = useState(0);
   const router = useRouter();
-
-  const handleBarcodeScanned = ({ data }: { data: string }) => {
-    setScannedId(data);
-  };
-
-  const handleReset = () => {
-    setScannedId(null);
-  };
-
-  const handleNavigate = () => {
-    router.push(`/products/${scannedId}`);
-  };
 
   if (!permission) {
     return <View style={styles.container} />;
@@ -45,38 +30,9 @@ const ScannerView = () => {
       <CameraView
         style={styles.camera}
         facing="back"
-        enableTorch={torchEnabled}
-        zoom={zoom}
         barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-        onBarcodeScanned={scannedId ? undefined : handleBarcodeScanned}
+        onBarcodeScanned={scannedId ? undefined : ({ data }) => setScannedId(data)}
       />
-
-      <TouchableOpacity
-        style={styles.torchButton}
-        onPress={() => setTorchEnabled(!torchEnabled)}
-      >
-        <Ionicons
-          name={torchEnabled ? "flash" : "flash-off"}
-          size={28}
-          color="#fff"
-        />
-      </TouchableOpacity>
-
-      <View style={styles.zoomControls}>
-        <TouchableOpacity
-          style={styles.zoomButton}
-          onPress={() => setZoom((z) => Math.max(0, z - 0.1))}
-        >
-          <Ionicons name="remove" size={20} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.zoomLabel}>{Math.round(zoom * 100)}%</Text>
-        <TouchableOpacity
-          style={styles.zoomButton}
-          onPress={() => setZoom((z) => Math.min(1, z + 0.1))}
-        >
-          <Ionicons name="add" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
 
       <View style={styles.resultContainer}>
         {scannedId ? (
@@ -85,13 +41,16 @@ const ScannerView = () => {
             <View style={styles.actions}>
               <TouchableOpacity
                 style={[styles.button, styles.secondaryButton]}
-                onPress={handleReset}
+                onPress={() => setScannedId(null)}
               >
                 <Text style={[styles.buttonText, styles.secondaryButtonText]}>
                   Scanner à nouveau
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={handleNavigate}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => router.push(`/products/${scannedId}`)}
+              >
                 <Text style={styles.buttonText}>Voir le produit</Text>
               </TouchableOpacity>
             </View>
@@ -114,34 +73,6 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
     width: "100%",
-  },
-  torchButton: {
-    position: "absolute",
-    top: 56,
-    right: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 10,
-    borderRadius: 30,
-  },
-  zoomControls: {
-    position: "absolute",
-    bottom: 140,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  zoomButton: {
-    padding: 4,
-  },
-  zoomLabel: {
-    color: "#fff",
-    fontSize: 14,
-    minWidth: 36,
-    textAlign: "center",
   },
   resultContainer: {
     backgroundColor: "#fff",
