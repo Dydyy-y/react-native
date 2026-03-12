@@ -13,7 +13,7 @@ const ProductsList = () => {
       renderItem={({ item }) => (
         <ProductListItem
           product={item}
-          onPress={() => router.push(`products/${item.id}`)}
+          onPress={() => router.push(`/products/${item.id}`)}
         />
       )}
       keyExtractor={({ id }) => id.toString()}

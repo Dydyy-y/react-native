@@ -5,7 +5,7 @@ const TabsLayout = () => {
   return (
     <Tabs>
       <Tabs.Screen
-        name="products/index"
+        name="products"
         options={{
           title: "Produits",
           tabBarIcon: ({ color, size }) => (

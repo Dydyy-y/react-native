@@ -3,12 +3,16 @@ import useNotificationDispatchContext from "@/contexts/Notification/useNotificat
 import { FlatList, StyleSheet, View } from "react-native";
 import Notification from "./Notification";
 import { useEffect, useRef } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const TAB_BAR_HEIGHT = 49;
 
 const NotificationsList = () => {
   const { notifications } = useNotificationContext();
   const dispatchNotificationAction = useNotificationDispatchContext();
+  const { bottom } = useSafeAreaInsets();
 
-  const intervalRef = useRef<NodeJS.Timeout>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handlePressNotification = (id: string) => {
     dispatchNotificationAction?.({ type: "REMOVE_NOTIFICATION", payload: id });
@@ -32,6 +36,7 @@ const NotificationsList = () => {
   useEffect(() => {
     if (notifications.length === 0 && intervalRef.current) {
       clearInterval(intervalRef.current);
+      intervalRef.current = null;
       return;
     }
 
@@ -44,7 +49,7 @@ const NotificationsList = () => {
   }, [notifications]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { bottom: TAB_BAR_HEIGHT + bottom }]}>
       <FlatList
         data={notifications}
         renderItem={({ item }) => (
@@ -66,7 +71,6 @@ export default NotificationsList;
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    bottom: 0,
     left: 0,
     right: 0,
     height: 300,
