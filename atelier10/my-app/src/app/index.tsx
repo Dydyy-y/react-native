@@ -1,7 +1,7 @@
 import { Redirect } from "expo-router";
 
 const RootView = () => {
-  return <Redirect href="/products" />;
+  return <Redirect href="/(tabs)/products" />;
 };
 
 export default RootView;
