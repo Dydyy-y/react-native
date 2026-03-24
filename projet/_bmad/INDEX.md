@@ -1,14 +1,55 @@
 # Space Conquest Online - Documentation Index
 
-**Version** : 1.0  
-**Date** : 23 mars 2026  
-**Status** : Sprint Planning Complete
+**Version** : 1.1  
+**Date** : 24 mars 2026  
+**Status** : Sprint Planning + Architecture Exploration
 
 ---
 
 ## 📋 Vue d'ensemble rapide
 
-Vous avez 5 documents de planification détaillés :
+Vous avez **9 documents de planification détaillés** :
+
+### 🆕 NOUVEAUX : Exploration Architecturale
+
+```
+⭐ DECISION_GUIDE.md      → PAR OÙ COMMENCER (lisez d'abord!)
+├─ 7 questions pour choisir votre architecture
+├─ Arbre de décision
+├─ Recommandation finale
+└─ Check-list avant de coder
+
+ARCHITECTURE_OPTIONS.md  → 3 options d'architecture complètes
+├─ OPTION A : Context API + Services
+├─ OPTION B : Zustand + Services (RECOMMANDÉ ⭐)
+├─ OPTION C : Feature-Folder + Zustand
+├─ Matrices de comparaison
+└─ Timeline par option
+
+ARCHITECTURE_DIAGRAMS.md → Visualisations & exemples
+├─ Data flow pour chaque option
+├─ Comparaison re-render behavior
+├─ Code review perspective
+└─ Timeline détaillée
+
+ARCHITECTURE_CODE_COMPARISON.md → Exemples de code concrets
+├─ Context API (185 lignes de boilerplate)
+├─ Zustand (30 lignes)
+├─ Comparaison directe
+└─ Cas où choisir quoi
+
+IMPLEMENTATION_GUIDE.md → Pas à pas démarrage
+├─ Setup initial (npm install, dossiers)
+├─ Créer premier store/context
+├─ Créer premier service
+├─ Créer première screen
+├─ Configurer navigation
+└─ Erreurs courantes à éviter
+```
+
+### 📋 ORIGINAUX : Planification du Sprint
+
+```
 
 ```
 ARCHITECTURE.md          → Design système complet
@@ -48,7 +89,91 @@ PRD_EPIC4_GAME.md        → Jeu & État
 
 ---
 
-## 🚀 Par où commencer ?
+## 🎯 PAR OÙ COMMENCER ? (NOUVEAU - DÉCISION ARCHITECTURALE)
+
+### 🚀 **Avant de Coder Quoi que Ce Soit**
+
+**Le chemin recommandé (20 minutes)** :
+
+1. **Lisez** [DECISION_GUIDE.md](DECISION_GUIDE.md) (5 min)
+   → 7 questions pour décider entre 3 architectures
+   → Recommendation finale
+
+2. **Explorez** [ARCHITECTURE_OPTIONS.md](ARCHITECTURE_OPTIONS.md) (10 min)
+   → Vue d'ensemble des 3 options
+   → Matrices de comparaison
+
+3. **Regardez** [ARCHITECTURE_CODE_COMPARISON.md](ARCHITECTURE_CODE_COMPARISON.md) (5 min)
+   → Code concrets : Context API vs Zustand
+   → Boilerplate réel
+
+4. **Exécutez** [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)
+   → Pas à pas : setup → premier store → première screen
+
+---
+
+### 📚 Chemins Thématiques
+
+#### Chemin A : "Je veux choisir rapidement"
+```
+1. DECISION_GUIDE.md (5 min)
+   → Réponds aux 7 questions
+   → Regarde l'arbre de décision
+   
+2. IMPLEMENTATION_GUIDE.md (30 min)
+   → Exécute les commandes Setup Étape 1
+   
+3. CODE: Go !
+```
+
+#### Chemin B : "Je veux comprendre les options en détail"
+```
+1. ARCHITECTURE_OPTIONS.md (15 min)
+   → Lis les 3 options complètement
+   
+2. ARCHITECTURE_DIAGRAMS.md (10 min)
+   → Visualisations, data flows
+   
+3. ARCHITECTURE_CODE_COMPARISON.md (10 min)
+   → Exemples concrets de code
+   
+4. DECISION_GUIDE.md (5 min)
+   → Finalise ton choix
+   
+5. IMPLEMENTATION_GUIDE.md (30 min)
+   → Setup + premier store
+   
+6. CODE: Go !
+```
+
+#### Chemin C : "Je sais déjà ce que je veux (Context API)"
+```
+1. ARCHITECTURE.md (45 min) ← Original doc
+   → Comprendre la structure proposée
+   
+2. SPRINT_PLANNING.md (20 min)
+   → Timeline et dépendances
+   
+3. IMPLEMENTATION_GUIDE.md (Option A section)
+   → Pas à pas pour Context API
+   
+4. PRD_EPIC1_AUTH.md
+   → Commencer par l'authentification
+   
+5. CODE: Go !
+```
+
+#### Chemin D : "Je veux la meilleure solution pour moi (RECOMMANDÉ)"
+```
+→ Suivez exactement le "Chemin A" ci-dessus
+→ Notre recommendation : Zustand + Feature Layout
+→ Vous gagnez 1-2 jours de développement
+→ Code plus lisible et maintenable
+```
+
+---
+
+## 🚀 Original Path (Si vous ignorer les décisions architecturales)
 
 ### 1️⃣ **Si vous êtes PM** (Product Manager)
 Lisez dans cet ordre :
@@ -60,26 +185,92 @@ Lisez dans cet ordre :
 
 ### 2️⃣ **Si vous êtes DEV** (Developer)
 Lisez dans cet ordre :
-1. [ARCHITECTURE.md](ARCHITECTURE.md) - COMPLÈTEMENT (structure, services, types)
-2. [SPRINT_PLANNING.md](SPRINT_PLANNING.md) - Section 5-7 (dépendances, standards)
-3. [PRD_EPIC1_AUTH.md](PRD_EPIC1_AUTH.md) - Section 4 (technical details)
-4. Chaque épique PRD dans l'ordre (1 → 2 → 3 → 4)
+1. **NEW** → [DECISION_GUIDE.md](DECISION_GUIDE.md) - Choisir l'architecture
+2. [ARCHITECTURE.md](ARCHITECTURE.md) - COMPLÈTEMENT (structure, services, types)
+3. **NEW** → [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) - Setup et code
+4. [SPRINT_PLANNING.md](SPRINT_PLANNING.md) - Section 5-7 (dépendances, standards)
+5. [PRD_EPIC1_AUTH.md](PRD_EPIC1_AUTH.md) - Section 4 (technical details)
+6. Chaque épique PRD dans l'ordre (1 → 2 → 3 → 4)
 
 ---
 
 ### 3️⃣ **Si vous avez 15 minutes** ⏱️
 Lisez seulement :
-1. Ce fichier (vous êtes ici)
+1. [DECISION_GUIDE.md](DECISION_GUIDE.md) - Décider en 5 min
 2. [SPRINT_PLANNING.md](SPRINT_PLANNING.md) - Sections 1-3 (Overview + Backlog)
 3. [ARCHITECTURE.md](ARCHITECTURE.md) - Section 1 (Vue d'ensemble visuelle)
 
 ---
 
-## 📚 Structure des Documents
+## 📚 Structure Complète des Documents
 
-### ARCHITECTURE.md
-**Quoi** : Design système complet  
+### 🆕 ARCHITECTURE DECISION DOCUMENTS
+
+#### DECISION_GUIDE.md
+**Longueur** : ~250 lignes  
+**Score** : ⭐⭐⭐⭐⭐ (LISEZ CECI EN PREMIER)  
+**Contenu** :
+- 7 questions pour décider
+- Arbre de décision
+- Recommandation finale
+- Check-list avant coding
+
+---
+
+#### ARCHITECTURE_OPTIONS.md
+**Longueur** : ~450 lignes  
+**Score** : ⭐⭐⭐⭐⭐ (COMPRENEZ LES OPTIONS)  
+**Contenu** :
+- OPTION A : Context API (35h)
+- OPTION B : Zustand (20h) ← RECOMMANDÉ
+- OPTION C : Feature-Folder (24h)
+- Matrices de comparaison
+- Avantages/inconvénients détaillés
+
+---
+
+#### ARCHITECTURE_DIAGRAMS.md
+**Longueur** : ~400 lignes  
+**Score** : ⭐⭐⭐⭐ (VISUALISEZ LES ARCHITECTURES)  
+**Contenu** :
+- Data flow diagrams
+- Boilerplate size comparisons
+- Re-render behavior
+- Code review perspectives
+- Timeline par option
+
+---
+
+#### ARCHITECTURE_CODE_COMPARISON.md
 **Longueur** : ~350 lignes  
+**Score** : ⭐⭐⭐⭐ (VOYEZ LE CODE RÉEL)  
+**Contenu** :
+- AuthStore en Context (235 lignes boilerplate)
+- AuthStore en Zustand (30 lignes)
+- Utilisation dans les composants
+- Comparaison directe
+- 4 stores : Context (1140 L) vs Zustand (120 L)
+
+---
+
+#### IMPLEMENTATION_GUIDE.md
+**Longueur** : ~600 lignes  
+**Score** : ⭐⭐⭐⭐⭐ (DÉMARREZ ICI POUR CODER)  
+**Contenu** :
+- Installation étape par étape
+- Créer premier store/context
+- Créer premier service
+- Créer première screen
+- Configurer la navigation
+- Erreurs courantes expliquées
+
+---
+
+### 📋 ORIGINAL DOCUMENTS
+
+#### ARCHITECTURE.md
+**Longueur** : ~450 lignes  
+**Score** : ⭐⭐⭐⭐⭐ (RÉFÉRENCE COMPLÈTE)  
 **Sections** :
 - Vue d'ensemble visuelle
 - Structure des dossiers (folder tree)
@@ -92,12 +283,13 @@ Lisez seulement :
 - Types TypeScript clés
 - Bonnes pratiques
 
-**Score** : ⭐⭐⭐⭐⭐ (fondamental pour les devs)
+**Note** : Peut être mise à jour avec votre architecture finale (Context, Zustand, ou Feature-Folder)
 
 ---
 
-### SPRINT_PLANNING.md
-**Quoi** : Planification exécutive du sprint  
+#### SPRINT_PLANNING.md
+**Longueur** : ~300 lignes  
+**Score** : ⭐⭐⭐⭐
 **Longueur** : ~300 lignes  
 **Sections** :
 - Overview
