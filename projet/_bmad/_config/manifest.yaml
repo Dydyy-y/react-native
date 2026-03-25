@@ -12,3 +12,4 @@ modules:
     repoUrl: null
 ides:
   - github-copilot
+  - claude-code

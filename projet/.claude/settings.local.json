@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -f MANIFEST.md README.md SETUP_COMPLETE.md INDEX.md SUMMARY.md QUICKSTART.md IMPLEMENTATION_QUICKSTART.md)",
+      "Bash(rm -f _config/agent-manifest.csv _config/bmad-help.csv _config/files-manifest.csv _config/skill-manifest.csv _config/task-manifest.csv _config/tool-manifest.csv _config/workflow-manifest.csv)",
+      "Bash(rm -f core/module-help.csv)"
+    ]
+  }
+}
