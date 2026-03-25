@@ -12,7 +12,9 @@
       "Bash(cp \"/c/Users/mathy/code/react-native/space-conquest-tmp/app.json\" \"/c/Users/mathy/code/react-native/projet/\")",
       "Bash(cp \"/c/Users/mathy/code/react-native/space-conquest-tmp/tsconfig.json\" \"/c/Users/mathy/code/react-native/projet/\")",
       "Bash(cp \"/c/Users/mathy/code/react-native/space-conquest-tmp/index.ts\" \"/c/Users/mathy/code/react-native/projet/\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm view:*)",
+      "Bash(npx expo:*)"
     ]
   }
 }
