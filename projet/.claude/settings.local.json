@@ -3,7 +3,16 @@
     "allow": [
       "Bash(rm -f MANIFEST.md README.md SETUP_COMPLETE.md INDEX.md SUMMARY.md QUICKSTART.md IMPLEMENTATION_QUICKSTART.md)",
       "Bash(rm -f _config/agent-manifest.csv _config/bmad-help.csv _config/files-manifest.csv _config/skill-manifest.csv _config/task-manifest.csv _config/tool-manifest.csv _config/workflow-manifest.csv)",
-      "Bash(rm -f core/module-help.csv)"
+      "Bash(rm -f core/module-help.csv)",
+      "Bash(npx create-expo-app@latest . --template blank-typescript)",
+      "Read(//c/Users/mathy/code/react-native/**)",
+      "Bash(npx create-expo-app@latest space-conquest-tmp --template blank-typescript)",
+      "Bash(cp \"/c/Users/mathy/code/react-native/space-conquest-tmp/package.json\" \"/c/Users/mathy/code/react-native/projet/\")",
+      "Bash(cp \"/c/Users/mathy/code/react-native/space-conquest-tmp/package-lock.json\" \"/c/Users/mathy/code/react-native/projet/\")",
+      "Bash(cp \"/c/Users/mathy/code/react-native/space-conquest-tmp/app.json\" \"/c/Users/mathy/code/react-native/projet/\")",
+      "Bash(cp \"/c/Users/mathy/code/react-native/space-conquest-tmp/tsconfig.json\" \"/c/Users/mathy/code/react-native/projet/\")",
+      "Bash(cp \"/c/Users/mathy/code/react-native/space-conquest-tmp/index.ts\" \"/c/Users/mathy/code/react-native/projet/\")",
+      "Bash(npm install:*)"
     ]
   }
 }
