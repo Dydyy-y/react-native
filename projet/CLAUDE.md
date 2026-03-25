@@ -67,6 +67,24 @@ RootNavigator
 | 4 | Jeu (carte grille, état, actions, polling) | À faire |
 | 5 | Fin de partie + profil | À faire |
 
+## Règle de Documentation (OBLIGATOIRE)
+
+Toute décision technique importante doit être documentée dans [`docs/DECISIONS.md`](docs/DECISIONS.md).
+
+**Quand documenter :**
+- Ajout d'une nouvelle dépendance npm
+- Introduction d'un nouveau pattern de code
+- Changement de structure de dossiers
+- Choix d'une lib plutôt qu'une autre
+- Décision de sécurité
+- Workaround non évident
+
+**Format :** Contexte → Décision → Pourquoi (pas les alternatives) → Conséquences.
+
+Le fichier `docs/DECISIONS.md` contient déjà toutes les décisions initiales documentées.
+
+---
+
 ## Documentation BMAD
 
 Toute la documentation de planning est dans `_bmad/` :
