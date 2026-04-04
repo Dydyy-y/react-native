@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
 import { LobbyStackParamList } from '../../../navigation/NavigationTypes';
 import { useLobby } from '../hooks/useLobby';
+import { useModeration } from '../hooks/useModeration';
 import { useAuth } from '../../auth';
 import { useUI } from '../../ui';
 import { usePolling } from '../../../shared/hooks/usePolling';
@@ -20,15 +21,17 @@ import { COLORS } from '../../../shared/utils/constants';
 
 type Props = StackScreenProps<LobbyStackParamList, 'SessionDetail'>;
 
-/** Ecran de detail de la session — polling 30s, liste joueurs, quitter */
+/** Ecran de detail de la session — polling, liste joueurs, moderation, start */
 export const SessionDetailScreen = ({ navigation }: Props) => {
   const { session, loading, refreshSession, leaveSession } = useLobby();
+  const { kickPlayer, banPlayer, deleteSession, startGame } = useModeration();
   const { state: authState } = useAuth();
   const { showToast } = useUI();
 
   const isCreator = session?.creator.id === Number(authState.user?.id);
+  const isWaiting = session?.state === 'waiting';
 
-  // Polling toutes les 30s pour mettre a jour la session
+  // Polling toutes les 30s
   const pollCallback = useCallback(async () => {
     try {
       await refreshSession();
@@ -38,21 +41,94 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
         showToast('Session supprimee', 'error');
         navigation.replace('LobbyHome');
       }
-      // Autres erreurs : retry au prochain intervalle
     }
   }, [refreshSession, showToast, navigation]);
 
   usePolling(pollCallback, 30000, !!session);
 
-  // Redirection si la session passe en "running"
+  // Redirection si la session passe en "running" (partie demarree)
   useEffect(() => {
     if (session?.state === 'running') {
-      // Redirection vers le jeu (sera implémenté au Sprint 4)
       showToast('La partie commence !', 'info');
+      // TODO Sprint 4 : navigation.navigate('Game', { gameId })
     }
   }, [session?.state, showToast]);
 
-  // Quitter la session (non-créateur)
+  // Si le joueur n'est plus dans la liste (kick/ban), retour au lobby
+  useEffect(() => {
+    if (!session || !authState.user) return;
+    const stillInSession = session.players.some(
+      (p) => p.id === Number(authState.user!.id),
+    );
+    if (!stillInSession) {
+      showToast('Vous avez ete retire de la session', 'info');
+      navigation.replace('LobbyHome');
+    }
+  }, [session?.players, authState.user, showToast, navigation, session]);
+
+  // ─── Actions createur ────────────────────────────────────────────
+
+  const handleKick = async (playerId: number) => {
+    const result = await kickPlayer(playerId);
+    if (result.success) {
+      showToast('Joueur expulse', 'info');
+    } else {
+      showToast(result.error, 'error');
+    }
+  };
+
+  const handleBan = async (playerId: number) => {
+    const result = await banPlayer(playerId);
+    if (result.success) {
+      showToast('Joueur banni', 'info');
+    } else {
+      showToast(result.error, 'error');
+    }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Supprimer la session',
+      'Tous les joueurs seront renvoyes au lobby. Continuer ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: async () => {
+            const result = await deleteSession();
+            if (result.success) {
+              showToast('Session supprimee', 'info');
+              navigation.replace('LobbyHome');
+            } else {
+              showToast(result.error, 'error');
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleStart = () => {
+    Alert.alert(
+      'Demarrer la partie',
+      'La partie va commencer pour tous les joueurs. Continuer ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Demarrer',
+          onPress: async () => {
+            const result = await startGame();
+            if (!result.success) {
+              showToast(result.error, 'error');
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  // Quitter la session (non-createur)
   const handleLeave = () => {
     Alert.alert(
       'Quitter le salon',
@@ -76,7 +152,8 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
     );
   };
 
-  // Pas de session chargée
+  // ─── Rendu ────────────────────────────────────────────────────────
+
   if (!session) {
     return (
       <View style={styles.loadingContainer}>
@@ -101,12 +178,12 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
         </View>
       </View>
 
-      {/* QR Code d'invitation (visible pour le créateur) */}
-      {isCreator && session.state === 'waiting' && (
+      {/* QR Code d'invitation (createur, session en attente) */}
+      {isCreator && isWaiting && (
         <QRDisplay inviteCode={session.invite_code} />
       )}
 
-      {/* Liste des joueurs */}
+      {/* Liste des joueurs avec actions moderation */}
       <View style={styles.listSection}>
         <Text style={styles.sectionTitle}>
           <Ionicons name="people" size={16} color={COLORS.info} /> Joueurs
@@ -114,13 +191,36 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
         <PlayerList
           players={session.players}
           creatorId={session.creator.id}
+          isCreator={isCreator && isWaiting}
+          onKick={handleKick}
+          onBan={handleBan}
         />
       </View>
 
-      {/* Actions */}
+      {/* Footer — actions */}
       <View style={styles.footer}>
-        {/* Bouton Quitter (non-créateur, session en attente) */}
-        {!isCreator && session.state === 'waiting' && (
+        {/* Bouton Demarrer (createur, >= 2 joueurs) */}
+        {isCreator && isWaiting && (
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              styles.startButton,
+              session.players.length < 2 && styles.buttonDisabled,
+            ]}
+            onPress={handleStart}
+            disabled={loading || session.players.length < 2}
+          >
+            <Ionicons name="rocket-outline" size={20} color={COLORS.white} />
+            <Text style={styles.actionButtonText}>
+              {session.players.length < 2
+                ? 'En attente de joueurs (min. 2)'
+                : 'Commencer la partie'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Bouton Quitter (non-createur, session en attente) */}
+        {!isCreator && isWaiting && (
           <TouchableOpacity
             style={[styles.actionButton, styles.leaveButton]}
             onPress={handleLeave}
@@ -131,7 +231,17 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
           </TouchableOpacity>
         )}
 
-        {/* Espace réservé pour les boutons créateur (Sprint 3 : kick, ban, start, delete) */}
+        {/* Bouton Supprimer (createur, session en attente) */}
+        {isCreator && isWaiting && (
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={handleDelete}
+            disabled={loading}
+          >
+            <Ionicons name="trash-outline" size={20} color={COLORS.white} />
+            <Text style={styles.actionButtonText}>Supprimer la session</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -197,8 +307,17 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 8,
   },
+  startButton: {
+    backgroundColor: COLORS.success,
+  },
   leaveButton: {
     backgroundColor: COLORS.error,
+  },
+  deleteButton: {
+    backgroundColor: '#666',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
   actionButtonText: {
     color: COLORS.white,

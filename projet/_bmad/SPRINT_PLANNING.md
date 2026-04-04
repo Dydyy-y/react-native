@@ -31,7 +31,7 @@
 |--------|---------------|--------|--------|-----------|--------|
 | 1 | Étape 1 — Auth | 13 | 6-8h | RIEN | ✅ Terminé |
 | 2 | Étape 2 — Lobby & QR | 21 | 8-10h | Sprint 1 | ✅ Terminé |
-| 3 | Étape 3 — Modération | 10 | 4-6h | Sprint 2 | A démarrer |
+| 3 | Étape 3 — Modération | 10 | 4-6h | Sprint 2 | ✅ Terminé |
 | 4 | Étape 4 — Carte & État | 10 | 4-6h | Sprint 3 | A démarrer |
 | 5 | Étape 5 — Actions de jeu | 13 | 6-8h | Sprint 4 | A démarrer |
 | 6 | Étapes 5bis+6 — Fin & Profil | 8 | 4-6h | Sprint 5 | A démarrer |
