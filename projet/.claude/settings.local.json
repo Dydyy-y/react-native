@@ -14,7 +14,8 @@
       "Bash(cp \"/c/Users/mathy/code/react-native/space-conquest-tmp/index.ts\" \"/c/Users/mathy/code/react-native/projet/\")",
       "Bash(npm install:*)",
       "Bash(npm view:*)",
-      "Bash(npx expo:*)"
+      "Bash(npx expo:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

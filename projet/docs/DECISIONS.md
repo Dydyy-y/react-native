@@ -424,6 +424,44 @@ Un repo git ne doit contenir que ce qui est utile et partageable entre développ
 
 ---
 
+## 15. Configuration du apiClient via callbacks injectés (pas d'import direct depuis shared vers features)
+
+**Contexte**
+L'interceptor Axios doit lire le token depuis `expo-secure-store` (dans `features/auth/services/tokenStorage.ts`) et déclencher le logout (dans `features/auth/contexts/AuthContext.tsx`). Importer directement ces modules depuis `shared/config/apiClient.ts` violerait la règle "pas d'imports depuis shared vers features".
+
+**Décision**
+Le `apiClient.ts` expose une fonction `configureApiClient(getToken, onUnauthorized)`. L'`AuthProvider` appelle cette fonction au montage avec les callbacks appropriés.
+
+**Pourquoi cette approche (pas d'import direct) ?**
+- **Respect de la règle d'architecture** : `shared/` ne doit pas dépendre de `features/`. L'injection inverse ce sens de dépendance.
+- **Testabilité** : les callbacks peuvent être mockés en test sans importer le SecureStore.
+- **Ref pour éviter les closures périmées** : `AuthProvider` utilise un `useRef` pour que la callback de logout soit toujours la version courante, même si l'effet ne se ré-exécute qu'au montage.
+
+**Conséquences**
+- `apiClient.ts` ne connaît pas `features/auth/` — dépendance unidirectionnelle conservée.
+- `AuthProvider` appelle `configureApiClient` dans un `useEffect([], [])` avec une ref stable.
+
+---
+
+## 16. Ajout de react-native-gesture-handler
+
+**Contexte**
+`@react-navigation/stack` v7 requiert `react-native-gesture-handler` pour les animations de navigation. Cette dépendance n'était pas dans le `package.json` initial.
+
+**Décision**
+Installation via `npx expo install react-native-gesture-handler` (version compatible SDK 54).
+
+**Pourquoi (pas rester avec @react-navigation/native-stack) ?**
+- `@react-navigation/stack` était déjà listé dans les dépendances initiales — c'était le choix du projet.
+- `react-native-gesture-handler` est la dépendance officielle requise par ce package.
+- Import ajouté en première ligne de `App.tsx` (requis par la documentation React Navigation).
+
+**Conséquences**
+- `import 'react-native-gesture-handler'` doit rester en **première ligne** de `App.tsx`.
+- Expo gère la compatibilité native automatiquement via SDK.
+
+---
+
 ## Comment documenter une nouvelle décision
 
 Quand tu ajoutes quelque chose d'important au projet, **ajoute une entrée ici** avec ce format :
