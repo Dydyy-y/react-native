@@ -10,10 +10,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
 import { LobbyStackParamList } from '../../../navigation/NavigationTypes';
+import { useNavigation } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { AppTabsParamList } from '../../../navigation/NavigationTypes';
 import { useLobby } from '../hooks/useLobby';
 import { useModeration } from '../hooks/useModeration';
 import { useAuth } from '../../auth';
 import { useUI } from '../../ui';
+import { useGame } from '../../game';
 import { usePolling } from '../../../shared/hooks/usePolling';
 import { PlayerList } from '../components/PlayerList';
 import { QRDisplay } from '../components/QRDisplay';
@@ -27,6 +31,8 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
   const { kickPlayer, banPlayer, deleteSession, startGame } = useModeration();
   const { state: authState } = useAuth();
   const { showToast } = useUI();
+  const { setSessionId } = useGame();
+  const tabNavigation = useNavigation<BottomTabNavigationProp<AppTabsParamList>>();
 
   const isCreator = session?.creator.id === Number(authState.user?.id);
   const isWaiting = session?.state === 'waiting';
@@ -49,10 +55,11 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
   // Redirection si la session passe en "running" (partie demarree)
   useEffect(() => {
     if (session?.state === 'running') {
+      setSessionId(session.id);
       showToast('La partie commence !', 'info');
-      // TODO Sprint 4 : navigation.navigate('Game', { gameId })
+      tabNavigation.navigate('Game');
     }
-  }, [session?.state, showToast]);
+  }, [session?.state, session?.id, showToast, setSessionId, tabNavigation]);
 
   // Si le joueur n'est plus dans la liste (kick/ban), retour au lobby
   useEffect(() => {

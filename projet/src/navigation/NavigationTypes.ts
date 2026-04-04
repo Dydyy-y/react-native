@@ -10,6 +10,10 @@ export type LobbyStackParamList = {
   SessionDetail: undefined;
 };
 
+export type GameStackParamList = {
+  GameMain: undefined;
+};
+
 export type AppTabsParamList = {
   Lobby: undefined;
   Game: undefined;

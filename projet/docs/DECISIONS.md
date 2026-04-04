@@ -658,4 +658,44 @@ Imbriquer un `Stack.Navigator` (LobbyStack) dans le tab Lobby du `Tab.Navigator`
 
 ---
 
+## 25. Endpoints jeu : /game-sessions/{id}/map et /game-sessions/{id}/state
+
+**Contexte**
+Le PRD supposait des endpoints `/games/{gameId}/map` et `/games/{gameId}/state`. La documentation API Swagger revele que les endpoints de jeu sont en realite sur le meme prefixe que les sessions : `/game-sessions/{id}/map`, `/game-sessions/{id}/state`, `/game-sessions/{id}/round-actions`.
+
+**Decision**
+Utiliser `/game-sessions/{id}/...` pour tous les appels jeu. Le session ID est aussi le "game ID" — pas d'identifiant de jeu separe.
+
+**Pourquoi ?**
+- L'API ne fournit pas de game_id distinct : la session EST le jeu.
+- Les actions de tour utilisent `round-actions` (pas `actions`) et le type `recruit` (pas `purchase`).
+
+**Consequences**
+- `gameService.ts` utilise les memes prefixes que `sessionService.ts`.
+- Le `sessionId` du LobbyContext est transmis au GameContext pour les appels jeu.
+
+---
+
+## 26. Grille FlatList : fond uni + icones uniquement sur cases occupees
+
+**Contexte**
+La consigne impose FlatList pour la grille et recommande de ne pas afficher d'image sur chaque case vide pour des raisons de performance.
+
+**Decision**
+- Fond uni (`COLORS.primary`) sous la grille entiere.
+- Cases vides : simple `View` avec bordure fine semi-transparente.
+- Ressources : icone diamant dore + fond subtil.
+- Vaisseaux : icone Ionicons coloree par joueur (rocket pour fighter, construct pour miner).
+- `React.memo` sur `MapCell` pour eviter les re-renders inutiles.
+
+**Pourquoi ?**
+- Performance : FlatList avec N*M cellules peut etre lent avec des images partout.
+- Lisibilite : les vaisseaux et ressources se distinguent visuellement sur un fond sombre.
+
+**Consequences**
+- Pas de dependance d'images/sprites.
+- Couleurs joueurs attribuees par index trie des player IDs (coherent entre tours).
+
+---
+
 *Derniere mise a jour : 04 avril 2026*

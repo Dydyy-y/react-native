@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { UIProvider } from './src/features/ui';
 import { AuthProvider } from './src/features/auth';
 import { LobbyProvider } from './src/features/lobby';
+import { GameProvider } from './src/features/game';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ToastContainer } from './src/features/ui/components/Toast';
 
@@ -13,11 +14,13 @@ export default function App() {
     <UIProvider>
       <AuthProvider>
         <LobbyProvider>
-          <NavigationContainer>
-            <StatusBar style="light" />
-            <RootNavigator />
-            <ToastContainer />
-          </NavigationContainer>
+          <GameProvider>
+            <NavigationContainer>
+              <StatusBar style="light" />
+              <RootNavigator />
+              <ToastContainer />
+            </NavigationContainer>
+          </GameProvider>
         </LobbyProvider>
       </AuthProvider>
     </UIProvider>

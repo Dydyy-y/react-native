@@ -3,7 +3,7 @@
 **Date** : 24 mars 2026 (mis à jour 04 avril 2026)  
 **Durée Totale** : 2 semaines (jusqu'au 07 avril 2026 23h59)  
 **Equipe** : Individuel (Mathys)  
-**Status** : Sprint 1 terminé, Sprint 2 terminé, Sprint 3 à démarrer
+**Status** : Sprint 1 terminé, Sprint 2 terminé, Sprint 3 terminé, Sprint 4 terminé
 
 **Approche** : Agile + Context API + useReducer + Feature-Folder + TypeScript strict
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +10,7 @@ import {
   JoinSessionScreen,
   SessionDetailScreen,
 } from '../features/lobby';
+import { GameScreen } from '../features/game';
 import { COLORS } from '../shared/utils/constants';
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();
@@ -49,13 +49,8 @@ const LobbyNavigator = () => (
   </LobbyStack.Navigator>
 );
 
-// Placeholder pour le jeu (Sprint 4)
-const GamePlaceholder = () => (
-  <View style={styles.placeholder}>
-    <Text style={styles.placeholderText}>Jeu</Text>
-    <Text style={styles.placeholderSubtext}>Epic 4 — A venir</Text>
-  </View>
-);
+// Game Navigator (Sprint 4)
+const GameNavigator = () => <GameScreen />;
 
 export const AppTabs = () => (
   <Tab.Navigator
@@ -81,7 +76,7 @@ export const AppTabs = () => (
     />
     <Tab.Screen
       name="Game"
-      component={GamePlaceholder}
+      component={GameNavigator}
       options={{
         tabBarLabel: 'Jeu',
         tabBarIcon: ({ color, size }) => (
@@ -102,21 +97,3 @@ export const AppTabs = () => (
   </Tab.Navigator>
 );
 
-const styles = StyleSheet.create({
-  placeholder: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderText: {
-    color: COLORS.text,
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  placeholderSubtext: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-  },
-});
