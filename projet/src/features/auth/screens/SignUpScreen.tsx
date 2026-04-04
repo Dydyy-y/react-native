@@ -14,17 +14,13 @@ import { AuthStackParamList } from '../../../navigation/NavigationTypes';
 import { useRegister } from '../hooks/useRegister';
 import { useUI } from '../../ui';
 import { COLORS } from '../../../shared/utils/constants';
-import {
-  isValidEmail,
-  isValidUsername,
-  isValidPassword,
-} from '../../../shared/utils/validation';
+import { isValidEmail, isValidPassword } from '../../../shared/utils/validation';
 import { authStyles as styles } from '../styles/authStyles';
 
 type Props = StackScreenProps<AuthStackParamList, 'SignUp'>;
 
 interface FormErrors {
-  username?: string;
+  name?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
@@ -36,12 +32,12 @@ export const SignUpScreen = ({ navigation }: Props) => {
   const { loading, execute } = useRegister();
   const { showToast } = useUI();
 
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [touched, setTouched] = useState<TouchedFields>({
-    username: false,
+    name: false,
     email: false,
     password: false,
     confirmPassword: false,
@@ -50,16 +46,18 @@ export const SignUpScreen = ({ navigation }: Props) => {
   const markTouched = (field: keyof TouchedFields) =>
     setTouched((prev) => ({ ...prev, [field]: true }));
 
+  const isValidName = (value: string) => value.trim().length >= 1;
+
   const getErrors = (): FormErrors => {
     const errors: FormErrors = {};
-    if (touched.username && !isValidUsername(username)) {
-      errors.username = "3-20 caractères, lettres, chiffres et _ uniquement";
+    if (touched.name && !isValidName(name)) {
+      errors.name = 'Le nom est requis';
     }
     if (touched.email && !isValidEmail(email)) {
       errors.email = 'Adresse email invalide';
     }
     if (touched.password && !isValidPassword(password)) {
-      errors.password = 'Minimum 8 caractères';
+      errors.password = 'Minimum 8 caracteres';
     }
     if (touched.confirmPassword && password !== confirmPassword) {
       errors.confirmPassword = 'Les mots de passe ne correspondent pas';
@@ -70,16 +68,16 @@ export const SignUpScreen = ({ navigation }: Props) => {
   const errors = getErrors();
 
   const isFormValid =
-    isValidUsername(username) &&
+    isValidName(name) &&
     isValidEmail(email) &&
     isValidPassword(password) &&
     password === confirmPassword;
 
   const handleSubmit = async () => {
-    setTouched({ username: true, email: true, password: true, confirmPassword: true });
+    setTouched({ name: true, email: true, password: true, confirmPassword: true });
     if (!isFormValid) return;
 
-    const result = await execute({ username, email, password });
+    const result = await execute({ name: name.trim(), email: email.trim(), password });
     if (!result.success && result.error) {
       showToast(result.error, 'error');
     }
@@ -95,25 +93,25 @@ export const SignUpScreen = ({ navigation }: Props) => {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Créer un compte</Text>
+          <Text style={styles.title}>Creer un compte</Text>
           <Text style={styles.subtitle}>Rejoignez Space Conquest Online</Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.fieldContainer}>
             <TextInput
-              style={[styles.input, errors.username ? styles.inputError : null]}
-              placeholder="Nom d'utilisateur"
+              style={[styles.input, errors.name ? styles.inputError : null]}
+              placeholder="Nom"
               placeholderTextColor={COLORS.textSecondary}
-              value={username}
-              onChangeText={setUsername}
-              onBlur={() => markTouched('username')}
-              autoCapitalize="none"
+              value={name}
+              onChangeText={setName}
+              onBlur={() => markTouched('name')}
+              autoCapitalize="words"
               autoCorrect={false}
               editable={!loading}
             />
-            {errors.username ? (
-              <Text style={styles.errorText}>{errors.username}</Text>
+            {errors.name ? (
+              <Text style={styles.errorText}>{errors.name}</Text>
             ) : null}
           </View>
 
@@ -184,7 +182,7 @@ export const SignUpScreen = ({ navigation }: Props) => {
             disabled={loading}
           >
             <Text style={styles.linkText}>
-              Vous avez déjà un compte ?{' '}
+              Vous avez deja un compte ?{' '}
               <Text style={styles.linkAccent}>Se connecter</Text>
             </Text>
           </TouchableOpacity>

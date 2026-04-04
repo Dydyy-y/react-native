@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 import { User } from '../types/auth.types';
 import { getToken, removeToken } from '../services/tokenStorage';
-import { validateToken } from '../services/authService';
+import { getProfile } from '../services/authService';
 import { configureApiClient } from '../../../shared/config/apiClient';
 import { logger } from '../../../shared/utils/logger';
 
@@ -94,8 +94,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           dispatch({ type: 'SET_LOADING', payload: false });
           return;
         }
-        // Valide le token avec l'API et récupère l'utilisateur
-        const user = await validateToken();
+        // Valide le token avec l'API et recupere l'utilisateur
+        const user = await getProfile();
         dispatch({ type: 'SET_TOKEN', payload: token });
         dispatch({ type: 'SET_USER', payload: user });
       } catch (error) {

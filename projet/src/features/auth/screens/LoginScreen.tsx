@@ -22,30 +22,30 @@ export const LoginScreen = ({ navigation }: Props) => {
   const { loading, execute } = useLogin();
   const { showToast } = useUI();
 
-  const [emailOrUsername, setEmailOrUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [touched, setTouched] = useState({ emailOrUsername: false, password: false });
+  const [touched, setTouched] = useState({ email: false, password: false });
 
-  const markTouched = (field: 'emailOrUsername' | 'password') =>
+  const markTouched = (field: 'email' | 'password') =>
     setTouched((prev) => ({ ...prev, [field]: true }));
 
   const getErrors = () => ({
-    emailOrUsername: touched.emailOrUsername && !emailOrUsername.trim()
-      ? 'Ce champ est requis'
+    email: touched.email && !email.trim()
+      ? 'L\'email est requis'
       : undefined,
     password: touched.password && password.length < 8
-      ? 'Minimum 8 caractères'
+      ? 'Minimum 8 caracteres'
       : undefined,
   });
 
   const errors = getErrors();
-  const isFormValid = emailOrUsername.trim().length > 0 && password.length >= 8;
+  const isFormValid = email.trim().length > 0 && password.length >= 8;
 
   const handleSubmit = async () => {
-    setTouched({ emailOrUsername: true, password: true });
+    setTouched({ email: true, password: true });
     if (!isFormValid) return;
 
-    const result = await execute(emailOrUsername.trim(), password);
+    const result = await execute(email.trim(), password);
     if (!result.success && result.error) {
       showToast(result.error, 'error');
     }
@@ -68,18 +68,19 @@ export const LoginScreen = ({ navigation }: Props) => {
         <View style={styles.form}>
           <View style={styles.fieldContainer}>
             <TextInput
-              style={[styles.input, errors.emailOrUsername ? styles.inputError : null]}
-              placeholder="Email ou nom d'utilisateur"
+              style={[styles.input, errors.email ? styles.inputError : null]}
+              placeholder="Email"
               placeholderTextColor={COLORS.textSecondary}
-              value={emailOrUsername}
-              onChangeText={setEmailOrUsername}
-              onBlur={() => markTouched('emailOrUsername')}
+              value={email}
+              onChangeText={setEmail}
+              onBlur={() => markTouched('email')}
+              keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
               editable={!loading}
             />
-            {errors.emailOrUsername ? (
-              <Text style={styles.errorText}>{errors.emailOrUsername}</Text>
+            {errors.email ? (
+              <Text style={styles.errorText}>{errors.email}</Text>
             ) : null}
           </View>
 
@@ -117,7 +118,7 @@ export const LoginScreen = ({ navigation }: Props) => {
           >
             <Text style={styles.linkText}>
               Pas encore inscrit ?{' '}
-              <Text style={styles.linkAccent}>Créer un compte</Text>
+              <Text style={styles.linkAccent}>Creer un compte</Text>
             </Text>
           </TouchableOpacity>
         </View>

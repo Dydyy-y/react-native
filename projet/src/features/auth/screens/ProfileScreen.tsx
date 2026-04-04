@@ -36,8 +36,8 @@ export const ProfileScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.label}>Nom d'utilisateur</Text>
-        <Text style={styles.value}>{state.user?.username}</Text>
+        <Text style={styles.label}>Nom</Text>
+        <Text style={styles.value}>{state.user?.name}</Text>
         <Text style={styles.label}>Email</Text>
         <Text style={styles.value}>{state.user?.email}</Text>
       </View>

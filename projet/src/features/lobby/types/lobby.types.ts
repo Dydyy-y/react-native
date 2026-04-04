@@ -1,7 +1,7 @@
 /** Joueur dans une session */
 export interface Player {
   id: number;
-  username: string;
+  name: string;
 }
 
 /** Session de jeu retournée par l'API */

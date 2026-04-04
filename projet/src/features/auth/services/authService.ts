@@ -3,32 +3,33 @@ import { AuthResponse, User } from '../types/auth.types';
 
 /** Inscription : POST /auth/register */
 export const register = async (
-  username: string,
+  name: string,
   email: string,
   password: string,
 ): Promise<AuthResponse> => {
   const response = await apiClient.post<AuthResponse>('/auth/register', {
-    username,
+    name,
     email,
     password,
+    password_confirmation: password,
   });
   return response.data;
 };
 
 /** Connexion : POST /auth/login */
 export const login = async (
-  emailOrUsername: string,
+  email: string,
   password: string,
 ): Promise<AuthResponse> => {
   const response = await apiClient.post<AuthResponse>('/auth/login', {
-    email_or_username: emailOrUsername,
+    email,
     password,
   });
   return response.data;
 };
 
-/** Validation du token et récupération de l'utilisateur courant : GET /auth/me */
-export const validateToken = async (): Promise<User> => {
-  const response = await apiClient.get<User>('/auth/me');
+/** Recuperation du profil utilisateur : GET /profile */
+export const getProfile = async (): Promise<User> => {
+  const response = await apiClient.get<User>('/profile');
   return response.data;
 };

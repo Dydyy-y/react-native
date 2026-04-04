@@ -1,12 +1,13 @@
 export interface User {
-  id: string;
-  username: string;
+  id: number;
+  name: string;
   email: string;
 }
 
+/** Reponse de POST /auth/login et POST /auth/register */
 export interface AuthResponse {
-  user: User;
   access_token: string;
-  token_type: string;
-  expires_in: number;
+  access_expires_at: string;
+  refresh_token: string;
+  refresh_expires_at: string;
 }

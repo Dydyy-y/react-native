@@ -93,7 +93,7 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
         <Text style={styles.title}>Salon : {session.name}</Text>
         <View style={styles.infoRow}>
           <Text style={styles.infoText}>
-            Createur : {session.creator.username}
+            Createur : {session.creator.name}
           </Text>
           <Text style={styles.infoText}>
             {session.players.length}/4 joueurs
