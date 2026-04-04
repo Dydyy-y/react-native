@@ -1,840 +1,665 @@
 # Sprint Planning & Roadmap
 
-**Date** : 24 mars 2026  
-**Durée Totale** : 4 semaines (jusqu'au 07 avril 2026)  
-**Équipe** : Individuel (Mathys)  
-**Status** : Sprint 1 - À démarrer
+**Date** : 24 mars 2026 (mis à jour 04 avril 2026)  
+**Durée Totale** : 2 semaines (jusqu'au 07 avril 2026 23h59)  
+**Equipe** : Individuel (Mathys)  
+**Status** : Sprint 1 terminé, Sprint 2 à démarrer
 
-**Temps Total Estimé** : 22-26 heures de développement  
-**Approche** : Agile + Zustand + Feature-Folder + TypeScript
+**Approche** : Agile + Context API + useReducer + Feature-Folder + TypeScript strict
 
 ---
 
-## 📋 Table des Matières
+## Table des Matières
 
 1. [Vue d'ensemble & Timeline](#vue-densemble--timeline)
-2. [Sprint 1: Authentification (EPIC 1)](#sprint-1-authentification-epic-1)
-3. [Sprint 2: Lobby & QR Code (EPIC 2)](#sprint-2-lobby--qr-code-epic-2)
-4. [Sprint 3: Modération & Start (EPIC 3)](#sprint-3-modération--start-epic-3)
-5. [Sprint 4: Game Map & État (EPIC 4)](#sprint-4-game-map--état-epic-4)
-6. [Dépendances & Risques Globaux](#dépendances--risques-globaux)
-7. [Backlog Bonus](#backlog-bonus)
+2. [Sprint 1: Authentification (Étape 1)](#sprint-1--authentification-étape-1)
+3. [Sprint 2: Lobby & QR Code (Étape 2)](#sprint-2--lobby--qr-code-étape-2)
+4. [Sprint 3: Modération & Démarrage (Étape 3)](#sprint-3--modération--démarrage-étape-3)
+5. [Sprint 4: Carte & État de jeu (Étape 4)](#sprint-4--carte--état-de-jeu-étape-4)
+6. [Sprint 5: Actions de jeu (Étape 5)](#sprint-5--actions-de-jeu-étape-5)
+7. [Sprint 6: Fin de partie, Profil & Historique (Étapes 5bis + 6)](#sprint-6--fin-de-partie-profil--historique-étapes-5bis--6)
+8. [Dépendances & Risques Globaux](#dépendances--risques-globaux)
+9. [Backlog Bonus](#backlog-bonus)
 
 ---
 
 ## Vue d'ensemble & Timeline
 
-### Chronologie Générale
-
-```
-Jour 1   (8h)   : Sprint 1 - EPIC 1 (Auth)          ✅ Base critique
-Jour 2-3 (13h)  : Sprint 2 - EPIC 2 (Lobby)         ✅ Gestion sessions
-Jour 4   (8h)   : Sprint 3 - EPIC 3 (Modération)    ✅ Contrôles créateur
-Jour 5   (8h)   : Sprint 4 - EPIC 4 (Game)          ✅ Affichage partie
-─────────────────────────────────────────────────────────────
-TOTAL    (27h)  : Tous épics complets + buff testing
-```
-
 ### Métriques par Sprint
 
-| Sprint | Épic | Points | Heures | Jours | Dépend de | Status |
-|--------|------|--------|--------|-------|-----------|--------|
-| 1 | Auth | 13 | 6-8h | 1 jour | RIEN | 🟡 À démarrer |
-| 2 | Lobby | 21 | 10-13h | 2.5 jours | Sprint 1 | 🟡 À démarrer |
-| 3 | Modération | 13 | 6-8h | 1 jour | Sprint 2 | 🟡 À démarrer |
-| 4 | Game | 13 | 6-8h | 1 jour | Sprint 3 | 🟡 À démarrer |
+| Sprint | Étape consigne | Points | Heures | Dépend de | Status |
+|--------|---------------|--------|--------|-----------|--------|
+| 1 | Étape 1 — Auth | 13 | 6-8h | RIEN | ✅ Terminé |
+| 2 | Étape 2 — Lobby & QR | 21 | 8-10h | Sprint 1 | A démarrer |
+| 3 | Étape 3 — Modération | 10 | 4-6h | Sprint 2 | A démarrer |
+| 4 | Étape 4 — Carte & État | 10 | 4-6h | Sprint 3 | A démarrer |
+| 5 | Étape 5 — Actions de jeu | 13 | 6-8h | Sprint 4 | A démarrer |
+| 6 | Étapes 5bis+6 — Fin & Profil | 8 | 4-6h | Sprint 5 | A démarrer |
+
+### Timeline
+
+```
+Vendredi 4 avril   : Sprint 2 (Lobby + QR + Polling)
+Samedi 5 avril     : Sprint 3 (Modération) + Sprint 4 (Carte)
+Dimanche 6 avril   : Sprint 5 (Actions de jeu)
+Lundi 7 avril      : Sprint 6 (Fin de partie + Profil) + Polish final
+```
 
 ---
 
-## Sprint 1: Authentification (EPIC 1)
+## Sprint 1 : Authentification (Étape 1)
 
-**⏱️ Durée** : 6-8 heures (1 jour complet)  
-**📍 Dépendances** : Aucune (point de départ)  
-**🎯 Objectif** : Permettre s'inscrire / connecter et gérer tokens sécurisément  
-**✅ Blockers** : Aucun
+**Durée** : 6-8 heures  
+**Dépendances** : Aucune  
+**Objectif** : Inscription, connexion, navigation protégée, tokens sécurisés  
+**Status** : ✅ Terminé
 
-### User Stories Détaillées
+### US 1.1 : Créer un compte (Sign Up) — 5 points ✅
 
-#### US 1.1 : Créer un compte (Sign Up) - 5 points
+**Description** : Nouveau joueur crée un compte avec username, email & password
 
-**Description** : Nouveau joueur crée un compte avec email & password
+**Critères d'acceptation** :
 
-**Critères d'acceptation détaillés** :
+1. **SignUpScreen — Interface**
+   - [x] Title : "Créer un compte"
+   - [x] Input `username` : placeholder "Nom d'utilisateur"
+   - [x] Input `email` : placeholder "Email"
+   - [x] Input `password` : masked, placeholder "Mot de passe"
+   - [x] Input `confirmPassword` : masked, placeholder "Confirmer mot de passe"
+   - [x] Button "S'inscrire" : disabled si form invalide
+   - [x] Link "Vous avez déjà un compte ? Se connecter" -> LoginScreen
+   - [x] Error display sous chaque champ (rouge)
+   - [x] Loading spinner pendant requête
 
-1. **SignUpScreen - Interface (1.5h)**
-   - [ ] Title : "Créer un compte"
-   - [ ] Input `username` : placeholder "Nom d'utilisateur", alphanumériques + underscore
-   - [ ] Input `email` : placeholder "Email"
-   - [ ] Input `password` : masked, placeholder "Mot de passe (min 8)"
-   - [ ] Input `confirmPassword` : masked, placeholder "Confirmer mot de passe"
-   - [ ] Button "S'inscrire" : disabled si form invalide
-   - [ ] Link "Vous avez déjà un compte ? Se connecter" → LoginScreen
-   - [ ] Error display sous chaque champ (rouge)
-   - [ ] Loading spinner pendant requête
+2. **Validations côté client**
+   - [x] Username : 3-20 caractères, regex `/^[a-zA-Z0-9_]+$/`
+   - [x] Email : format email valide
+   - [x] Password : min 8 caractères
+   - [x] confirmPassword === password
+   - [x] Erreurs affichées en temps réel (onBlur)
 
-2. **Validations côté client (0.5h)**
-   - [ ] Username : 3-20 caractères, regex `/^[a-zA-Z0-9_]+$/`
-   - [ ] Email : format email valide, regex email standard
-   - [ ] Password : min 8 caractères, afficher force indicator (optionnel)
-   - [ ] confirmPassword === password
-   - [ ] Erreurs affichées en TEMPS RÉEL (onChange)
-   - [ ] Cas: champs vides, format invalide, mismatch password
+3. **Appel API & Storage**
+   - [x] POST `/auth/register` avec body `{ username, email, password }`
+   - [x] Token sauvegardé dans `expo-secure-store` via `tokenStorage.ts`
+   - [x] User dispatch dans AuthContext via `useRegister` hook
+   - [x] En cas erreur : toast via UIContext
 
-3. **Appel API & Storage (1h)**
-   - [ ] POST `https://api.../auth/register` avec body `{ username, email, password }`
-   - [ ] Response: `{ user: { id, username, email }, access_token, token_type, expires_in }`
-   - [ ] Token sauvegardé dans `expo-secure-store` sous clé `auth_token`
-   - [ ] User object sauvegardé dans AuthStore (Zustand)
-   - [ ] En cas erreur : afficher toast API error message (ex: "Email déjà utilisé")
+4. **State Management (Context API + useReducer)**
+   - [x] AuthContext : `dispatch({ type: 'SET_USER', payload })` + `dispatch({ type: 'SET_TOKEN', payload })`
+   - [x] Loading state dans le hook `useRegister`
+   - [x] Success : navigation automatique vers AppTabs (RootNavigator réagit au changement de state)
 
-4. **State Management (1h)**
-   - [ ] AuthStore: `setUser()`, `setToken()`, `setLoading()`, `setError()`
-   - [ ] Loading state: spinner visible, button disabled
-   - [ ] Success: redirection automatique vers AppTabs (ou LoginScreen si no auto-login)
-   - [ ] Error: toast rouge, pas de redirection, focus input problématique
-
-**Tâches Techniques**:
-- [ ] Créer `src/features/auth/stores/authStore.ts` (Zustand)
-- [ ] Créer `src/features/auth/services/authService.ts` (axios calls)
-- [ ] Créer `src/features/auth/screens/SignUpScreen.tsx`
-- [ ] Créer `src/features/auth/components/InputField.tsx` (réutilisable)
-- [ ] Créer `src/features/auth/types/index.ts` (interfaces User, Auth)
-- [ ] Setup `expo-secure-store` import & export wrapper
-- [ ] Test: créer compte valide → token en secure storage
-
-**Definition of Done**:
-- ✅ SignUpScreen fonctionne end-to-end
-- ✅ Token secure stocké et retrievable
-- ✅ Validations côté client complètes
-- ✅ Gestion erreurs API (affichage toast)
-- ✅ TypeScript types strict
+**Fichiers créés** :
+- `src/features/auth/contexts/AuthContext.tsx` (Context + Reducer + Provider)
+- `src/features/auth/services/authService.ts` (appels API)
+- `src/features/auth/services/tokenStorage.ts` (expo-secure-store wrapper)
+- `src/features/auth/hooks/useRegister.ts` (hook de récupération API)
+- `src/features/auth/screens/SignUpScreen.tsx`
+- `src/features/auth/types/auth.types.ts`
+- `src/shared/utils/validation.ts`
 
 ---
 
-#### US 1.2 : S'authentifier (Sign In) - 5 points
+### US 1.2 : S'authentifier (Sign In) — 5 points ✅
 
 **Description** : Joueur existant se connecte et son token est utilisé automatiquement
 
-**Critères d'acceptation détaillés** :
+**Critères d'acceptation** :
 
-1. **LoginScreen - Interface (1.5h)**
-   - [ ] Title : "Se connecter"
-   - [ ] Input `emailOrUsername` : placeholder "Email ou nom d'utilisateur"
-   - [ ] Input `password` : masked, placeholder "Mot de passe"
-   - [ ] Checkbox "Se souvenir de moi" (optionnel v1)
-   - [ ] Button "Se connecter" : disabled si form invalide
-   - [ ] Link "Pas encore inscrit ? Créer un compte" → SignUpScreen
-   - [ ] [BONUS] Link "Mot de passe oublié ?" (à ignorer v1)
-   - [ ] Error display sous champs (rouge)
-   - [ ] Loading spinner pendant requête
+1. **LoginScreen — Interface**
+   - [x] Title : "Se connecter"
+   - [x] Input `emailOrUsername` : placeholder "Email ou nom d'utilisateur"
+   - [x] Input `password` : masked, placeholder "Mot de passe"
+   - [x] Button "Se connecter" : disabled si form invalide
+   - [x] Link "Pas encore inscrit ? Créer un compte" -> SignUpScreen
+   - [x] Loading spinner pendant requête
 
-2. **Validations côté client (0.5h)**
-   - [ ] Email/username : non-vide
-   - [ ] Password : non-vide, min 8 affichés
-   - [ ] Erreurs affichées en TEMPS RÉEL
+2. **Validations côté client**
+   - [x] emailOrUsername : non-vide
+   - [x] Password : min 8 caractères
 
-3. **Appel API & Persistent Storage (1.5h)**
-   - [ ] POST `https://api.../auth/login` avec body `{ email_or_username, password }`
-   - [ ] Response: `{ user: { id, username, email }, access_token, token_type, expires_in }`
-   - [ ] Token sauvegardé dans `expo-secure-store` sous clé `auth_token`
-   - [ ] User stocké dans AuthStore
-   - [ ] Header Authorization automatiquement ajouté par interceptor Axios
-   - [ ] Erreur: afficher toast "Email/password invalides" (spécifique)
+3. **Appel API & Storage**
+   - [x] POST `/auth/login` avec body `{ email_or_username, password }`
+   - [x] Token sauvegardé dans `expo-secure-store`
+   - [x] Header Authorization ajouté automatiquement par interceptor Axios
+   - [x] Erreur : toast via UIContext
 
-4. **State Management & Navigation (1h)**
-   - [ ] Loading state: spinner visible, button disabled
-   - [ ] Success: redirection AppTabs (Lobby screen)
-   - [ ] Error: toast, state reset, focus input
-   - [ ] AuthStore.setUser() & setToken()
+4. **State Management (Context API + useReducer)**
+   - [x] AuthContext : `SET_TOKEN` + `SET_USER`
+   - [x] Hook `useLogin` gère loading/error
+   - [x] Success : navigation automatique vers AppTabs
 
-**Tâches Techniques**:
-- [ ] Créer `src/features/auth/screens/LoginScreen.tsx`
-- [ ] Créer `src/shared/api/apiClient.ts` (Axios + interceptors)
-- [ ] Configurer Authorization interceptor (Bearer token)
-- [ ] Créer `src/shared/hooks/useAuth.ts` (selector hook optionnel)
-- [ ] Test: login valide → token utilisé dans requêtes suivantes
-
-**Definition of Done**:
-- ✅ LoginScreen fonctionne end-to-end
-- ✅ Token ajouté automatiquement aux requests (interceptor)
-- ✅ Validations côté client
-- ✅ Gestion erreurs API
-- ✅ Navigation automatique post-login
+**Fichiers créés** :
+- `src/features/auth/hooks/useLogin.ts`
+- `src/features/auth/screens/LoginScreen.tsx`
+- `src/shared/config/apiClient.ts` (Axios instance + interceptors)
+- `src/shared/utils/constants.ts` (API_BASE_URL, TOKEN_KEY, COLORS)
 
 ---
 
-#### US 1.3 : Navigation Protégée & Token Management - 3 points
+### US 1.3 : Navigation Protégée & Token Management — 3 points ✅
 
-**Description** : App protégée, utilisateurs non-connectés ne peuvent pas accéder au contenu
+**Description** : App protégée, utilisateurs non-connectés redirigés vers login
 
-**Critères d'acceptation détaillés** :
+**Critères d'acceptation** :
 
-1. **RootNavigator Logic (1h)**
-   - [ ] State: `isLoading` (vérifier token au démarrage)
-   - [ ] Si `isLoading=true` → afficher SplashScreen (spinner + branding)
-   - [ ] Si `isLoading=false && !user` → AuthStack (LoginScreen/SignUpScreen)
-   - [ ] Si `isLoading=false && user` → AppTabs (Lobby, Game, etc.)
+1. **RootNavigator Logic**
+   - [x] `isLoading=true` -> SplashScreen (vérification token)
+   - [x] `isLoading=false && !user` -> AuthStack (LoginScreen/SignUpScreen)
+   - [x] `isLoading=false && user` -> AppTabs (Lobby, Game, Profile)
 
-2. **App Startup Verification (1h)**
-   - [ ] useEffect au montage App
-   - [ ] Vérifier existance token dans `expo-secure-store`
-   - [ ] Si token existe: appel GET `/api/auth/me` pour valider
-   - [ ] Si valide: charger user, AuthStore.setUser() + continue
-   - [ ] Si invalide/401: supprimer token, redirection LoginScreen
-   - [ ] Si offline: timeout 5s, afficher toast, allow try again
+2. **App Startup Token Verification**
+   - [x] Au montage AuthProvider : vérifier token dans `expo-secure-store`
+   - [x] Si token existe : GET `/auth/me` pour valider
+   - [x] Si valide : charger user dans AuthContext
+   - [x] Si invalide/401 : supprimer token, afficher LoginScreen
 
-3. **Logout / Déconnexion (1h)**
-   - [ ] Button logout dans Settings/Profile screen
-   - [ ] Confirmation modale: "Êtes-vous sûr de vous déconnecter ?"
-   - [ ] Action: supprimer token secure storage + AuthStore.logout() + RootNavigator refresh
-   - [ ] Redirection automatique LoginScreen
+3. **Logout / Déconnexion**
+   - [x] Bouton logout dans ProfileScreen
+   - [x] Confirmation modale (Alert)
+   - [x] Action : supprimer token + dispatch LOGOUT + navigation auto
 
-4. **Token Interceptor & 401 Handling (1h)**
-   - [ ] Axios interceptor: ajouter `Authorization: Bearer ${token}` si existe
-   - [ ] Gestion réponse 401 (token expiré): auto-logout + LoginScreen
-   - [ ] Gestion réponse 403: afficher toast "Accès refusé"
-   - [ ] Gestion timeout (offline): retry après 5s
+4. **Token Interceptor & 401 Handling**
+   - [x] Interceptor requête : ajoute `Authorization: Bearer {token}`
+   - [x] Interceptor réponse : 401 -> logout automatique
+   - [x] Configuration via callbacks injectés (pas d'import croisé shared -> features)
 
-**Tâches Techniques**:
-- [ ] Créer `src/navigation/RootNavigator.tsx`
-- [ ] Créer `src/navigation/AuthStack.tsx` (LoginScreen, SignUpScreen)
-- [ ] Créer `src/navigation/AppTabs.tsx` (Lobby, Game, Settings)
-- [ ] Créer `src/shared/hooks/useStartupToken.ts` (verify token on app open)
-- [ ] Setup Axios interceptors en `src/shared/api/apiClient.ts`
-- [ ] Créer SplashScreen ou utiliser expo built-in
-
-**Definition of Done**:
-- ✅ RootNavigator fonctionne (3 states)
-- ✅ Token vérifié au démarrage app
-- ✅ 401 géré (auto-logout)
-- ✅ Logout fonctionne completement
-- ✅ TypeScript types strict
+**Fichiers créés** :
+- `src/navigation/RootNavigator.tsx`
+- `src/navigation/AuthStack.tsx`
+- `src/navigation/AppTabs.tsx` (TabsNavigator obligatoire)
+- `src/navigation/NavigationTypes.ts`
+- `src/features/auth/screens/SplashScreen.tsx`
+- `src/features/auth/screens/ProfileScreen.tsx`
+- `src/features/ui/contexts/UIContext.tsx` (Context + Reducer)
+- `src/features/ui/components/Toast.tsx` (ToastContainer overlay)
+- `src/shared/utils/errorHandler.ts`
+- `src/shared/utils/logger.ts`
 
 ---
 
-### Definition of Done Global Sprint 1
+## Sprint 2 : Lobby & QR Code (Étape 2)
 
-- ✅ AuthStore complètement implémenté avec Zustand
-- ✅ authService avec login/register/logout/getToken
-- ✅ Secure token storage fonctionnel
-- ✅ Tous les screens de login/signup créés et testés
-- ✅ RootNavigator avec 3 états (loading, auth, app)
-- ✅ Axios interceptors OK (Bearer token + 401 handling)
-- ✅ Validations côté client pour tous les inputs
-- ✅ Gestion erreurs API (toasts)
-- ✅ Code 100% TypeScript strict
-- ✅ All 9 acceptance tests (T1.1.x, T1.2.x, T1.3.x) passing
+**Durée** : 8-10 heures  
+**Dépendances** : Sprint 1 terminé  
+**Objectif** : Créer/rejoindre sessions, QR code, polling temps réel  
+**Status** : A démarrer
 
-### Risques Sprint 1
+### US 2.1 : Créer une session de jeu — 5 points
 
-| Risque | Probabilité | Impact | Mitigation |
-|--------|------------|--------|-----------|
-| Problème token expiration | Basse | Moyen | Implém. refresh token (bonus après sprint) |
-| Secure store permission | Basse | Haut | Tester sur iOS/Android device |
-| API non accessible | Basse | Critique | Mock API response en dev |
+**Description** : Joueur crée une nouvelle session et obtient un QR code d'invitation
 
----
+**Critères d'acceptation** :
 
-## Sprint 2: Lobby & QR Code (EPIC 2)
+1. **CreateSessionScreen — Interface**
+   - [ ] Accessible depuis LobbyHomeScreen via bouton "Nouvelle session"
+   - [ ] Input `sessionName` : optionnel, placeholder "Nom de la partie"
+   - [ ] Button "Créer la session"
+   - [ ] Loading spinner pendant création
+   - [ ] Error toast si erreur API
 
-**⏱️ Durée** : 10-13 heures (2.5 jours)  
-**📍 Dépendances** : Sprint 1 DONE  
-**🎯 Objectif** : Créer/rejoindre sessions, générer QR codes, polling en temps réel  
-**✅ Blockers** : Aucun si Sprint 1 OK
+2. **Appel API** (POST /sessions)
+   - [ ] Body : `{ name }`
+   - [ ] Response : session avec `id`, `name`, `creator_id`, `state`, `code`
+   - [ ] Session stockée dans LobbyContext via dispatch
 
-### User Stories Détaillées
+3. **Affichage QR Code**
+   - [ ] QR Code généré contenant le code d'invitation de la session
+   - [ ] Message : "Invitez vos amis à scanner ce QR Code"
+   - [ ] Redirection automatique vers SessionDetailScreen avec polling
 
-#### US 2.1 : Créer une Session & QR Code - 7 points
+4. **State Management (Context API + useReducer)**
+   - [ ] LobbyContext : `dispatch({ type: 'SET_SESSION', payload: session })`
+   - [ ] Loading/error gérés dans le hook
 
-**Description** : Joueur créé nouvelle session et obtient QR code pour inviter d'autres
-
-**Critères d'acceptation détaillés** :
-
-1. **CreateSessionScreen - Interface (1.5h)**
-   - [ ] Accédé depuis LobbyListScreen via bouton "Nouvelle session"
-   - [ ] Input `sessionName` : optionnel, placeholder "Nom de la partie" (défaut: "Session de {username}")
-   - [ ] Dropdown `maxPlayers` : [2, 3, 4], défaut 4
-   - [ ] Button "Créer la session" : soumet form
-   - [ ] Button "Annuler" : back to LobbyListScreen
-   - [ ] Loading spinner pendant créatio
-   - [ ] Error toast si API error
-
-2. **API Call & Response (1h)**
-   - [ ] POST `https://api.../sessions` avec body `{ name, max_players }`
-   - [ ] Response: `{ session: { id, name, creator_id, state: "waiting", qr_code_data, ... } }`
-   - [ ] Session sauvegardée dans LobbyStore (Zustand)
-   - [ ] Error: afficher toast API message
-
-3. **QR Code Display (1.5h)**
-   - [ ] Composant `QRDisplayComponent` montré après création succès
-   - [ ] QR Code contient: `${BASE_URL}/join/${session.id}` ou `${session.id}`
-   - [ ] Générer QR avec `react-native-qrcode-svg`
-   - [ ] Button "Copier le code" : copie vers clipboard (react-native-clipboard)
-   - [ ] Button "Partager" : share intent Android/iOS (optionnel)
-   - [ ] Message: "Invitez vos amis à scaner ce QR Code"
-   - [ ] Auto-redirection vers SessionDetailScreen (StartPolling)
-
-4. **State Management (1h)**
-   - [ ] LobbyStore: `createSession()`, `setCurrentSession()`
-   - [ ] Loading/error display
-   - [ ] Redirection automatique post-création
-
-**Tâches Techniques**:
-- [ ] Créer `src/features/lobby/stores/lobbyStore.ts` (Zustand)
-  - États: `currentSession`, `sessions[]`, `players[]`, `loading`, `error`
-  - Actions: `createSession()`, `setCurrentSession()`, `addPlayer()`, `removePlayer()`
-- [ ] Créer `src/features/lobby/services/sessionService.ts`
-  - `createSession(name, maxPlayers)`, `joinSession(id)`, `leaveSession(id)`, `kickPlayer()`, `banPlayer()`, `deleteSession()`, `startGame()`
-- [ ] Créer `src/features/lobby/screens/CreateSessionScreen.tsx`
-- [ ] Créer `src/features/lobby/components/QRDisplayComponent.tsx`
-- [ ] Installer dépendances: `react-native-qrcode-svg`, `@react-native-clipboard/clipboard`
-- [ ] Test: créer session → QR affiché → copie code OK
-
-**Definition of Done**:
-- ✅ CreateSessionScreen fonctionne end-to-end
-- ✅ Session créée via API
-- ✅ QR code généré et affiché
-- ✅ Copy-to-clipboard fonctionne
-- ✅ Auto-redirection post-création
+**Fichiers à créer** :
+- `src/features/lobby/contexts/LobbyContext.tsx` (Context + Reducer + Provider)
+- `src/features/lobby/services/sessionService.ts`
+- `src/features/lobby/screens/LobbyHomeScreen.tsx`
+- `src/features/lobby/screens/CreateSessionScreen.tsx`
+- `src/features/lobby/components/QRDisplay.tsx`
+- `src/features/lobby/hooks/useLobby.ts`
+- `src/features/lobby/types/lobby.types.ts`
+- `src/features/lobby/index.ts`
 
 ---
 
-#### US 2.2 : Rejoindre une Session via QR/Code - 7 points
+### US 2.2 : Rejoindre une session via QR Code — 5 points
 
-**Description** : Joueur rejoint une session en scannant QR ou entrant code manuel
+**Description** : Joueur rejoint une session en scannant un QR code
 
-**Critères d'acceptation détaillés** :
+**Critères d'acceptation** :
 
-1. **JoinSessionScreen - Interface (1.5h)**
-   - [ ] Accédé depuis LobbyListScreen via bouton "Rejoindre une session"
-   - [ ] Affiche 2 options:
-     - Tab A: "Scanner QR Code" + bouton scan camera
-     - Tab B: "Code manuel" + input code
-   - [ ] Button "Annuler" : back
-   - [ ] Responsive layout (tabs ou buttons)
+1. **JoinSessionScreen — Interface**
+   - [ ] Accessible depuis LobbyHomeScreen via bouton "Rejoindre"
+   - [ ] Scanner QR code (expo-camera)
+   - [ ] Permission caméra demandée
+   - [ ] Preview caméra affichée
 
-2. **QR Scanner (2h)**
-   - [ ] Utiliser `expo-camera` + `expo-barcode-scanner`
-   - [ ] Permission demandée au tap "Scanner QR"
-   - [ ] Camera preview affiché full-screen
-   - [ ] Bounding box ou guide visuel centré
-   - [ ] Une fois QR scanné: extraire session ID/code
-   - [ ] Auto-call API POST `/sessions/{id}/join`
-   - [ ] Error handling: QR invalide, session inexistante, etc.
-   - [ ] Back button ou swipe dismiss
+2. **QR Scanner**
+   - [ ] Scan -> extraction du code d'invitation
+   - [ ] Appel API automatique pour rejoindre
 
-3. **Manual Code Input (1h)**
-   - [ ] Input `invitationCode` : placeholder "Entrez le code d'invitation (ex: ABC123)"
-   - [ ] Uppercase auto-convert
-   - [ ] Button "Rejoindre"
-   - [ ] POST `/sessions/{code}/join` (same endpoint, accept code or id)
+3. **Appel API** (POST /sessions/{id}/join)
+   - [ ] Erreurs gérées : session pleine, inexistante, déjà membre, banni
+   - [ ] Toast d'erreur spécifique
 
-4. **API Call & State (1.5h)**
-   - [ ] POST `https://api.../sessions/{id}/join` avec body `{ }`
-   - [ ] Response: `{ session: { id, name, creator_id, players: [...], ... } }`
-   - [ ] Erreurs gérées:
-     - Session pleine (max_players reached)
-     - Session inexistante (404)
-     - Déjà membre
-     - Session en cours
-   - [ ] Afficher toast error spécifique
+4. **State & Navigation**
+   - [ ] LobbyContext : `SET_SESSION` avec la session rejointe
+   - [ ] Redirection vers SessionDetailScreen si succès
 
-5. **State & Navigation (1h)**
-   - [ ] LobbyStore: `joinSession()`, `setCurrentSession()`
-   - [ ] Success: redirection SessionDetailScreen
-   - [ ] Error: toast rouge, stay on JoinSessionScreen
-   - [ ] Start polling (voir US 2.3)
-
-**Tâches Techniques**:
-- [ ] Créer `src/features/lobby/screens/JoinSessionScreen.tsx`
-- [ ] Créer `src/features/lobby/components/QRScanner.tsx`
-- [ ] Créer `src/features/lobby/components/CodeInput.tsx`
-- [ ] Installer: `expo-camera`, `expo-barcode-scanner`
-- [ ] Test: scanner QR → redirection, manual code → redirection
-
-**Definition of Done**:
-- ✅ JoinSessionScreen fonctionne
-- ✅ QR scanner fonctionne (iOS + Android)
-- ✅ Manual code input fonctionne
-- ✅ API call success + error handling
-- ✅ Redirection post-join
+**Fichiers à créer** :
+- `src/features/lobby/screens/JoinSessionScreen.tsx`
+- `src/features/lobby/components/QRScanner.tsx`
 
 ---
 
-#### US 2.3 : Lobby Polling en Temps Réel - 5 points
+### US 2.3 : Affichage du salon en temps réel — 8 points
 
-**Description** : Liste joueurs mise à jour automatiquement toutes les 30s via polling
+**Description** : Liste des joueurs mise à jour automatiquement via polling 30s
 
-**Critères d'acceptation détaillés** :
+**Critères d'acceptation** :
 
-1. **SessionDetailScreen - Interface (1.5h)**
-   - [ ] Header: "Salon : {session.name}"
-   - [ ] Info: "Créateur : {creator.username}", "{players.length}/4 joueurs"
-   - [ ] List composant: affiche tous les joueurs (FlatList)
-     - Per joueur: avatar (initiale), nom, badge créateur si applicable
-   - [ ] Bottom section: boutons (Quitter, Kick, Ban, Démarrer - voir US 2.4, 3.x)
-   - [ ] Pull-to-refresh optionnel (déclench polling immédiat)
-   - [ ] Loading spinner si premier load
+1. **SessionDetailScreen — Interface**
+   - [ ] Header : "Salon : {session_name}"
+   - [ ] Info : "Créateur : {creator_name}", "{players_count}/4 joueurs"
+   - [ ] Liste joueurs (FlatList) avec nom + badge créateur
+   - [ ] Boutons en bas (Quitter, et actions créateur — voir Sprint 3)
 
-2. **Polling HTTP (2h)**
-   - [ ] Démarré au mont SessionDetailScreen
-   - [ ] GET `/sessions/{current_session.id}` toutes les 30 secondes
-   - [ ] Respecte rate limit: 20 req/min max (1 req per 3s = OK pour polling 30s)
-   - [ ] Arrêté au unmount
-   - [ ] Arrêté si `state==="running"` → redirection GameScreen
-   - [ ] Arrêté si session=404 (supprimée) → toast + redirection LobbyListScreen
-   - [ ] Arrêté si 401 (token expiré) → logout + LoginScreen
+2. **Polling HTTP**
+   - [ ] GET `/sessions/{id}` toutes les 30 secondes (rate limit : 20 req/min)
+   - [ ] Démarré au mount SessionDetailScreen
+   - [ ] Arrêté au unmount ou quand session passe à "running"
+   - [ ] Arrêté si session supprimée (404) ou utilisateur expulsé
+   - [ ] Utilise le hook partagé `usePolling` depuis `shared/hooks/`
 
-3. **State Update & Animation (1h)**
-   - [ ] GET response: `{ session: { ..., players: [...] } }`
-   - [ ] Comparer ancienne vs nouvelle liste
-   - [ ] Si nouveau joueur: animation slide-in (Animated)
-   - [ ] Si joueur parti: animation fade-out + remove
-   - [ ] Si liste identique: pas de re-render (memoization)
-   - [ ] LobbyStore.setPlayers(newPlayers) ou addPlayer()/removePlayer()
+3. **Gestion des mises à jour**
+   - [ ] LobbyContext : `SET_SESSION` avec les nouvelles données
+   - [ ] Si session.state === "running" -> redirection vers GameScreen
 
-4. **Error Handling & Retry (1h)**
-   - [ ] Erreur réseau: afficher toast "Impossible de synchroniser", retry après 30s
-   - [ ] 401: logout + LoginScreen (voir Sprint 1)
-   - [ ] 403: toast "Session supprimée", redirection LobbyListScreen
-   - [ ] 404: toast "Session introuvable", redirection LobbyListScreen
+4. **Gestion erreurs polling**
+   - [ ] Erreur réseau : toast, retry au prochain intervalle
+   - [ ] 401 : logout automatique (interceptor)
+   - [ ] 404 : toast "Session supprimée" + redirection LobbyHomeScreen
 
-**Tâches Techniques**:
-- [ ] Créer `src/features/lobby/screens/SessionDetailScreen.tsx`
-- [ ] Créer `src/features/lobby/hooks/usePollingSession.ts` (custom hook pour polling)
-  - Logique: useEffect + setInterval, cleanup on unmount
-  - Gère start/stop basé sur session state
-- [ ] Créer `src/features/lobby/components/PlayerListItem.tsx`
-- [ ] Créer `src/features/lobby/components/ModerationPanel.tsx` (basic, détail US 3.1)
-- [ ] Test: polling OK, messages arrivent, animations smooth, stop on running
-
-**Definition of Done**:
-- ✅ SessionDetailScreen affiche liste joueurs
-- ✅ Polling déclenché automatiquement
-- ✅ Polling 30s interval respecté
-- ✅ Animations présentes et smooth
-- ✅ Erreurs gérées (retry, redirection)
-- ✅ Stop polling si session running ou supprimée
+**Fichiers à créer** :
+- `src/features/lobby/screens/SessionDetailScreen.tsx`
+- `src/features/lobby/components/PlayerList.tsx`
+- `src/shared/hooks/usePolling.ts` (hook générique réutilisable)
 
 ---
 
-#### US 2.4 : Quitter le Salon - 2 points
+### US 2.4 : Quitter le salon — 3 points
 
-**Description** : Non-créateur peut quitter session facilement avant démarrage
+**Description** : Non-créateur peut quitter la session avant le démarrage
 
-**Critères d'acceptation détaillés** :
+**Critères d'acceptation** :
 
-1. **Quitter Bouton (0.5h)**
-   - [ ] Button "Quitter le salon"
-   - [ ] Visible sur SessionDetailScreen si state=="waiting"
-   - [ ] **DISABLED** si user === creator
-   - [ ] Confirmation: "Êtes-vous sûr de vouloir quitter ?"
+1. **Bouton "Quitter"**
+   - [ ] Visible sur SessionDetailScreen si session.state === "waiting"
+   - [ ] Invisible ou disabled si utilisateur est le créateur
+   - [ ] Confirmation modale avant action
 
-2. **API Call (0.5h)**
-   - [ ] DELETE `/sessions/{session.id}/leave` avec body `{ }`
-   - [ ] Response: `{ success: true }`
-   - [ ] Error: afficher toast
+2. **Appel API** (POST ou DELETE /sessions/{id}/leave — vérifier doc API)
+   - [ ] Succès : LobbyContext `CLEAR_SESSION` + redirection LobbyHomeScreen
+   - [ ] Erreur : toast
 
-3. **State & Navigation (0.5h)**
-   - [ ] LobbyStore.removeCurrentSession()
-   - [ ] Stop polling
-   - [ ] Redirection LobbyListScreen
-   - [ ] Toast "Vous avez quitté la session"
-
-**Tâches Techniques**:
-- [ ] Ajouter method dans sessionService.ts: `leaveSession(sessionId)`
-- [ ] Ajouter button dans SessionDetailScreen
-- [ ] Test: quitter OK, polling arrêté, redirection
-
-**Definition of Done**:
-- ✅ Button "Quitter" fonctionne
-- ✅ Confirmation modale présente
-- ✅ API appel OK
-- ✅ Navigation OK
-- ✅ Polling arrêté
+3. **State Management**
+   - [ ] Polling arrêté
+   - [ ] LobbyContext nettoyé
 
 ---
 
-### Definition of Done Global Sprint 2
+### Definition of Done Sprint 2
 
-- ✅ LobbyStore complètement implémenté (create, join, leave, polling state)
-- ✅ sessionService avec 4 methods (create, join, leave, getSession)
-- ✅ CreateSessionScreen fonctionne end-to-end
-- ✅ QR generation & display OK
-- ✅ JoinSessionScreen avec scanner + manual code OK
-- ✅ SessionDetailScreen avec liste joueurs OK
-- ✅ Polling 30s implémenté et testé
-- ✅ Animations présentes (joueur arrive/part)
-- ✅ Rate limit respecté (20 req/min)
-- ✅ Gestion erreurs complète (network, 401, 403, 404)
-- ✅ Code 100% TypeScript strict
-
-### Risques Sprint 2
-
-| Risque | Probabilité | Impact | Mitigation |
-|--------|------------|--------|-----------|
-| Camera permission issues | Moyenne | Moyen | Tester sur device, handle denied |
-| Polling timing inexact | Basse | Bas | Utiliser setTimeout précis |
-| QR Code scan unreliable | Moyenne | Moyen | Allow manual code input fallback |
-| Rate limit breach | Basse | Haut | Augmenter polling interval si nécessaire |
+- [ ] LobbyContext implémenté (Context API + useReducer)
+- [ ] sessionService avec create, join, leave, getSession
+- [ ] CreateSessionScreen + QR code generation
+- [ ] JoinSessionScreen avec scanner QR
+- [ ] SessionDetailScreen avec liste joueurs
+- [ ] Polling 30s implémenté via `usePolling`
+- [ ] Rate limit respecté (20 req/min)
+- [ ] Gestion erreurs complète (réseau, 401, 404)
+- [ ] Code TypeScript strict
 
 ---
 
-## Sprint 3: Modération & Start (EPIC 3)
+## Sprint 3 : Modération & Démarrage (Étape 3)
 
-**⏱️ Durée** : 6-8 heures (1 jour)  
-**📍 Dépendances** : Sprint 2 DONE  
-**🎯 Objectif** : Créateur modère salon (kick/ban), lance la partie  
-**✅ Blockers** : Aucun si Sprint 2 OK
+**Durée** : 4-6 heures  
+**Dépendances** : Sprint 2 terminé  
+**Objectif** : Créateur modère le salon (kick/ban/delete) et lance la partie  
+**Status** : A démarrer
 
-### User Stories Détaillées
+### US 3.1 : Actions de modération (Kick & Ban) — 3 points
 
-#### US 3.1 : Actions de Modération (Kick & Ban) - 5 points
+**Description** : Créateur peut expulser ou bannir des joueurs
 
-**Description** : Créateur peut expulser ou bannir joueurs
-**Critères d'acceptation détaillés** :
+**Critères d'acceptation** :
 
-1. **ModerationPanel - Interface (1.5h)**
-   - [ ] Affichée **SEULEMENT** si user === session.creator
-   - [ ] Pour chaque NON-créateur dans liste:
-     - Option A: Menu contexte "..." avec [Kick] [Ban]
-     - Option B: Swipe left (iOS) / long-press (Android) avec actions
-   - [ ] Boutons visuellement distincts (rouge/orange, icônes)
-   - [ ] Accessibilité: label text visible avant tap
+1. **Interface**
+   - [ ] Boutons kick/ban affichés SEULEMENT si user === créateur de la session
+   - [ ] Pour chaque joueur NON-créateur : actions disponibles
+   - [ ] Confirmation modale avant chaque action
 
-2. **Kick Action (1.5h)**
-   - [ ] Confirmation: "Êtes-vous sûr d'expulser {username} ?" [Annuler] [OK]
-   - [ ] POST `/sessions/{id}/kick` avec body `{ player_id }`
-   - [ ] Response: `{ success: true, players: [...] }`
-   - [ ] Success: joueur retiré liste, toast "Joueur expulsé"
-   - [ ] Joueur expulsé: polling retourne joueur absent → auto-redirection LobbyListScreen
-   - [ ] Joueur peut rejoindre APRÈS kick (rescanner QR)
+2. **Kick (Expulsion)**
+   - [ ] Appel API : endpoint kick (vérifier doc API)
+   - [ ] Joueur retiré de la liste
+   - [ ] Joueur expulsé : perd accès session, redirigé vers LobbyHomeScreen au prochain polling
+   - [ ] Peut rejoindre à nouveau en rescannant le QR
 
-3. **Ban Action (1.5h)**
-   - [ ] Confirmation: "Êtes-vous sûr de bannir {username} ? Il ne pourra plus rejoindre." [Annuler] [OK]
-   - [ ] POST `/sessions/{id}/ban` avec body `{ player_id }`
-   - [ ] Response: `{ success: true, ban_list: [...], players: [...] }`
-   - [ ] Success: joueur retiré liste, toast "Joueur banni"
-   - [ ] Joueur banni: ne peut PAS rejoindre même avec QR (API rejette)
-   - [ ] Ban persiste pour la session
+3. **Ban (Bannissement)**
+   - [ ] Appel API : endpoint ban (vérifier doc API)
+   - [ ] Joueur retiré de la liste
+   - [ ] Joueur banni : ne peut PAS rejoindre à nouveau, même avec le QR
 
-4. **State & List Update (1h)**
-   - [ ] LobbyStore.removePlayer(playerId) ou setPlayers(newPlayers)
-   - [ ] Polling synchronise aussi (joueur disparait de liste côté server)
-   - [ ] Animation fade-out + remove du joueur
-
-**Tâches Techniques**:
-- [ ] Augmenter sessionService.ts avec: `kickPlayer(sessionId, playerId)`, `banPlayer(sessionId, playerId)`
-- [ ] Créer `src/features/lobby/components/PlayerContextMenu.tsx`
-- [ ] Créer `src/features/lobby/components/ModerationConfirmation.tsx` (modale réutilisable)
-- [ ] Augmenter SessionDetailScreen avec ModerationPanel
-- [ ] Test: kick OK, joueur disparait, peut rejoindre après; ban OK, joueur banni ne peut rejoindre
-
-**Definition of Done**:
-- ✅ Kick fonctionne (confirmation + API + state update)
-- ✅ Ban fonctionne (confirmation + API + ban-list respected)
-- ✅ Boutons visibles SEULEMENT pour créateur
-- ✅ Animations présentes (fade-out)
-- ✅ Confirmations affichées
-- ✅ API errors handled
+4. **State (Context API + useReducer)**
+   - [ ] LobbyContext : mise à jour de la session après kick/ban
+   - [ ] Le polling synchronise aussi côté joueur expulsé/banni
 
 ---
 
-#### US 3.2 : Supprimer la Session - 2 points
+### US 3.2 : Suppression de la session — 2 points
 
-**Description** : Créateur peut supprimer session complètement
-**Critères d'acceptation détaillés** :
+**Description** : Créateur peut supprimer la session entière
 
-1. **Delete Button (0.5h)**
-   - [ ] Button "Supprimer la session" rouge/warning
+**Critères d'acceptation** :
+
+1. **Bouton "Supprimer"**
    - [ ] Visible SEULEMENT au créateur
-   - [ ] Dans SessionDetailScreen (ex: menu "...")
+   - [ ] Confirmation modale
+   - [ ] Appel API DELETE /sessions/{id}
 
-2. **Confirmation Modale (0.5h)**
-   - [ ] "Êtes-vous sûr de vouloir supprimer la session ? Personne ne pourra plus la rejoindre."
-   - [ ] [Annuler] [Supprimer]
-
-3. **API Call (0.5h)**
-   - [ ] DELETE `/sessions/{id}` avec body `{ }`
-   - [ ] Response: `{ success: true }`
-   - [ ] Créateur: toast "Session supprimée", redirection LobbyListScreen
-   - [ ] Autres joueurs: polling va retourner 404/error, auto-redirection + toast
-
-4. **State Management (0.5h)**
-   - [ ] LobbyStore.deleteSession()
-   - [ ] Stop polling
-   - [ ] Clear currentSession
-
-**Tâches Techniques**:
-- [ ] Augmenter sessionService.ts: `deleteSession(sessionId)`
-- [ ] Ajouter button dans SessionDetailScreen
-- [ ] Test: créateur supprime → 404 sur polling d'autres → auto-redirection
-
-**Definition of Done**:
-- ✅ Delete button fonctionne (créateur seulement)
-- ✅ Confirmation affichée
-- ✅ Créateur redirigé après delete
-- ✅ Autres joueurs redirigés automatiquement (polling error)
+2. **Gestion multi-joueurs**
+   - [ ] Créateur : toast "Session supprimée" + redirection LobbyHomeScreen
+   - [ ] Autres joueurs : polling retourne 404 -> toast + redirection LobbyHomeScreen
 
 ---
 
-#### US 3.3 : Démarrer la Partie - 3 points
+### US 3.3 : Démarrer la partie — 5 points
 
-**Description** : Créateur démarre la partie quand prêt (≥2 joueurs)
+**Description** : Créateur démarre la partie quand au moins 2 joueurs sont présents
 
-**Critères d'acceptation détaillés** :
+**Critères d'acceptation** :
 
-1. **Start Button (1h)**
-   - [ ] Button "Commencer la partie" bleu/primaire
+1. **Bouton "Commencer la partie"**
    - [ ] Visible SEULEMENT au créateur
-   - [ ] **DISABLED** si < 2 joueurs
-   - [ ] Tooltip: "Au moins 2 joueurs requis"
-   - [ ] Enable/disable dynamique basé sur players.length
+   - [ ] DISABLED si < 2 joueurs
+   - [ ] Appel API POST /sessions/{id}/start
 
-2. **API Call (1h)**
-   - [ ] POST `/sessions/{id}/start` avec body `{ }`
-   - [ ] Response: `{ session: { id, state: "running", game_id }, ... }`
-   - [ ] game_id reçu et stocké dans GameStore
+2. **Redirection**
+   - [ ] Session passe en state "running"
+   - [ ] Créateur : redirection vers GameScreen
+   - [ ] Autres joueurs : polling détecte state === "running" -> redirection GameScreen
+   - [ ] Polling arrêté
 
-3. **State & Navigation (1h)**
-   - [ ] LobbyStore.session.state = "running"
-   - [ ] Polling arrêté (detected state === "running")
-   - [ ] GameStore initialisé avec game_id
-   - [ ] Créateur: redirection GameScreen
-   - [ ] Autres joueurs: polling détecte running → auto-redirection GameScreen
-   - [ ] Toast: "Partie démarrée"
+3. **Comportements post-démarrage**
+   - [ ] Plus personne ne peut quitter
+   - [ ] Boutons modération cachés
+   - [ ] GameContext initialisé avec le game_id reçu
 
-4. **Post-Start Behaviors**
-   - [ ] Plus personne peut quitter (leave button disparu/disabled)
-   - [ ] Modération buttons CACHÉS (session en cours)
-   - [ ] Joueurs vont à GameScreen pour actions en jeu
-
-**Tâches Techniques**:
-- [ ] Augmenter sessionService.ts: `startGame(sessionId)`
-- [ ] Augmenter usePollingSession hook: arrêter polling si state === "running"
-- [ ] Ajouter button dans SessionDetailScreen
-- [ ] Créer GameStore (base) en Sprint 4
-- [ ] Test: start dengan ≥2 joueurs OK, tous redirectés GameScreen
-
-**Definition of Done**:
-- ✅ Start button visible/enabled correctly
-- ✅ API call OK
-- ✅ Tous joueurs redirigés GameScreen
-- ✅ Polling arrêté
-- ✅ GameStore initialisé
+**Fichiers à créer** :
+- Compléter `sessionService.ts` : kickPlayer, banPlayer, deleteSession, startGame
+- Compléter `SessionDetailScreen.tsx` avec les boutons créateur
 
 ---
 
-### Definition of Done Global Sprint 3
+### Definition of Done Sprint 3
 
-- ✅ ModerationPanel fonctionne (kick/ban)
-- ✅ Kick: joueur retiré, peut rejoindre après
-- ✅ Ban: joueur banni, ne peut rejoindre
-- ✅ Delete session: créateur OK, autres auto-redirigés
-- ✅ Start game: bouton enabled à ≥2 joueurs, tous redirigés
-- ✅ Permissions vérifiées (créateur seulement)
-- ✅ Confirmations modales affichées
-- ✅ Polling synchronise automatiquement
-- ✅ Code 100% TypeScript strict
-
-### Risques Sprint 3
-
-| Risque | Probabilité | Impact | Mitigation |
-|--------|------------|--------|-----------|
-| Permission checks (creator) | Basse | Moyen | Vérifier user_id === session.creator_id |
-| Ban list persistence | Basse | Moyen | Vérifier API stocke ban_list |
-| Redict timing | Basse | Bas | Tester avec polling de 30s |
+- [ ] Kick/Ban fonctionnels (créateur seulement)
+- [ ] Suppression session + gestion pour tous les joueurs
+- [ ] Démarrage partie + redirection de tous les joueurs
+- [ ] Confirmations modales pour toutes actions destructives
+- [ ] Permissions vérifiées côté UI (créateur seulement)
+- [ ] Code TypeScript strict
 
 ---
 
-## Sprint 4: Game Map & État (EPIC 4)
+## Sprint 4 : Carte & État de jeu (Étape 4)
 
-**⏱️ Durée** : 6-8 heures (1 jour)  
-**📍 Dépendances** : Sprint 3 DONE  
-**🎯 Objectif** : Afficher carte et état du joueur en partie  
-**✅ Blockers** : Aucun si Sprint 3 OK
+**Durée** : 4-6 heures  
+**Dépendances** : Sprint 3 terminé  
+**Objectif** : Afficher la carte du jeu (grille FlatList) et l'état du joueur  
+**Status** : A démarrer
 
-### User Stories Détaillées
+### US 4.1 : Affichage de la carte — 5 points
 
-#### US 4.1 : Affichage de la Carte - 5 points
+**Description** : Carte du jeu affichée sous forme de grille avec ressources et vaisseaux
 
-**Description** : Carte du jeu affichée avec grille, ressources, vaisseaux
+**Critères d'acceptation** :
 
-**Critères d'acceptation détaillés** :
+1. **GameScreen — Interface**
+   - [ ] Header : "Tour {round} — {session_name}"
+   - [ ] Grille principale (FlatList obligatoire — consigne)
+   - [ ] Panneau stats joueur sous la carte
 
-1. **GameScreen / MapScreen - Interface (1.5h)**
-   - [ ] Header: "Tour {round} - {session.name}"
-   - [ ] Composant principal: Grille de jeu
-   - [ ] Sous-grille: PlayerStatus panel (voir US 4.2)
-   - [ ] Bottom navigation tabs: Game, Profile, Chat (optionnel)
-   - [ ] Loading spinner au démarrage
+2. **Récupération carte (une seule fois)**
+   - [ ] GET /games/{gameId}/map au montage
+   - [ ] Response : `{ width, height, resource_nodes: [{ x, y }] }`
+   - [ ] PAS de polling pour la carte (données statiques)
+   - [ ] Stocké dans GameContext via dispatch `SET_MAP`
 
-2. **Récupération Carte (1h)**
-   - [ ] GET `/games/{gameId}/map` UNE SEULE FOIS au montage
-   - [ ] Response: `{ width, height, resource_nodes: [{ x, y }, ...] }`
-   - [ ] Pas de polling pour la carte (données statiques)
-   - [ ] Stocké dans GameStore.map
+3. **Rendu Grille (FlatList)**
+   - [ ] Grille de width x height cellules
+   - [ ] Fond uni sous la grille pour l'immersion (consigne : pas d'image par case vide)
+   - [ ] Images/formes UNIQUEMENT sur les cases avec vaisseau ou ressource (perf FlatList)
+   - [ ] Ressources : couleur distinctive (ex: doré)
+   - [ ] Vaisseaux : couleur par joueur + icône par type
 
-3. **Rendu Grille (1.5h)**
-   - [ ] Dimensions: `width x height` cellules
-   - [ ] Taille cellule: responsive (ex: 40px sur mobile, 60px tablet)
-   - [ ] Fond gris clair (#f5f5f5) ou pattern
-   - [ ] Bordures subtiles entre cellules (1px, #ccc)
-   - [ ] Scrollable si grille > viewport (ScrollView horizontal + vertical)
-   - [ ] Tap/press sur cellule: highlight ou info (bonus)
+4. **Récupération état initial**
+   - [ ] GET /games/{gameId}/state au montage
+   - [ ] Response : `{ round, resource, stats, ships, round_actions_submitted, status }`
+   - [ ] Stocké dans GameContext via dispatch `SET_GAME_STATE`
 
-4. **Affichage Ressources (1h)**
-   - [ ] Pour chaque `{x, y}` dans resource_nodes:
-     - Icône minerai/ressource (or/jaune #FFD700)
-     - Centré dans cellule
-     - Label optionnel: "⛏" ou "Ore"
-
-5. **Affichage Vaisseaux (1.5h)**
-   - [ ] Pour chaque ship dans gameState.ships:
-     - Position: {x, y}
-     - Propriétaire: owner_id
-     - Icône: petit triangle/carré/cercle
-     - Couleur par joueur (J1=bleu, J2=rouge, J3=vert, etc.)
-     - Label optionnel: "J1", "J2"
-   - [ ] Vaisseaux z-index > ressources
-   - [ ] Animation optional sur mouvement
-
-6. **Responsive & Scroll (0.5h)**
-   - [ ] Grille adapt à viewport size
-   - [ ] Pinch-to-zoom optional (React Native Gesture Handler)
-   - [ ] ScrollView avec momentum scroll
-
-**Tâches Techniques**:
-- [ ] Créer `src/features/game/stores/gameStore.ts` (Zustand)
-  - États: `gameId`, `map: { width, height, resource_nodes[] }`, `gameState`, `ships[]`, `round`, `resource`, `stats`
-  - Actions: `setMap()`, `setGameState()`, `setShips()`, `updateRound()`
-- [ ] Créer `src/features/game/services/gameService.ts`
-  - `getMap(gameId)`, `getGameState(gameId)`, `submitActions(gameId, actions)`
-- [ ] Créer `src/features/game/screens/GameScreen.tsx`
-- [ ] Créer `src/features/game/components/GameMap.tsx`
-- [ ] Créer `src/features/game/components/GridCell.tsx`
-- [ ] Créer `src/features/game/components/ResourceNode.tsx`
-- [ ] Créer `src/features/game/components/Ship.tsx`
-- [ ] Créer utility: `src/features/game/utils/colorByPlayer.ts` (assigner couleur par player_id)
-- [ ] Test: map charge, ressources affichées, vaisseaux affichés correctement, scroll OK
-
-**Definition of Done**:
-- ✅ GameScreen fonctionne
-- ✅ Carte affichée avec grille responsive
-- ✅ Ressources affichées correctement
-- ✅ Vaisseaux affichés par joueur (couleurs)
-- ✅ Scroll OK si grille > viewport
-- ✅ Pas de polling (une seule requête)
+**Fichiers à créer** :
+- `src/features/game/contexts/GameContext.tsx` (Context + Reducer + Provider)
+- `src/features/game/services/gameService.ts`
+- `src/features/game/screens/GameScreen.tsx`
+- `src/features/game/components/GameMap.tsx` (FlatList)
+- `src/features/game/components/MapCell.tsx`
+- `src/features/game/components/PlayerStats.tsx`
+- `src/features/game/hooks/useGame.ts`
+- `src/features/game/types/game.types.ts`
+- `src/features/game/index.ts`
 
 ---
 
-#### US 4.2 : Affichage États du Joueur - 3 points
+### US 4.2 : Affichage de l'état du joueur — 3 points
 
-**Description** : Stats joueur affichées (tour, minerai, vaisseaux, etc.)
+**Description** : Stats du joueur affichées (tour, minerai, vaisseaux, status actions)
 
-**Critères d'acceptation détaillés** :
+**Critères d'acceptation** :
 
-1. **PlayerStatus Panel - Interface (1h)**
-   - [ ] Affiché sous map ou onglet "Stats"
-   - [ ] Card/section visuelle distincte
-   - [ ] 2x2 grid ou liste verticale
-
-2. **Infos Affichées (0.5h)**
-   - [ ] **Tour** : "Tour {round}/{max_rounds}" (ex: "Tour 3/30")
-   - [ ] **Minerai** : "Minerai : {ore} ⛏" (ex: "Minerai : 500")
-   - [ ] **Vaisseaux** : "Vaisseaux : {ships.length}" (ex: "Vaisseaux : 5")
-   - [ ] **Stats cumulées**:
-     - `ships_destroyed`: "Détruits : 5"
-     - `resources_collected`: "Collectés : 1200"
-     - Autres du serveur
-   - [ ] **Status d'action**:
-     - Si NOT submitted: "Actions non validées ⚠️"
-     - Si submitted: "Actions validées ✅"
-
-3. **API Call (0.5h)**
-   - [ ] GET `/games/{gameId}/state` UNE FOIS au montage
-   - [ ] Response: `{ round, resource: { ore }, stats: { ships_destroyed, resources_collected }, ships, round_actions_submitted }`
-   - [ ] Pas de polling (données actualisées au submit d'actions)
-   - [ ] Stocké dans GameStore.gameState
-
-4. **Format & Design (0.5h)**
-   - [ ] Icônes visuelles (⛏ minerai, 🚀 vaisseaux, etc.)
-   - [ ] Police monospace pour nombres (optional)
-   - [ ] Contraste bon, lisible sur différents fonds
-
-**Tâches Techniques**:
-- [ ] Augmenter gameService.ts: `getGameState(gameId)`
-- [ ] Créer `src/features/game/components/PlayerStatusPanel.tsx`
-- [ ] Créer `src/features/game/types/index.ts` (GameState, Ship, etc.)
-- [ ] Test: infos du joueur affichées correctement
-
-**Definition of Done**:
-- ✅ PlayerStatusPanel affichée
-- ✅ Tous infos affichées correctement
-- ✅ Icônes et design OK
-- ✅ API call OK (une fois seulement)
+1. **PlayerStats Panel**
+   - [ ] Tour actuel : `round`
+   - [ ] Minerai : `resource.ore`
+   - [ ] Nombre de vaisseaux
+   - [ ] Stats cumulées : `ships_destroyed`, `resources_collected`
+   - [ ] Status actions : "Actions validées" ou "Actions non validées" selon `round_actions_submitted`
 
 ---
 
-#### US 4.3 : Gestion Erreurs & Retry - 2 points
+### US 4.3 : Gestion erreurs & loading — 2 points
 
-**Description** : Erreurs gérées proprement, retry possible
-
-**Critères d'acceptation détaillés** :
-
-1. **States Visuels (1h)**
-   - [ ] Loading initial: spinner fullscreen + "Chargement de la partie..."
-   - [ ] Erreur carte: toast + bouton "Retry"
-   - [ ] Erreur état: toast + bouton "Retry"
-   - [ ] Offline: toast "Pas de connexion", allow retry
-
-2. **Retry Logic (0.5h)**
-   - [ ] Bouton "Retry" relance GET /map + GET /state
-   - [ ] Max 3 tentatives avant "Impossible de charger"
-   - [ ] Exponential backoff: 1s, 2s, 4s
-   - [ ] Logging errors (console ou remote)
-
-3. **Edge Cases (0.5h)**
-   - [ ] Session supprimée pendant jeu: redirection LobbyListScreen + toast
-   - [ ] Joueur banni: redirection LobbyListScreen + toast "Vous avez été banni"
-   - [ ] Timeout API (>5s): auto-retry ou toast "Timeout"
-
-**Tâches Techniques**:
-- [ ] Ajouter error state & retry logic dans GameScreen
-- [ ] Créer `src/features/game/components/ErrorFallback.tsx`
-- [ ] Créer util: `src/shared/utils/retryWithBackoff.ts`
-- [ ] Test: trigger error, retry OK, max attempts OK, edge cases handled
-
-**Definition of Done**:
-- ✅ Loading state affiché
-- ✅ Erreurs affichées (toast)
-- ✅ Retry fonctionne
-- ✅ Max retries implémenté (3x)
-- ✅ Edge cases handled (banned, session deleted)
+**Critères d'acceptation** :
+- [ ] Loading initial : spinner + "Chargement de la partie..."
+- [ ] Erreur carte/état : toast + bouton Retry
+- [ ] Session supprimée pendant chargement : redirection LobbyHomeScreen
 
 ---
 
-### Definition of Done Global Sprint 4
+### Definition of Done Sprint 4
 
-- ✅ GameStore complètement implémenté
-- ✅ gameService avec getMap() et getGameState()
-- ✅ GameScreen affiche carte + état joueur
-- ✅ Grille affichée responsively
-- ✅ Ressources affichées correctement
-- ✅ Vaisseaux affichés par joueur (couleurs)
-- ✅ Stats joueur affichées complètement
-- ✅ Erreurs gérées (loading, toast, retry)
-- ✅ Retry logic implémenté (max 3x, backoff)
-- ✅ Edge cases handled (banned, session deleted)
-- ✅ Code 100% TypeScript strict
+- [ ] GameContext implémenté (Context API + useReducer)
+- [ ] Carte affichée sous forme de grille FlatList
+- [ ] Ressources et vaisseaux visibles aux bonnes positions
+- [ ] Stats joueur affichées
+- [ ] Erreurs gérées (loading, retry)
+- [ ] Code TypeScript strict
 
-### Risques Sprint 4
+---
 
-| Risque | Probabilité | Impact | Mitigation |
-|--------|------------|--------|-----------|
-| Grille très grande | Basse | Moyen | Implém. virtual scrolling (lazy render) |
-| Z-index issues | Basse | Bas | CSS z-index correct dans components |
-| Responsiveness problems | Basse | Moyen | Tester sur 3 tailles device |
+## Sprint 5 : Actions de jeu (Étape 5)
+
+**Durée** : 6-8 heures  
+**Dépendances** : Sprint 4 terminé  
+**Objectif** : Permettre les actions de jeu (move, attack, purchase) et le polling d'état  
+**Status** : A démarrer
+
+### US 5.1 : Inspection des vaisseaux — 3 points
+
+**Description** : Presser une case affiche les infos du vaisseau présent
+
+**Critères d'acceptation** :
+- [ ] Cases pressables (TouchableOpacity dans MapCell)
+- [ ] Si vaisseau présent : afficher ses infos (type, HP, attaque, portée, propriétaire)
+- [ ] Modal ou panneau d'info
+
+---
+
+### US 5.2 : Actions move & attack — 5 points
+
+**Description** : Joueur sélectionne un vaisseau et effectue une action (déplacement ou attaque)
+
+**Critères d'acceptation** :
+
+1. **Sélection vaisseau**
+   - [ ] Tap sur un vaisseau du joueur : le sélectionne (highlight)
+   - [ ] Afficher les actions disponibles : "Déplacer" / "Attaquer"
+
+2. **Move**
+   - [ ] Afficher les cases à portée de déplacement
+   - [ ] Tap sur case cible -> ajouter action `{ type: "move", ship_id, target_x, target_y }`
+   - [ ] 1 seule action par vaisseau par tour
+
+3. **Attack**
+   - [ ] Afficher les cases à portée d'attaque
+   - [ ] Tap sur case cible avec vaisseau ennemi -> ajouter action `{ type: "attack", ship_id, target_x, target_y }`
+
+4. **Validation du tour**
+   - [ ] Bouton "Valider mes actions"
+   - [ ] POST /games/{gameId}/actions avec body `{ actions: [...] }`
+   - [ ] Si erreur de validation serveur : afficher erreur, permettre correction et renvoi
+   - [ ] Succès : `round_actions_submitted = true`, UI en mode attente
+
+---
+
+### US 5.3 : Achat de vaisseaux — 3 points
+
+**Description** : Joueur consulte les types de vaisseaux et en achète
+
+**Critères d'acceptation** :
+- [ ] Interface listant les types de vaisseaux (GET /games/{gameId}/ship-types ou endpoint équivalent)
+- [ ] Pour chaque type : HP, attaque, portée déplacement, portée attaque, gathering_rate, coût
+- [ ] Bouton "Acheter" (si minerai suffisant)
+- [ ] Après achat : sélectionner case de déploiement (case libre ou ressource, pas de vaisseau dessus)
+- [ ] Action `{ type: "purchase", ship_type_id, target_x, target_y }` ajoutée au tour
+
+---
+
+### US 5.4 : Polling d'état & attente entre tours — 2 points
+
+**Description** : Après validation des actions, polling pour détecter le tour suivant
+
+**Critères d'acceptation** :
+- [ ] Après submit actions : afficher visuel d'attente ("En attente des autres joueurs...")
+- [ ] Le joueur peut consulter la carte mais ne peut plus agir
+- [ ] Polling GET /games/{gameId}/state toutes les 30s
+- [ ] Quand `round_actions_submitted` revient à `false` : nouveau tour commence
+- [ ] Mettre à jour toute l'interface (positions vaisseaux, ressources, round)
+
+**Fichiers à créer** :
+- `src/features/game/components/ShipInfo.tsx`
+- `src/features/game/components/ActionPanel.tsx`
+- `src/features/game/components/ShipShop.tsx`
+- Compléter `gameService.ts` : submitActions, getShipTypes
+
+---
+
+### Definition of Done Sprint 5
+
+- [ ] Cases pressables avec info vaisseau
+- [ ] Actions move/attack fonctionnelles
+- [ ] Achat vaisseaux fonctionnel
+- [ ] Validation du tour + gestion erreurs serveur
+- [ ] Polling état après validation
+- [ ] Transition entre tours fonctionnelle
+- [ ] Code TypeScript strict
+
+---
+
+## Sprint 6 : Fin de partie, Profil & Historique (Étapes 5bis + 6)
+
+**Durée** : 4-6 heures  
+**Dépendances** : Sprint 5 terminé  
+**Objectif** : Gérer l'élimination, la fin de partie, le profil complet et l'historique  
+**Status** : A démarrer
+
+### US 6.1 : Élimination des joueurs — 2 points
+
+**Description** : Joueur éliminé (plus de vaisseaux) est informé mais peut encore observer
+
+**Critères d'acceptation** :
+- [ ] Détection : le joueur n'a plus de vaisseaux dans `ships`
+- [ ] Message clair : "Vous avez été éliminé"
+- [ ] Le joueur peut encore voir la carte et les infos
+- [ ] Le joueur ne peut plus effectuer d'actions de jeu
+- [ ] Le polling continue pour suivre la partie
+
+---
+
+### US 6.2 : Fin de la partie — 3 points
+
+**Description** : Quand un seul joueur reste, la partie est terminée
+
+**Critères d'acceptation** :
+- [ ] Détection : `status` passe à "finished" dans l'état de jeu
+- [ ] Redirection vers écran de fin de partie (GameOverScreen)
+- [ ] Afficher : nom du gagnant, classement, statistiques de la partie
+- [ ] Appel API pour récupérer les résultats finaux
+
+**Fichiers à créer** :
+- `src/features/game/screens/GameOverScreen.tsx`
+
+---
+
+### US 6.3 : Profil complet — 2 points
+
+**Description** : Écran profil avec infos utilisateur et modification
+
+**Critères d'acceptation** :
+- [ ] Afficher nom d'utilisateur et email (déjà fait)
+- [ ] Interface de modification : changer nom, email, mot de passe
+- [ ] Appel API pour mettre à jour le profil
+- [ ] Gestion erreurs de validation
+- [ ] Bouton déconnexion (déjà fait)
+
+---
+
+### US 6.4 : Historique des parties — 1 point
+
+**Description** : Liste des parties jouées avec possibilité de consulter les détails
+
+**Critères d'acceptation** :
+- [ ] Écran accessible depuis le profil ou un tab dédié
+- [ ] Liste des parties (FlatList)
+- [ ] Pour chaque partie : nom session, date, résultat (gagné/perdu/éliminé)
+- [ ] Tap -> détails de la partie (stats)
+
+**Fichiers à créer/modifier** :
+- Compléter `src/features/auth/screens/ProfileScreen.tsx` (modification profil)
+- `src/features/auth/screens/GameHistoryScreen.tsx`
+- Compléter `authService.ts` : updateProfile, getGameHistory
+
+---
+
+### Definition of Done Sprint 6
+
+- [ ] Élimination détectée et affichée
+- [ ] Fin de partie avec écran résultats
+- [ ] Profil modifiable (nom, email, password)
+- [ ] Historique des parties consultable
+- [ ] Code TypeScript strict
 
 ---
 
@@ -843,419 +668,65 @@ TOTAL    (27h)  : Tous épics complets + buff testing
 ### Dependency Tree
 
 ```
-┌─────────────────────────────────────────────┐
-│ Sprint 1: EPIC 1 (Authentification)         │
-│ - authStore, LoginScreen, SignUpScreen      │
-│ - Secure token storage, Interceptors        │
-└──────────────┬──────────────────────────────┘
-               │ (User authentifié)
-               ↓
-┌─────────────────────────────────────────────┐
-│ Sprint 2: EPIC 2 (Lobby & QR)               │
-│ - lobbyStore, SessionDetailScreen           │
-│ - QR generation, Polling HTTP               │
-└──────────────┬──────────────────────────────┘
-               │ (Session créée/rejointe)
-               ↓
-┌─────────────────────────────────────────────┐
-│ Sprint 3: EPIC 3 (Modération)               │
-│ - Kick, Ban, Delete, Start game             │
-│ - Creator-only permissions                  │
-└──────────────┬──────────────────────────────┘
-               │ (Partie démarrée)
-               ↓
-┌─────────────────────────────────────────────┐
-│ Sprint 4: EPIC 4 (Game Map & État)          │
-│ - GameScreen, Map display, Stats            │
-│ - Error handling & Retry                    │
-└─────────────────────────────────────────────┘
+Sprint 1: Auth (Étape 1)            ✅ Terminé
+  │ (User authentifié + token)
+  v
+Sprint 2: Lobby & QR (Étape 2)      A démarrer
+  │ (Session créée/rejointe)
+  v
+Sprint 3: Modération (Étape 3)      A démarrer
+  │ (Partie démarrée)
+  v
+Sprint 4: Carte & État (Étape 4)    A démarrer
+  │ (Carte affichée)
+  v
+Sprint 5: Actions de jeu (Étape 5)  A démarrer
+  │ (Jeu fonctionnel)
+  v
+Sprint 6: Fin & Profil (Étapes 5bis+6)  A démarrer
 ```
 
 ### Risques Globaux
 
 | Risque | Probabilité | Impact | Mitigation |
 |--------|------------|--------|-----------|
-| API server down | Basse | Critique | Mock API en dev, contact serveur owner |
-| Token expiration (>24h) | Basse | Moyen | Implém. refresh token (bonus sprint 5) |
-| Rate limit breach (>20 req/min) | Basse | Moyen | Monitor polling, augmenter interval si nécessaire |
-| Timezone issues | Basse | Bas | Use server timestamps, ISO 8601 |
-| Android vs iOS differences | Moyenne | Moyen | Test sur device dès début |
-| Device memory/performance | Basse | Moyen | Profile app avec Flipper, optimize renders |
+| API server down | Basse | Critique | Tester les endpoints dès le début de chaque sprint |
+| Rate limit breach (>20 req/min) | Basse | Haut | Polling 30s strict, monitorer |
+| Camera permission refusée | Moyenne | Moyen | Permettre saisie manuelle du code |
+| Grille trop grande pour FlatList | Basse | Moyen | Virtualisation, cellules légères |
+| Manque de temps | Haute | Haut | Prioriser qualité > quantité (consigne) |
 
 ### Cross-Sprint Dependencies
 
-- **Token Management** : Sprint 1 → Used in all API calls (Sprints 2-4)
-- **User State** : Sprint 1 → Used in Sprints 2-4 (creator checks, player list)
-- **Session State** : Sprint 2 → Used in Sprints 3-4 (visibility of moderation, game state)
-- **Game State** : Sprint 3 → Used in Sprint 4 (game_id passed from session to game)
+- **Token Management** : Sprint 1 -> utilisé dans tous les appels API (Sprints 2-6)
+- **User State** : Sprint 1 -> utilisé dans Sprints 2-6 (creator checks, player identification)
+- **Session State** : Sprint 2 -> utilisé dans Sprints 3-5 (modération, game init)
+- **Game State** : Sprint 4 -> utilisé dans Sprints 5-6 (actions, fin de partie)
+- **usePolling** : Sprint 2 -> réutilisé dans Sprint 5 (polling état de jeu)
 
 ---
 
 ## Backlog Bonus
 
-**Post-MVP Features** (Après Sprint 4, si temps disponible):
+**Post-MVP (si temps disponible après Sprint 6)** :
 
 ### Bonus 1 : Refresh Token (2-3h)
-- Implém. refresh token mechanism
-- 401 → auto-refresh + retry request
-- Extends user session beyond 24h
+- Interceptor 401 -> appel refresh token -> retry requête initiale
+- Si refresh échoue -> logout
+- Étend la session au-delà de 24h
 
-### Bonus 2 : Offline Mode & Sync (3-4h)
-- Local cache de session/game state
-- Sync on reconnect
-- Optimistic updates
-
-### Bonus 3 : Animations & Polish (2-3h)
-- Smooth transitions between screens
-- Lottie animations (loading, errors)
-- Gesture feedback (haptics)
-
-### Bonus 4 : Settings & Profile (2-3h)
-- Profile screen: username, stats, logout
-- Settings: difficulty, notifications, theme
-- Leaderboard (optionnel)
-
-### Bonus 5 : Chat / Social (3-5h)
-- In-game chat (real-time via WebSocket ou long-poll)
-- Friend list, invites
-- Notifications
-
-### Bonus 6 : Game Actions (4-6h)
-- Submit actions screen
-- Visual action builder
-- Turn timer
+### Bonus 2 : Retour haptique & vibrations (1-2h)
+- Haptic feedback sur validation du tour
+- Vibration quand un vaisseau est détruit
+- `expo-haptics`
 
 ---
 
-## Checklist Pre-Production
-
-**Avant de considérer le projet "DONE"** :
-
-- [ ] Tous users stories complétées et testées
-- [ ] No console errors / warnings
-- [ ] TypeScript strict mode: no `any` types
-- [ ] Tests manuels sur iOS + Android device
-- [ ] API rate limits respectés (20 req/min)
-- [ ] Erreurs réseau gérées (toasts, retry)
-- [ ] Tokens secure stockés (expo-secure-store)
-- [ ] Logout possible partout
-- [ ] App splash screen fonctionnel
-- [ ] Navigation transitions smooth
-- [ ] App icon & name config OK
-- [ ] Ready for App Store / Play Store submit
-
----
-
-## Notes de Gestion
-
-### Estimation Accuracy
-- Estimations points = Fibonacci (3, 5, 8, 13, 21)
-- Temps réel = points × 0.5 heure (ex: 13 points = 6.5h)
-- Buffer = 20% (pour debug, review, edge cases)
-
-### Daily Status
-- **Pour chaque jour** : Log dans ce fichier las tâches complétées
-- Format: `[✅ Completed]` ou `[🟡 In Progress]` ou `[❌ Blocked]`
-
-### Communication avec API Server
-- Base URL: `https://space-conquest-online.osc-fr1.scalingo.io/api`
-- Rate limit: 20 req/min global
-- Polling min: 30s interval
-- Auth: Bearer token in Authorization header
-- Content-Type: application/json
-
----
-
-## Résumé Timeline
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   SPACE CONQUEST ONLINE                     │
-│                  Sprint Planning Dashboard                 │
-├────────┬─────────┬────────┬────────┬──────────────────────┤
-│ Sprint │  Épic   │ Points │ Heures │ Status               │
-├────────┼─────────┼────────┼────────┼──────────────────────┤
-│   1    │ Auth    │  13    │ 6-8h   │ 🟡 À démarrer      │
-│ Sprint │ Lobby   │  21    │10-13h  │ 🟡 À démarrer      │
-│   3    │ Modération│ 13   │ 6-8h   │ 🟡 À démarrer      │
-│   4    │ Game    │  13    │ 6-8h   │ 🟡 À démarrer      │
-├────────┼─────────┼────────┼────────┼──────────────────────┤
-│ TOTAL  │ MVP     │  60    │22-26h  │ 🟡 À démarrer      │
-└────────┴─────────┴────────┴────────┴──────────────────────┘
-```
-
-**Next Action** : 
-1. ✅ Lire ce document entièrement
-2. 🟡 Démarrer Sprint 1 US 1.1 (SignUpScreen)
-3. 🟡 Follow checklist "Definition of Done" par US
-4. 🟡 Log progress quotidiennement
-
-**Bon courage! 🚀**
-- Error handling ✓
-
----
-
-## 3. Timeline
-
-```
-Semaine 1 (23-29 mars)   :  Fondations + Épic 1 + Début Épic 2
-├─ Lundi 23   : Architecture setup, project init
-├─ Mardi 24   : Épic 1 screens + auth service
-├─ Mercredi 25: Épic 1 testing + Épic 2 start (sessions)
-├─ Jeudi 26   : Épic 2 QR integration
-└─ Vendredi 27: Épic 2 polling + testing
-
-Semaine 2 (30 mars-5 avril) : Épic 2 finish + Épic 3 + Début Épic 4
-├─ Lundi 30   : Épic 2 edge cases + Épic 3 start (moderation)
-├─ Mardi 31   : Épic 3 kick/ban/delete
-├─ Mercredi 1 : Épic 3 start-game + testing
-├─ Jeudi 2    : Épic 4 start (map display)
-└─ Vendredi 3 : Épic 4 map + player stats
-
-Semaine 3 (6-7 avril)      : Épic 4 finish + Polish + Bonus
-├─ Samedi 6   : Épic 4 edge cases + error handling
-└─ Dimanche 7 : Final polish + code review + commit
-```
-
----
-
-## 4. Dépendances d'Implémentation
-
-```
-Épic 1 ────────→ Épic 2 ────────→ Épic 3 ────────→ Épic 4
-(3-4j)          (5-6j)          (3-4j)          (3-4j)
-                                                  ↓
-                                            (Bonus)
-                                            Actions + Results
-```
-
-**Chemin critique** :
-1. Auth fonctionnelle (sans cela, impossible de tester la suite)
-2. Lobby fonctionnel + Polling (base du multiplayer)
-3. Start game (launch la partie)
-4. Game display (endgame)
-
----
-
-## 5. Ressources Externes Requises
-
-### APIs
-- ✅ API REST : https://space-conquest-online.osc-fr1.scalingo.io/api
-- ✅ Documentation : https://space-conquest-online.osc-fr1.scalingo.io/api/documentation
-
-### Dépendances NPM
-```javascript
-{
-  // Core
-  "react": "^18.x",
-  "react-native": "^0.73.x",
-  "expo": "^50.x",
-  
-  // Navigation
-  "@react-navigation/native": "^6.x",
-  "@react-navigation/bottom-tabs": "^6.x",
-  "@react-navigation/stack": "^6.x",
-  "react-native-screens": "^3.x",
-  "react-native-safe-area-context": "^4.x",
-  
-  // State Management
-  // Context API + useReducer (built-in, no deps)
-  
-  // API
-  "axios": "^1.x",
-  // ou "fetch" (built-in)
-  
-  // Secure Storage
-  "expo-secure-store": "^12.x",
-  // ou "@react-native-async-storage/async-storage": "^1.x"
-  
-  // QR Code
-  "expo-barcode-scanner": "^12.x",
-  "expo-camera": "^13.x",
-  "react-native-qrcode-svg": "^6.x",
-  
-  // UI Components (optionnel)
-  "react-native-paper": "^5.x",
-  // ou "native-base": "^4.x"
-  
-  // Utils
-  "date-fns": "^2.x",
-  "lodash": "^4.x",
-  
-  // Dev
-  "typescript": "^5.x",
-  "eslint": "^8.x",
-  "prettier": "^3.x"
-}
-```
-
----
-
-## 6. Architecture & Setup
-
-Voir [ARCHITECTURE.md](ARCHITECTURE.md) pour :
-- Folder structure
-- Navigation architecture
-- Context API organization
-- Service layer design
-- Hooks patterns
-
----
-
-## 7. Standards & Best Practices
-
-### Code Quality
-- ✅ TypeScript strict mode
-- ✅ ESLint + Prettier
-- ✅ Comments on complex logic
-- ✅ Error handling everywhere
-
-### State Management
-- ✅ Context API + useReducer (no Redux)
-- ✅ One context per domain
-- ✅ Custom hooks encapsulation
-
-### API
-- ✅ Axios client with interceptors
-- ✅ Centralized error handling
-- ✅ Polling respects rate limits (20 req/min)
-
-### Security
-- ✅ Token in SecureStore
-- ✅ 401 handling → logout
-- ✅ No sensitive data in logs
-
-### Testing
-- ✅ Manual acceptance tests (list in PRDs)
-- ✅ Edge case testing
-- ✅ Error scenario testing
-
----
-
-## 8. Definition of Doneness (Epic Level)
-
-Un épique est considéré "DONE" si :
-
-1. ✅ Tous les user stories implémentés
-2. ✅ Tous les acceptance criteria validés
-3. ✅ Code écrit en TypeScript
-4. ✅ Error handling robuste
-5. ✅ Manual testing successively completed
-6. ✅ Comments explicatifs ajoutés
-7. ✅ Ready for code review
-
----
-
-## 9. Risk & Mitigation
-
-### Risk 1 : Rate Limiting API
-**Impact** : Polling bloqué, UX dégradée  
-**Mitigation** : Bien tester les interval, 30s minimum pour lobby polling
-
-### Risk 2 : QR Code Scanner Issues
-**Impact** : Impossible de rejoindre une session  
-**Mitigation** : Fallback input manuel, test physique sur devices réels
-
-### Risk 3 : Token Management Complexity
-**Impact** : Authentication bugs  
-**Mitigation** : Tests exhaustifs + edge case coverage (expiry, refresh)
-
-### Risk 4 : Responsive Design sur petits écrans
-**Impact** : Carte illisible sur mobile  
-**Mitigation** : Scroll + zoom, testing sur multiples devices
-
----
-
-## 10. Bonus Features (Out of Scope Initial)
-
-Si temps permet après épic 4 :
-
-- [ ] **Actions Submission** : Interface pour jouer ses actions chaque tour
-- [ ] **Turn Results** : Afficher résultats du tour après validation
-- [ ] **Polling Game State** : Updates en temps réel de l'état
-- [ ] **Refresh Token** : Extend token validity (24h → auto-refresh)
-- [ ] **User Profile** : Page profil + stats globales
-- [ ] **Chat In-Game** : Communication joueurs
-- [ ] **Settings** : Thème, notifications, etc.
-- [ ] **Replay Mode** : Rejeu des tours passés
-
----
-
-## 11. Démarrage du Développement
-
-### Step 1 : Project Setup (Jour 1)
-```bash
-# Créer project Expo
-npx create-expo-app@latest my-app --template with-typescript
-
-# Installer dépendances fondamentales
-cd my-app
-npm install axios expo-secure-store expo-barcode-scanner expo-camera
-npm install @react-navigation/native @react-navigation/bottom-tabs ...
-
-# Setup ESLint + TypeScript
-npx eslint --init
-```
-
-### Step 2 : Folder Structure (Jour 1)
-```bash
-mkdir -p src/{app,contexts,hooks,services,screens,components,types,utils,config}
-touch src/app/App.tsx src/app/RootNavigator.tsx
-# ... (créer autres fichiers clés)
-```
-
-### Step 3 : Authentication (Jour 2-3)
-```bash
-# Développer Épic 1 en parallèle avec structure setup
-# Commits : auth-init, auth-signup, auth-login, auth-navigation
-```
-
-### Step 4 : Lobby + QR (Jour 4-8)
-```bash
-# Épic 2 implémentation
-# Commits : lobby-create, lobby-join, lobby-polling
-```
-
-### Step 5 : Moderation (Jour 8-11)
-```bash
-# Épic 3 implémentation
-# Commits : moderation-kick-ban, moderation-delete, game-start
-```
-
-### Step 6 : Game Display (Jour 11-15)
-```bash
-# Épic 4 implémentation
-# Commits : game-map, game-state, game-polish
-```
-
-### Step 7 : Final Polish (Jour 15-16)
-```bash
-# Error handling, edge cases, code review
-# Final commit + push to GitHub
-```
-
----
-
-## 12. Checkliste Final Submission
-
-- [ ] Code sur GitHub (repo public)
-- [ ] README.md avec instructions setup
-- [ ] TypeScript strict mode obligatoire
-- [ ] Aucun linting errors
-- [ ] All 4 Epics implémentés
-- [ ] Tests manuels tous validés
-- [ ] Code review self-review complétée
-- [ ] Comments explicatifs finalisés
-- [ ] Responsive design testé
-- [ ] API integration correct
-- [ ] Secure storage fonctionnel
-- [ ] Pas de token hardcodé
-- [ ] Pas de console.log en production
-- [ ] Performance acceptable
-
----
-
-**Fin du Sprint Planning Document**
-
-Version 1.0 - [ARCHITECTURE.md](ARCHITECTURE.md) | [PRD_EPIC1_AUTH.md](PRD_EPIC1_AUTH.md) | [PRD_EPIC2_LOBBY.md](PRD_EPIC2_LOBBY.md) | [PRD_EPIC3_MODERATION.md](PRD_EPIC3_MODERATION.md) | [PRD_EPIC4_GAME.md](PRD_EPIC4_GAME.md)
-
+## Communication API
+
+- **Base URL** : `https://space-conquest-online.osc-fr1.scalingo.io/api`
+- **Documentation** : `https://space-conquest-online.osc-fr1.scalingo.io/api/documentation`
+- **Rate limit** : 20 req/min global
+- **Polling** : 30s minimum
+- **Auth** : Bearer token dans header Authorization
+- **Content-Type** : application/json

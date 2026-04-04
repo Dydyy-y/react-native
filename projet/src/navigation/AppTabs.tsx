@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { AppTabsParamList } from './NavigationTypes';
 import { ProfileScreen } from '../features/auth/screens/ProfileScreen';
 import { COLORS } from '../shared/utils/constants';
@@ -37,17 +38,32 @@ export const AppTabs = () => (
     <Tab.Screen
       name="Lobby"
       component={LobbyPlaceholder}
-      options={{ tabBarLabel: 'Lobby' }}
+      options={{
+        tabBarLabel: 'Lobby',
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="people-outline" size={size} color={color} />
+        ),
+      }}
     />
     <Tab.Screen
       name="Game"
       component={GamePlaceholder}
-      options={{ tabBarLabel: 'Jeu' }}
+      options={{
+        tabBarLabel: 'Jeu',
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="game-controller-outline" size={size} color={color} />
+        ),
+      }}
     />
     <Tab.Screen
       name="Profile"
       component={ProfileScreen}
-      options={{ tabBarLabel: 'Profil' }}
+      options={{
+        tabBarLabel: 'Profil',
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="person-outline" size={size} color={color} />
+        ),
+      }}
     />
   </Tab.Navigator>
 );

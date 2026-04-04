@@ -13,7 +13,7 @@ import {
 import { StackScreenProps } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../../navigation/NavigationTypes';
 import { useRegister } from '../hooks/useRegister';
-import { useUI } from '../../ui/contexts/UIContext';
+import { useUI } from '../../ui';
 import { COLORS } from '../../../shared/utils/constants';
 import {
   isValidEmail,

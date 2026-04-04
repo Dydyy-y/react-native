@@ -462,6 +462,48 @@ Installation via `npx expo install react-native-gesture-handler` (version compat
 
 ---
 
+## 17. Icônes des tabs : @expo/vector-icons (Ionicons)
+
+**Contexte**
+Les tabs du `AppTabs` n'avaient pas d'icônes, ce qui nuit à l'expérience utilisateur (on ne sait pas quel onglet correspond à quoi sans lire le label).
+
+**Décision**
+Utiliser `@expo/vector-icons` avec le jeu d'icônes `Ionicons` pour les icônes des tabs.
+
+**Pourquoi @expo/vector-icons (pas react-native-vector-icons ou images custom) ?**
+- `@expo/vector-icons` est inclus nativement dans Expo SDK — aucune dépendance supplémentaire à installer.
+- Fournit plusieurs sets d'icônes (Ionicons, MaterialIcons, FontAwesome...) accessibles directement.
+- Les icônes sont vectorielles (pas de pixellisation, s'adaptent à toutes les tailles).
+- `Ionicons` a un style cohérent avec les conventions iOS/Android modernes.
+
+**Conséquences**
+- Aucune nouvelle dépendance npm ajoutée.
+- Les props `color` et `size` sont fournies automatiquement par le `TabNavigator` via `tabBarIcon`.
+
+---
+
+## 18. Hook usePolling générique dans shared/hooks/
+
+**Contexte**
+Le polling HTTP (requêtes périodiques à intervalle régulier) est nécessaire dans au moins 2 features : lobby (liste des joueurs) et game (état de jeu). La consigne impose un intervalle de 30 secondes minimum.
+
+**Décision**
+Créer un hook `usePolling(callback, interval, enabled)` dans `shared/hooks/usePolling.ts`, réutilisable par toutes les features.
+
+**Pourquoi un hook partagé (pas du setInterval dans chaque composant) ?**
+- **DRY** : évite de dupliquer la logique `setInterval` + cleanup dans chaque écran qui poll.
+- **Sécurité rate limit** : le hook impose un minimum de 30s (`Math.max`), impossible de descendre en dessous par erreur.
+- **Cleanup automatique** : le `clearInterval` dans le return de `useEffect` évite les memory leaks au démontage du composant.
+- **Ref pour callback** : `useRef` sur le callback évite de recréer le timer à chaque changement de closure — le polling reste stable.
+- **Paramètre `enabled`** : permet d'activer/désactiver dynamiquement (ex: arrêter le polling quand les actions sont validées, reprendre quand le nouveau tour commence).
+
+**Conséquences**
+- Toute feature qui a besoin de polling importe depuis `shared/hooks/usePolling`.
+- Le callback gère ses propres erreurs (le hook ne les intercepte pas).
+- Appel immédiat au montage, puis toutes les N secondes.
+
+---
+
 ## Comment documenter une nouvelle décision
 
 Quand tu ajoutes quelque chose d'important au projet, **ajoute une entrée ici** avec ce format :

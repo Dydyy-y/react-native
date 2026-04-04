@@ -57,15 +57,16 @@ RootNavigator
     └── ProfileTab
 ```
 
-## Épics et Progression
+## Sprints et Progression
 
-| Épic | Feature | Status |
-|------|---------|--------|
-| 1 | Auth (login, signup, token sécurisé) | À faire |
-| 2 | Lobby (create/join session, QR code, polling) | À faire |
-| 3 | Modération (kick, ban, delete, start game) | À faire |
-| 4 | Jeu (carte grille, état, actions, polling) | À faire |
-| 5 | Fin de partie + profil | À faire |
+| Sprint | Étape consigne | Feature | Status |
+|--------|---------------|---------|--------|
+| 1 | Étape 1 | Auth (login, signup, token sécurisé) | ✅ Terminé |
+| 2 | Étape 2 | Lobby (create/join session, QR code, polling) | A démarrer |
+| 3 | Étape 3 | Modération (kick, ban, delete, start game) | A démarrer |
+| 4 | Étape 4 | Jeu (carte grille FlatList, état joueur) | A démarrer |
+| 5 | Étape 5 | Actions de jeu (move, attack, purchase, tours) | A démarrer |
+| 6 | Étapes 5bis+6 | Fin de partie + profil + historique | A démarrer |
 
 ## Règle de Documentation (OBLIGATOIRE)
 
@@ -89,10 +90,12 @@ Le fichier `docs/DECISIONS.md` contient déjà toutes les décisions initiales d
 
 Toute la documentation de planning est dans `_bmad/` :
 - [ARCHITECTURE.md](_bmad/ARCHITECTURE.md) - Architecture détaillée
-- [PRD_EPIC1_AUTH.md](_bmad/PRD_EPIC1_AUTH.md) - Specs auth
-- [PRD_EPIC2_LOBBY.md](_bmad/PRD_EPIC2_LOBBY.md) - Specs lobby
-- [PRD_EPIC3_MODERATION.md](_bmad/PRD_EPIC3_MODERATION.md) - Specs modération
-- [PRD_EPIC4_GAME.md](_bmad/PRD_EPIC4_GAME.md) - Specs jeu
+- [PRD_EPIC1_AUTH.md](_bmad/PRD_EPIC1_AUTH.md) - Étape 1 : Auth
+- [PRD_EPIC2_LOBBY.md](_bmad/PRD_EPIC2_LOBBY.md) - Étape 2 : Lobby
+- [PRD_EPIC3_MODERATION.md](_bmad/PRD_EPIC3_MODERATION.md) - Étape 3 : Modération
+- [PRD_EPIC4_GAME.md](_bmad/PRD_EPIC4_GAME.md) - Étape 4 : Carte & État
+- [PRD_EPIC5_ACTIONS.md](_bmad/PRD_EPIC5_ACTIONS.md) - Étape 5 : Actions de jeu
+- [PRD_EPIC6_FIN_PROFIL.md](_bmad/PRD_EPIC6_FIN_PROFIL.md) - Étapes 5bis+6 : Fin & Profil
 - [SPRINT_PLANNING.md](_bmad/SPRINT_PLANNING.md) - Planning complet
 
 ## Agents BMAD Disponibles

@@ -1,22 +1,22 @@
-# PRD - Épic 1 : Inscription et Connexion
+# PRD - Étape 1 : Inscription et Connexion
 
-**Date** : 23 mars 2026  
-**Version** : 1.0  
-**Status** : À développer  
-**Epic Estimate** : 13 points (3-4 jours)
+**Date** : 23 mars 2026 (mis à jour 04 avril 2026)  
+**Version** : 2.0  
+**Status** : ✅ Terminé  
+**Sprint** : 1
 
 ---
 
-## 1. Objectif Business
+## 1. Objectif
 
 Permettre aux utilisateurs de créer un compte et de s'authentifier sécurisément pour accéder aux fonctionnalités du jeu "Space Conquest Online".
 
-**Success Metrics** :
-- ✅ Utilisateurs peuvent s'inscrire avec email valide et mot de passe
-- ✅ Utilisateurs peuvent se connecter avec identifiants valides
-- ✅ Token d'authentification stocké sécurisé et utilisé automatiquement
-- ✅ Utilisateurs non-connectés ne peuvent pas accéder à l'app
-- ✅ Erreurs claires affichées à l'utilisateur
+**Critères de succès** :
+- Utilisateurs peuvent s'inscrire avec username, email et mot de passe
+- Utilisateurs peuvent se connecter avec identifiants valides
+- Token d'authentification stocké dans `expo-secure-store` et utilisé automatiquement
+- Utilisateurs non-connectés ne peuvent pas accéder à l'app
+- Erreurs claires affichées via le système de toasts
 
 ---
 
@@ -31,31 +31,29 @@ Permettre aux utilisateurs de créer un compte et de s'authentifier sécuriséme
 **Critères d'acceptation** :
 
 1. **Interface SignUpScreen**
-   - [ ] Title/Header : "Créer un compte"
-   - [ ] Input username : Placeholder "Nom d'utilisateur"
-   - [ ] Input email : Placeholder "Email"
-   - [ ] Input password : Placeholder "Mot de passe" (type password, masqué)
-   - [ ] Input confirm password : Placeholder "Confirmer mot de passe" (type password, masqué)
-   - [ ] Button "S'inscrire" (disabled tant que form invalide)
-   - [ ] Link "Vous avez déjà un compte ? Se connecter"
+   - [x] Title : "Créer un compte"
+   - [x] Input username : placeholder "Nom d'utilisateur"
+   - [x] Input email : placeholder "Email"
+   - [x] Input password : masked
+   - [x] Input confirm password : masked
+   - [x] Button "S'inscrire" (disabled tant que form invalide)
+   - [x] Link "Vous avez déjà un compte ? Se connecter"
 
 2. **Validations côté client**
-   - [ ] Username : 3-20 caractères, alphanumériques + underscore
-   - [ ] Email : Format email valide
-   - [ ] Password : Min 8 caractères
-   - [ ] Password === Confirm password
-   - [ ] Les erreurs de validation affichées en temps réel
-   - [ ] Erreurs en rouge sous chaque champ
+   - [x] Username : 3-20 caractères, alphanumériques + underscore
+   - [x] Email : format email valide
+   - [x] Password : min 8 caractères
+   - [x] Password === Confirm password
+   - [x] Erreurs affichées en temps réel (onBlur) en rouge sous chaque champ
 
-3. **Appel API** (POST /register)
-   - [ ] Body : `{ username, email, password }`
-   - [ ] Response : `{ user: { id, username, email }, access_token, token_type, expires_in }`
-   - [ ] En cas d'erreur API (email déjà utilisé, etc.) : afficher toast avec message d'erreur API
+3. **Appel API** (POST /auth/register)
+   - [x] Body : `{ username, email, password }`
+   - [x] En cas d'erreur API : toast via UIContext
 
-4. **Gestion State**
-   - [ ] Loading state : button désactivé, spinner visible
-   - [ ] Succès : redirection vers LoginScreen (ou directement AppTabs si auto-login)
-   - [ ] Erreur : toast rouge, state reset, focus sur champ problématique
+4. **Gestion State (Context API + useReducer)**
+   - [x] Hook `useRegister` gère loading/error
+   - [x] Succès : token sauvegardé dans expo-secure-store + dispatch SET_TOKEN/SET_USER dans AuthContext
+   - [x] Navigation automatique vers AppTabs via RootNavigator
 
 ---
 
@@ -63,154 +61,136 @@ Permettre aux utilisateurs de créer un compte et de s'authentifier sécuriséme
 
 **En tant que** joueur existant  
 **Je veux** me connecter avec mes identifiants  
-**Afin de** accéder à mes sessions de jeu
+**Afin d'** accéder à mes sessions de jeu
 
 **Critères d'acceptation** :
 
 1. **Interface LoginScreen**
-   - [ ] Title/Header : "Se connecter"
-   - [ ] Input email/username : Placeholder "Email ou nom d'utilisateur"
-   - [ ] Input password : Placeholder "Mot de passe" (masqué)
-   - [ ] Checkbox "Se souvenir de moi" (optionnel, v1)
-   - [ ] Button "Se connecter" (disabled tant que form invalide)
-   - [ ] Link "Pas encore inscrit ? Créer un compte"
-   - [ ] [BONUS] Link "Mot de passe oublié ?"
+   - [x] Title : "Se connecter"
+   - [x] Input email/username : placeholder "Email ou nom d'utilisateur"
+   - [x] Input password : masked
+   - [x] Button "Se connecter" (disabled tant que form invalide)
+   - [x] Link "Pas encore inscrit ? Créer un compte"
 
 2. **Validations côté client**
-   - [ ] Email/username : Non-vide
-   - [ ] Password : Non-vide, min 8 caractères affichés
-   - [ ] Erreurs affichées en rouge
+   - [x] Email/username : non-vide
+   - [x] Password : min 8 caractères
 
-3. **Appel API** (POST /login)
-   - [ ] Body : `{ email_or_username, password }`
-   - [ ] Response : `{ user: { id, username, email }, access_token, token_type, expires_in }`
-   - [ ] En cas d'erreur (credentials invalides) : afficher toast "Email/password invalides"
-   - [ ] Header Authorization automatiquement ajouté pour requêtes futures
+3. **Appel API** (POST /auth/login)
+   - [x] Body : `{ email_or_username, password }`
+   - [x] Header Authorization ajouté automatiquement par interceptor Axios
 
-4. **Gestion State & Stockage**
-   - [ ] Token stocké dans Secure Storage (`expo-secure-store`)
-   - [ ] User stocké dans AuthContext
-   - [ ] Loading state pendant requête
-   - [ ] Succès : redirection automatique vers AppTabs (Lobby)
-   - [ ] Erreur : toast rouge, state reset, focus sur champ
+4. **Gestion State (Context API + useReducer)**
+   - [x] Hook `useLogin` gère loading/error
+   - [x] Token stocké dans expo-secure-store
+   - [x] Succès : dispatch SET_TOKEN/SET_USER -> navigation auto vers AppTabs
 
 5. **Récupération au démarrage App**
-   - [ ] Au montage App : vérifier si token en Secure Storage
-   - [ ] Si token exist : afficher SplashScreen (loading), valider token avec API (GET /me)
-   - [ ] Si token valide : loader user + redirection automatique AppTabs
-   - [ ] Si token invalide/expiré : redirection LoginScreen, token supprimé
+   - [x] Au montage AuthProvider : vérifier token dans expo-secure-store
+   - [x] Si token existe : GET /auth/me pour valider
+   - [x] Si valide : charger user + navigation auto vers AppTabs
+   - [x] Si invalide/expiré : supprimer token, afficher LoginScreen
 
 ---
 
 ### US 1.3 - Navigation Protégée
 
-**En tant que** utilisateur  
-**Je veux** que l'app me protège des accès non-autorisés  
-**Afin de** que mes données restent privées
+**En tant qu'** utilisateur  
+**Je veux** que l'app protège les accès non-autorisés  
+**Afin que** mes données restent privées
 
 **Critères d'acceptation** :
 
 1. **RootNavigator Logic**
-   - [ ] `isLoading=true` → SplashScreen (vérifier token)
-   - [ ] `isLoading=false && !user` → AuthStack (LoginScreen/SignUpScreen)
-   - [ ] `isLoading=false && user` → AppTabs (Lobby, Game, etc.)
+   - [x] `isLoading=true` -> SplashScreen
+   - [x] `isLoading=false && !user` -> AuthStack
+   - [x] `isLoading=false && user` -> AppTabs
 
 2. **Logout / Déconnexion**
-   - [ ] Button logout visible dans Profile ou Settings (bonus)
-   - [ ] Action logout : supprimer token de Secure Storage + clear AuthContext + redirection LoginScreen
-   - [ ] Message confirmation avant logout
+   - [x] Bouton dans ProfileScreen
+   - [x] Confirmation modale (Alert)
+   - [x] Supprimer token + dispatch LOGOUT + redirection auto
 
-3. **Gestion Token dans Requests**
-   - [ ] Interceptor Axios/Fetch : ajouter `Authorization: Bearer ${token}` si existe
-   - [ ] Gestion 401 : logout automatique + redirection LoginScreen
-   - [ ] Gestion 403 : toast erreur
-
-4. **Edge Cases**
-   - [ ] Token expiré (>24h) : logout + redirection (bonus : refresh token)
-   - [ ] Token invalide : logout + redirection
-   - [ ] Offline mode : afficher message, permettre retry
+3. **Gestion Token dans les requêtes**
+   - [x] Interceptor Axios : ajoute `Authorization: Bearer {token}`
+   - [x] Gestion 401 : logout automatique via callback injectée
+   - [x] Configuration apiClient via `configureApiClient()` (injection de dépendances)
 
 ---
 
-## 3. Acceptance Tests
+## 3. Détails Techniques
 
-| Test ID | Scenario | Expected | Pass/Fail |
-|---------|----------|----------|-----------|
-| T1.1.1 | Créer compte : email invalide | Toast erreur, form reset | |
-| T1.1.2 | Créer compte : password ≠ confirm password | Erreur affichée, submit disabled | |
-| T1.1.3 | Créer compte : email déjà utilisé | Toast API error | |
-| T1.1.4 | Créer compte : succès | Redirect LoginScreen | |
-| T1.2.1 | Login : token invalide | Toast erreur, form reset | |
-| T1.2.2 | Login : succès | Redirect AppTabs, token en storage | |
-| T1.3.1 | App startup + token valide | Auto-redirect AppTabs | |
-| T1.3.2 | App startup + token invalide | Auto-redirect LoginScreen | |
-| T1.3.3 | 401 response during request | Auto-logout + LoginScreen | |
-
----
-
-## 4. Technical Details
-
-### AuthContext
+### AuthContext (Context API + useReducer)
 ```typescript
-// State
-{
+interface AuthState {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   error: string | null;
 }
 
-// Actions
-- SET_USER(user: User)
-- SET_TOKEN(token: string)
-- SET_LOADING(bool)
-- SET_ERROR(error: string)
-- LOGOUT()
-- CLEAR_ERROR()
+type AuthAction =
+  | { type: 'SET_USER'; payload: User | null }
+  | { type: 'SET_TOKEN'; payload: string | null }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'LOGOUT' }
+  | { type: 'CLEAR_ERROR' };
 ```
 
 ### Services
-- **`authService.register(username, email, password)`**
-- **`authService.login(emailOrUsername, password)`**
-- **`authService.logout()`**
-- **`authService.validateToken()`**
-- **`tokenStorage.saveToken(token)`**
-- **`tokenStorage.getToken()`**
-- **`tokenStorage.removeToken()`**
+- `authService.register(username, email, password)` -> POST /auth/register
+- `authService.login(emailOrUsername, password)` -> POST /auth/login
+- `authService.validateToken()` -> GET /auth/me
+- `tokenStorage.saveToken(token)` / `getToken()` / `removeToken()`
 
-### Hooks
-- **`useAuth()`** : Return { user, token, isLoading, error, login, register, logout }
-- **`useSecureStorage()`** : Return { saveToken, getToken, removeToken }
+### Hooks (récupération API)
+- `useLogin()` -> { loading, execute }
+- `useRegister()` -> { loading, execute }
 
 ### API Endpoints
-- `POST /register` → Register
-- `POST /login` → Login
-- `GET /me` → Validate token & get current user
+- `POST /auth/register` -> Register
+- `POST /auth/login` -> Login
+- `GET /auth/me` -> Validate token & get current user
 
 ---
 
-## 5. UI/UX Guidelines
+## 4. Fichiers Implémentés
 
-- Clean, modern design (Expo UI library ou custom)
-- Form validation feedback en temps réel
-- Loading spinner pendant requests API
-- Toast notifications pour succès/erreurs
-- Couleurs : 
-  - Succès : #4CAF50 (vert)
-  - Erreur : #f44336 (rouge)
-  - Info : #2196F3 (bleu)
+```
+src/features/auth/
+├── contexts/AuthContext.tsx     (Context + Reducer + Provider + useAuth)
+├── services/
+│   ├── authService.ts          (appels API)
+│   └── tokenStorage.ts         (expo-secure-store wrapper)
+├── hooks/
+│   ├── useLogin.ts             (hook récupération API login)
+│   └── useRegister.ts          (hook récupération API register)
+├── screens/
+│   ├── LoginScreen.tsx
+│   ├── SignUpScreen.tsx
+│   ├── SplashScreen.tsx
+│   └── ProfileScreen.tsx
+├── types/auth.types.ts
+└── index.ts
 
----
+src/features/ui/
+├── contexts/UIContext.tsx       (Context + Reducer + Provider + useUI)
+├── components/Toast.tsx         (ToastContainer overlay)
+└── index.ts
 
-## 6. Définition de Done
+src/shared/
+├── config/apiClient.ts         (Axios + interceptors + injection callbacks)
+├── utils/
+│   ├── constants.ts            (API_BASE_URL, TOKEN_KEY, COLORS)
+│   ├── validation.ts           (isValidUsername, isValidEmail, isValidPassword)
+│   ├── errorHandler.ts         (getErrorMessage)
+│   └── logger.ts
+└── types/common.types.ts       (ApiError)
 
-- [ ] Code écrit en TypeScript
-- [ ] Tests des 3 US complétés
-- [ ] All acceptance tests pass
-- [ ] Error handling robuste
-- [ ] Secure token storage implémenté
-- [ ] Navigation protégée fonctionnelle
-- [ ] Code review + commentaires pertinents
-
----
-
+src/navigation/
+├── RootNavigator.tsx           (auth conditionnel)
+├── AuthStack.tsx               (Login + SignUp)
+├── AppTabs.tsx                 (TabsNavigator obligatoire)
+└── NavigationTypes.ts
+```

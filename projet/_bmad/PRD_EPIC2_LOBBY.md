@@ -1,22 +1,21 @@
-# PRD - Épic 2 : Création et Gestion du Salon (Lobby)
+# PRD - Étape 2 : Créer, Rejoindre ou Quitter une Session de Jeu
 
-**Date** : 23 mars 2026  
-**Version** : 1.0  
-**Status** : À développer  
-**Epic Estimate** : 21 points (5-6 jours)
+**Date** : 23 mars 2026 (mis à jour 04 avril 2026)  
+**Version** : 2.0  
+**Status** : A développer  
+**Sprint** : 2
 
 ---
 
-## 1. Objectif Business
+## 1. Objectif
 
 Permettre aux joueurs de créer une nouvelle session de jeu, de rejoindre une session existante via QR Code, et de gérer l'état du salon avant le démarrage de la partie.
 
-**Success Metrics** :
-- ✅ Utilisateurs capable de créer une session de jeu
-- ✅ QR Code généré et lisible
-- ✅ Utilisateurs peuvent rejoindre une session en scannant le QR Code
-- ✅ Liste des joueurs dans le salon mise à jour en temps réel via polling
-- ✅ Utilisateurs peuvent quitter le salon tant que la partie n'a pas démarré
+**Critères de succès** :
+- Joueurs peuvent créer une session et obtenir un QR code d'invitation
+- Joueurs peuvent rejoindre une session en scannant le QR code
+- Liste des joueurs dans le salon mise à jour via polling HTTP (30s)
+- Joueurs non-créateur peuvent quitter le salon tant que la partie n'a pas démarré
 
 ---
 
@@ -25,270 +24,171 @@ Permettre aux joueurs de créer une nouvelle session de jeu, de rejoindre une se
 ### US 2.1 - Créer une session de jeu
 
 **En tant que** joueur  
-**Je veux** créer une nouvelle session de jeu et inviter d'autres joueurs  
+**Je veux** créer une nouvelle session et inviter d'autres joueurs  
 **Afin de** lancer une partie avec mes amis
 
 **Critères d'acceptation** :
 
 1. **Interface CreateSessionScreen**
-   - [ ] Page accessible depuis LobbyListScreen
-   - [ ] Input session name : Placeholder "Nom de la partie" (optionnel, défaut : "Session de {username}")
-   - [ ] Input max players : Dropdown [2, 3, 4] (défaut : 4)
+   - [ ] Accessible depuis LobbyHomeScreen
+   - [ ] Input session name : placeholder "Nom de la partie"
    - [ ] Button "Créer la session"
-   - [ ] Button "Annuler" (back to LobbyListScreen)
+   - [ ] Loading spinner pendant création
 
 2. **Appel API** (POST /sessions)
-   - [ ] Body : `{ name, max_players }`
-   - [ ] Response : `{ session: { id, name, creator_id, state, qr_code_data }, ... }`
-   - [ ] En cas d'erreur : afficher toast avec message erreur
+   - [ ] Body : `{ name }` (vérifier doc API pour les champs exacts)
+   - [ ] Response : session avec id, name, creator_id, state, code d'invitation
+   - [ ] En cas d'erreur : toast via UIContext
 
 3. **Affichage QR Code**
-   - [ ] Une fois session créée : afficher QRDisplayComponent
-   - [ ] QR Code contient : session ID ou invitation code
-   - [ ] Bouton "Copier le code" (copie vers clipboard)
-   - [ ] Bouton "Partager" (share intent - optionnel)
-   - [ ] Message : "Invitez vos amis à scaner ce QR Code"
-   - [ ] Redirection automatique vers SessionDetailScreen avec polling
+   - [ ] QR Code contient le code d'invitation de la session
+   - [ ] Message : "Invitez vos amis à scanner ce QR Code"
+   - [ ] Redirection vers SessionDetailScreen avec polling activé
 
-4. **Gestion State**
-   - [ ] Session stockée dans LobbyContext
-   - [ ] Loading state pendant création
-   - [ ] Erreur : toast rouge, stay on CreateSessionScreen
+4. **State (Context API + useReducer)**
+   - [ ] LobbyContext : `dispatch({ type: 'SET_SESSION', payload: session })`
 
 ---
 
 ### US 2.2 - Rejoindre une session
 
 **En tant que** joueur  
-**Je veux** rejoindre une session existante en scannant un QR Code  
+**Je veux** rejoindre une session en scannant un QR Code  
 **Afin de** jouer avec d'autres joueurs
 
 **Critères d'acceptation** :
 
 1. **Interface JoinSessionScreen**
-   - [ ] Page accessible depuis LobbyListScreen avec bouton "Rejoindre une session"
-   - [ ] 2 options affichées :
-     - Option A : Bouton "Scanner QR Code"
-     - Option B : Input manuel du code d'invitation
-   - [ ] Bouton "Annuler" (back to LobbyListScreen)
-
-2. **QR Scanner**
-   - [ ] Utiliser `expo-camera` + `expo-barcode-scanner`
-   - [ ] Permission demandée à l'utilisateur
+   - [ ] Accessible depuis LobbyHomeScreen
+   - [ ] Scanner QR Code via expo-camera
+   - [ ] Permission caméra demandée à l'utilisateur
    - [ ] Preview caméra affichée
-   - [ ] Une fois QR scanné : extraire session code/ID
-   - [ ] Appel API automatique POST /sessions/{id}/join
 
-3. **Input manuel**
-   - [ ] Input code : Placeholder "Entrez le code d'invitation"
-   - [ ] Button "Rejoindre"
-   - [ ] Même appel API PUT /sessions/{code}/join
+2. **Scan & Join**
+   - [ ] QR scanné -> extraction code d'invitation
+   - [ ] Appel API automatique pour rejoindre (vérifier endpoint dans doc API)
+   - [ ] Erreurs gérées : session pleine, inexistante, déjà membre, banni
+   - [ ] Toast d'erreur spécifique
 
-4. **Appel API** (POST /sessions/{id}/join)
-   - [ ] Body : `{ }`
-   - [ ] Response : `{ session: { id, name, players, ... } }`
-   - [ ] En cas d'erreur : afficher toast (session pleine, session inexistante, déjà membre, etc.)
-
-5. **Gestion State**
-   - [ ] Session stockée dans LobbyContext
-   - [ ] Redirection automatique vers SessionDetailScreen si succès
-   - [ ] Erreur : toast rouge, stay on JoinSessionScreen
+3. **State & Navigation**
+   - [ ] LobbyContext : `SET_SESSION` avec la session rejointe
+   - [ ] Redirection vers SessionDetailScreen si succès
 
 ---
 
 ### US 2.3 - Affichage du salon en temps réel
 
 **En tant que** joueur dans un salon  
-**Je veux** voir la liste des joueurs présents mise à jour automatiquement  
-**Afin de** vérifier que tout le monde est connecté avant le démarrage
+**Je veux** voir la liste des joueurs mise à jour automatiquement  
+**Afin de** vérifier que tout le monde est connecté
 
 **Critères d'acceptation** :
 
 1. **Interface SessionDetailScreen**
-   - [ ] Display :
-     - Header : "Salon : {session_name}"
-     - Session info : "Créateur : {creator_name}", "{players_count}/4 joueurs"
-     - List composant : affiche tous les joueurs
-       - Pour chaque joueur : nom, statut (créateur badge)
-     - Button section du bas (voir US 2.4, 3.x)
-   - [ ] Refresh indicator (pull-to-refresh optionnel)
+   - [ ] Header : "Salon : {session_name}"
+   - [ ] Info : "Créateur : {creator_name}", "{players_count}/4 joueurs"
+   - [ ] Liste joueurs : pour chaque joueur -> nom, badge créateur si applicable
+   - [ ] Boutons en bas (Quitter + boutons créateur des US 3.x)
 
 2. **Polling HTTP**
-   - [ ] Appel GET /sessions/{id} toutes les 30 secondes (contrainte API : 20 req/min)
-   - [ ] Déclenché au mount de SessionDetailScreen
-   - [ ] Arrêté au unmount ou quand utilisateur quitte
-   - [ ] Arêté si session état = "running" → redirection GameScreen
-   - [ ] Arrêté si session supprimée ou utilisateur banni → redirection LobbyListScreen
+   - [ ] GET /sessions/{id} toutes les 30 secondes (rate limit : 20 req/min)
+   - [ ] Démarré au mount de SessionDetailScreen
+   - [ ] Arrêté au unmount
+   - [ ] Arrêté si session.state === "running" -> redirection GameScreen
+   - [ ] Arrêté si session supprimée (404) -> redirection LobbyHomeScreen
+   - [ ] Utilise le hook partagé `usePolling` depuis `shared/hooks/usePolling.ts`
 
-3. **Gestion des mises à jour**
-   - [ ] Comparer ancienne liste vs nouvelle liste
-   - [ ] Si nouveau joueur : animation slide-in
-   - [ ] Si joueur parti : animation fade-out + remove
-   - [ ] Si liste identique : pas de re-render inutile
-   - [ ] LobbyContext.setPlayers(newPlayers) ou updatePlayer()
-
-4. **Gestion des erreurs de polling**
-   - [ ] Erreur réseau : afficher toast "Impossible de synchroniser", retry après 30s
-   - [ ] 401 : logout (token expiré) + redirection LoginScreen
-   - [ ] 403 : afficher toast "Session supprimée" + redirection LobbyListScreen
-   - [ ] 404 : session inexistante → redirection LobbyListScreen
+3. **Gestion des erreurs de polling**
+   - [ ] Erreur réseau : toast, retry au prochain intervalle
+   - [ ] 401 : logout automatique (interceptor Axios)
+   - [ ] 404 : toast "Session supprimée" + redirection LobbyHomeScreen
 
 ---
 
 ### US 2.4 - Quitter le salon
 
-**En tant que** joueur dans un salon qui n'a pas démarré  
-**Je veux** pouvoir quitter le salon facilement  
+**En tant que** joueur dans un salon non démarré  
+**Je veux** pouvoir quitter le salon  
 **Afin de** chercher une autre session
 
 **Critères d'acceptation** :
 
-1. **Button "Quitter"**
-   - [ ] Visible dans SessionDetailScreen si state === "waiting"
-   - [ ] **DISABLED** si utilisateur est le créateur
-   - [ ] Appel API DELETE /sessions/{id}/leave
+1. **Bouton "Quitter"**
+   - [ ] Visible si session.state === "waiting"
+   - [ ] Invisible ou disabled si utilisateur === créateur (le créateur doit supprimer la session)
+   - [ ] Confirmation modale avant action
 
-2. **Confirmation Modale**
-   - [ ] Modale "Êtes-vous sûr de vouloir quitter ?" avec 2 boutons
-   - [ ] Cancel : ferme modale
-   - [ ] Confirm : appel API
-
-3. **Appel API** (DELETE /sessions/{id}/leave)
-   - [ ] Response : `{ success: true }`
-   - [ ] Succès : dispatch LobbyContext.clearSession() + redirection LobbyListScreen
-   - [ ] Erreur : toast "Impossible de quitter", retry
-
-4. **Gestion State**
-   - [ ] Loading pendant suppression
-   - [ ] Polling arrêté
-   - [ ] LobbyContext cleared
+2. **Appel API** (vérifier endpoint dans doc API — probablement POST /sessions/{id}/leave)
+   - [ ] Succès : LobbyContext `CLEAR_SESSION` + redirection LobbyHomeScreen
+   - [ ] Erreur : toast
 
 ---
 
-## 3. Acceptance Tests
+## 3. Détails Techniques
 
-| Test ID | Scenario | Expected | Pass/Fail |
-|---------|----------|----------|-----------|
-| T2.1.1 | Créer session : succès | QR displayed, redirect SessionDetail | |
-| T2.1.2 | Créer session : erreur API | Toast erreur, stay on CreateSession | |
-| T2.2.1 | Scanner QR : valide | Join session, redirect SessionDetail | |
-| T2.2.2 | Scanner QR : invalide | Toast erreur, stay on JoinSession | |
-| T2.2.3 | Rejoindre session : already member | Toast erreur | |
-| T2.2.4 | Rejoindre session : full | Toast "Session complète" | |
-| T2.3.1 | Polling : nouveau joueur | List updated, animation | |
-| T2.3.2 | Polling : joueur parti | List updated, animation | |
-| T2.3.3 | Polling : session supprimée | Redirect LobbyList + toast | |
-| T2.3.4 | Polling : utilisateur banni | Redirect LobbyList + toast | |
-| T2.4.1 | Quitter salon : succès | Redirect LobbyList | |
-| T2.4.2 | Quitter salon : créateur disabled | Button grayed out | |
-
----
-
-## 4. Technical Details
-
-### LobbyContext
+### LobbyContext (Context API + useReducer)
 ```typescript
-// State
-{
-  session: GameSession | null;
-  players: Player[];
-  isLoading: boolean;
+interface LobbyState {
+  currentSession: GameSession | null;
+  loading: boolean;
   error: string | null;
-  pollingActive: boolean;
 }
 
-// Actions
-- SET_SESSION(session: GameSession)
-- SET_PLAYERS(players: Player[])
-- UPDATE_PLAYER(player: Player)
-- REMOVE_PLAYER(playerId: string)
-- SET_POLLING_ACTIVE(bool)
-- CLEAR_SESSION()
+type LobbyAction =
+  | { type: 'SET_SESSION'; payload: GameSession | null }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'CLEAR_SESSION' };
 ```
 
 ### Services
-- **`sessionService.createSession(name, maxPlayers)`**
-- **`sessionService.joinSession(sessionId)`**
-- **`sessionService.leaveSession(sessionId)`**
-- **`lobbyService.getSessionInfo(sessionId)`**
-- **`qrService.generateQR(sessionId)`**
-- **`qrService.parseQR(qrData)`**
+- `sessionService.createSession(name)` -> POST /sessions
+- `sessionService.joinSession(code)` -> endpoint join (vérifier doc API)
+- `sessionService.leaveSession(sessionId)` -> endpoint leave (vérifier doc API)
+- `sessionService.getSessionInfo(sessionId)` -> GET /sessions/{id}
 
-### Hooks
-- **`useLobby()`** : Return { session, players, isLoading, error, createSession, joinSession, leaveSession }
-- **`usePolling(url, interval, condition)`** : Polling hook réutilisable
+### Hooks (récupération API)
+- `useLobby()` -> { session, loading, error, createSession, joinSession, leaveSession }
 
-### API Endpoints
-- `POST /sessions` → Create session
-- `GET /sessions/{id}` → Get session info
-- `POST /sessions/{id}/join` → Join session
-- `DELETE /sessions/{id}/leave` → Leave session
+### Hook partagé
+- `usePolling(callback, interval, enabled)` -> polling générique réutilisable
+
+### API Endpoints (vérifier doc officielle)
+- `POST /sessions` -> Create session
+- `GET /sessions/{id}` -> Get session info (polling)
+- `POST /sessions/{id}/join` -> Join session
+- Endpoint leave (vérifier dans doc API)
 
 ---
 
-## 5. Polling Implementation Strategy
+## 4. Fichiers à Créer
 
-```typescript
-// Hook usePolling
-export const usePolling = (
-  fetchFn: () => Promise<any>,
-  interval: number = 30000,
-  active: boolean = true,
-  onDataUpdate?: (data: any) => void,
-  onError?: (error: Error) => void
-) => {
-  useEffect(() => {
-    if (!active) return;
-    
-    const timerId = setInterval(async () => {
-      try {
-        const data = await fetchFn();
-        onDataUpdate?.(data);
-      } catch (error) {
-        onError?.(error);
-      }
-    }, interval);
-    
-    return () => clearInterval(timerId);
-  }, [active, interval, fetchFn, onDataUpdate, onError]);
-};
+```
+src/features/lobby/
+├── contexts/LobbyContext.tsx    (Context + Reducer + Provider)
+├── services/sessionService.ts
+├── screens/
+│   ├── LobbyHomeScreen.tsx
+│   ├── CreateSessionScreen.tsx
+│   ├── JoinSessionScreen.tsx
+│   └── SessionDetailScreen.tsx
+├── components/
+│   ├── PlayerList.tsx
+│   ├── QRDisplay.tsx
+│   └── QRScanner.tsx
+├── hooks/useLobby.ts
+├── types/lobby.types.ts
+└── index.ts
 
-// Usage in SessionDetailScreen
-usePolling(
-  () => lobbyService.getSessionInfo(session.id),
-  30000,
-  true, // active only if on screen
-  (data) => {
-    dispatch({ type: 'SET_SESSION', payload: data.session });
-    dispatch({ type: 'SET_PLAYERS', payload: data.players });
-  },
-  (error) => {
-    // Handle polling error
-  }
-);
+src/shared/hooks/
+└── usePolling.ts               (hook générique)
 ```
 
 ---
 
-## 6. UI/UX Guidelines
+## 5. Points d'Attention
 
-- Smooth transitions/animations lors des updates de liste
-- Loading skeleton pour session info
-- Clear error messages (session pleine, inexistante, etc.)
-- QR code bien défini et lisible
-- Countdown ou warning si session va être supprimée
-
----
-
-## 7. Définition de Done
-
-- [ ] Code en TypeScript
-- [ ] All acceptance tests pass
-- [ ] Polling implémenté et testé (rate limit respecté)
-- [ ] QR Code généré et scannability testée
-- [ ] Navigation fluide entre écrans
-- [ ] Error handling robuste
-- [ ] Comments pertinents
-
----
-
+- **Rate limit** : 20 req/min -> polling à 30s = 2 req/min, laisse de la marge
+- **QR Code** : vérifier ce que l'API retourne comme données d'invitation
+- **Consigne** : "Une session ne peut être rejointe que via l'utilisation d'un QR code"
+- **Sessions limitées** à 4 joueurs (vérifié côté serveur)

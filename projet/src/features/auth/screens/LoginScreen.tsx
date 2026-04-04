@@ -13,7 +13,7 @@ import {
 import { StackScreenProps } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../../navigation/NavigationTypes';
 import { useLogin } from '../hooks/useLogin';
-import { useUI } from '../../ui/contexts/UIContext';
+import { useUI } from '../../ui';
 import { COLORS } from '../../../shared/utils/constants';
 
 type Props = StackScreenProps<AuthStackParamList, 'Login'>;

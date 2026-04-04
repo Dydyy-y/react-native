@@ -7,7 +7,7 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
-import { useUI } from '../../ui/contexts/UIContext';
+import { useUI } from '../../ui';
 import { COLORS } from '../../../shared/utils/constants';
 
 /** Écran profil — affiche les infos utilisateur et le bouton de déconnexion */
