@@ -1,25 +1,59 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { AppTabsParamList } from './NavigationTypes';
+import { AppTabsParamList, LobbyStackParamList } from './NavigationTypes';
 import { ProfileScreen } from '../features/auth/screens/ProfileScreen';
+import {
+  LobbyHomeScreen,
+  CreateSessionScreen,
+  JoinSessionScreen,
+  SessionDetailScreen,
+} from '../features/lobby';
 import { COLORS } from '../shared/utils/constants';
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();
+const LobbyStack = createStackNavigator<LobbyStackParamList>();
 
-// Placeholders pour les épics futurs
-const LobbyPlaceholder = () => (
-  <View style={styles.placeholder}>
-    <Text style={styles.placeholderText}>Lobby</Text>
-    <Text style={styles.placeholderSubtext}>Épic 2 — À venir</Text>
-  </View>
+// Stack Navigator pour le Lobby (4 écrans)
+const LobbyNavigator = () => (
+  <LobbyStack.Navigator
+    screenOptions={{
+      headerStyle: { backgroundColor: COLORS.surface },
+      headerTintColor: COLORS.white,
+      headerTitleStyle: { fontWeight: 'bold' },
+      cardStyle: { backgroundColor: COLORS.background },
+    }}
+  >
+    <LobbyStack.Screen
+      name="LobbyHome"
+      component={LobbyHomeScreen}
+      options={{ headerShown: false }}
+    />
+    <LobbyStack.Screen
+      name="CreateSession"
+      component={CreateSessionScreen}
+      options={{ title: 'Nouvelle session' }}
+    />
+    <LobbyStack.Screen
+      name="JoinSession"
+      component={JoinSessionScreen}
+      options={{ title: 'Rejoindre' }}
+    />
+    <LobbyStack.Screen
+      name="SessionDetail"
+      component={SessionDetailScreen}
+      options={{ title: 'Salon', headerLeft: () => null }}
+    />
+  </LobbyStack.Navigator>
 );
 
+// Placeholder pour le jeu (Sprint 4)
 const GamePlaceholder = () => (
   <View style={styles.placeholder}>
     <Text style={styles.placeholderText}>Jeu</Text>
-    <Text style={styles.placeholderSubtext}>Épic 4 — À venir</Text>
+    <Text style={styles.placeholderSubtext}>Epic 4 — A venir</Text>
   </View>
 );
 
@@ -37,7 +71,7 @@ export const AppTabs = () => (
   >
     <Tab.Screen
       name="Lobby"
-      component={LobbyPlaceholder}
+      component={LobbyNavigator}
       options={{
         tabBarLabel: 'Lobby',
         tabBarIcon: ({ color, size }) => (

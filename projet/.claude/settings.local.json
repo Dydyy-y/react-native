@@ -15,7 +15,8 @@
       "Bash(npm install:*)",
       "Bash(npm view:*)",
       "Bash(npx expo:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:space-conquest-online.osc-fr1.scalingo.io)"
     ]
   }
 }

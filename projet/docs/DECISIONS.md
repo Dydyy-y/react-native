@@ -504,6 +504,57 @@ Créer un hook `usePolling(callback, interval, enabled)` dans `shared/hooks/useP
 
 ---
 
+## 19. Styles partagés entre écrans d'auth
+
+**Contexte**
+`LoginScreen` et `SignUpScreen` avaient des StyleSheet quasi identiques (90%+), ce qui constituait une duplication inutile.
+
+**Décision**
+Extraire les styles communs dans `features/auth/styles/authStyles.ts`, importé par les deux écrans.
+
+**Pourquoi un fichier dans auth/ (pas dans shared/) ?**
+- Ces styles sont spécifiques aux écrans d'authentification, pas partagés entre features.
+- Respecte le principe Feature-Folder : ce qui appartient à une feature reste dans cette feature.
+
+**Conséquences**
+- Un seul endroit pour modifier le look des formulaires d'auth.
+- Les deux écrans importent `authStyles` au lieu de redéfinir chacun leur StyleSheet.
+
+---
+
+## 20. Filtre des routes d'auth dans l'interceptor 401
+
+**Contexte**
+L'interceptor Axios de réponse déclenche un `logout()` sur tout 401. Mais les routes `/auth/login` et `/auth/register` peuvent aussi retourner 401 (identifiants incorrects). Déclencher `logout()` dans ce cas est sémantiquement incorrect (l'utilisateur n'est pas encore connecté).
+
+**Décision**
+L'interceptor vérifie si l'URL commence par `/auth/` avant de déclencher le `_onUnauthorized`. Les 401 sur les routes d'auth sont ignorés par l'interceptor et gérés normalement par le catch du service.
+
+**Conséquences**
+- Un login raté ne déclenche plus de dispatch LOGOUT parasite.
+- Les 401 sur les routes protégées continuent de déclencher le logout automatique.
+
+---
+
+## 21. NavigationContainer dans App.tsx (pas dans RootNavigator)
+
+**Contexte**
+Le `NavigationContainer` était initialement dans `RootNavigator.tsx`. Avec l'ajout futur de `LobbyProvider` et `GameProvider` dans `App.tsx`, la hiérarchie était incohérente avec l'architecture documentée.
+
+**Décision**
+Déplacer `NavigationContainer` et `ToastContainer` dans `App.tsx`. Le `RootNavigator` ne contient plus que la logique conditionnelle (auth check).
+
+**Pourquoi ?**
+- `App.tsx` est le point d'entrée : il gère les providers ET le container de navigation.
+- `RootNavigator` a une seule responsabilité : décider quel navigateur afficher.
+- Prépare proprement l'ajout de `LobbyProvider` et `GameProvider` autour du `NavigationContainer`.
+
+**Conséquences**
+- `RootNavigator` est simplifié (plus d'import NavigationContainer ni ToastContainer).
+- L'ajout de futurs providers se fait dans `App.tsx` sans toucher au navigateur.
+
+---
+
 ## Comment documenter une nouvelle décision
 
 Quand tu ajoutes quelque chose d'important au projet, **ajoute une entrée ici** avec ce format :
@@ -535,4 +586,76 @@ Ce que cette décision implique concrètement dans le code.
 
 ---
 
-*Dernière mise à jour : 25 mars 2026*
+## 22. QR Code : react-native-qrcode-svg pour la generation, expo-camera pour le scan
+
+**Contexte**
+Le Sprint 2 (Lobby) necessite de generer un QR code contenant l'invite_code de la session, et de scanner ce QR code pour rejoindre une session.
+
+**Decision**
+- Generation : `react-native-qrcode-svg` (+ `react-native-svg` en peer dependency)
+- Scan : `expo-camera` avec `CameraView` et `barcodeScannerSettings`
+
+**Pourquoi react-native-qrcode-svg (pas react-native-qrcode ou une image statique) ?**
+- Rendu vectoriel SVG : le QR code est net a toutes les tailles, pas de pixellisation.
+- Compatible React Native + Expo sans config native.
+- API simple : `<QRCode value={code} size={200} />`.
+
+**Pourquoi expo-camera pour le scan (pas expo-barcode-scanner) ?**
+- `expo-barcode-scanner` est deprecie depuis SDK 51.
+- `expo-camera` SDK 54 integre le scan de codes-barres dans `CameraView` via `barcodeScannerSettings` et `onBarcodeScanned`.
+- Un seul package pour la camera et le scan.
+
+**Consequences**
+- `react-native-svg` est une dependance transitive necessaire.
+- La permission camera est demandee via `useCameraPermissions()` d'expo-camera.
+- Le QR code contient uniquement l'`invite_code` (UUID) retourne par l'API.
+
+---
+
+## 23. Endpoints API : /game-sessions (pas /sessions)
+
+**Contexte**
+Le PRD initial supposait des endpoints en `/sessions`. La documentation Swagger de l'API revele que les vrais endpoints sont en `/game-sessions`.
+
+**Decision**
+Utiliser les endpoints reels de l'API dans `sessionService.ts` :
+- `POST /game-sessions` (creer)
+- `GET /game-sessions/{id}` (polling)
+- `POST /game-sessions/join` avec `{ invite_code }` (rejoindre)
+- `POST /game-sessions/{id}/leave` (quitter)
+- `DELETE /game-sessions/{id}` (supprimer)
+- `POST /game-sessions/{id}/start` (demarrer)
+- `POST /game-sessions/{id}/kick` avec `{ player_id }` (expulser)
+- `POST /game-sessions/{id}/ban` avec `{ player_id }` (bannir)
+
+**Consequences**
+- Le service inclut deja les endpoints de moderation (Sprint 3) pour eviter de le modifier plus tard.
+- L'`invite_code` est un UUID (pas un code court), c'est ce qui est encode dans le QR code.
+
+---
+
+## 24. LobbyStack dans le tab Lobby (Stack imbriqué dans Tab)
+
+**Contexte**
+Le tab Lobby doit naviguer entre 4 ecrans (LobbyHome, CreateSession, JoinSession, SessionDetail) tout en restant dans l'onglet Lobby.
+
+**Decision**
+Imbriquer un `Stack.Navigator` (LobbyStack) dans le tab Lobby du `Tab.Navigator` (AppTabs).
+
+**Pourquoi un Stack dans le Tab (pas des ecrans au meme niveau) ?**
+- Le Tab Navigator ne supporte qu'un ecran par tab. Pour avoir une navigation hierarchique (LobbyHome -> CreateSession -> SessionDetail), un Stack interne est necessaire.
+- C'est le pattern standard React Navigation pour les tabs avec sous-navigation.
+- Le header du Stack est masque sur LobbyHome (l'ecran a son propre design) et visible sur les sous-ecrans avec un bouton retour.
+
+**Pourquoi headerLeft null sur SessionDetail ?**
+- Une fois dans le salon, l'utilisateur ne doit pas "revenir en arriere" avec la fleche — il doit quitter explicitement via le bouton "Quitter" (qui fait l'appel API de leave).
+- `navigation.replace` est utilise pour eviter d'empiler les ecrans dans le stack.
+
+**Consequences**
+- Le tab Lobby contient un Stack avec 4 routes.
+- `navigation.replace('SessionDetail')` remplace l'ecran courant (pas de back).
+- `navigation.replace('LobbyHome')` apres un leave/delete remet le stack a zero.
+
+---
+
+*Derniere mise a jour : 04 avril 2026*

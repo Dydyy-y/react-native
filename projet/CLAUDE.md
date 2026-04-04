@@ -24,16 +24,16 @@ Application mobile **React Native + Expo + TypeScript** servant de client pour l
 ```
 src/
 ├── features/
-│   ├── auth/          → Authentification (login, signup, token)
+│   ├── auth/          → Authentification (login, signup, token, profil)
 │   ├── lobby/         → Sessions de jeu (create, join, QR code)
 │   ├── game/          → Jeu (carte, état, actions)
-│   └── ui/            → Composants UI partagés + état global UI
+│   └── ui/            → Composants UI partagés + état global UI (toasts)
 ├── shared/
-│   ├── hooks/         → useApi.ts, usePolling.ts
+│   ├── hooks/         → usePolling.ts
 │   ├── utils/         → constants, validation, logger, errorHandler
 │   ├── types/         → common.types.ts
-│   └── config/        → apiClient.ts (Axios + interceptors)
-└── navigation/        → RootNavigator, NavigationTypes
+│   └── config/        → apiClient.ts (Axios + interceptors + injection callbacks)
+└── navigation/        → RootNavigator, AuthStack, AppTabs, NavigationTypes
 ```
 
 ## État Global : 4 Contexts
@@ -62,7 +62,7 @@ RootNavigator
 | Sprint | Étape consigne | Feature | Status |
 |--------|---------------|---------|--------|
 | 1 | Étape 1 | Auth (login, signup, token sécurisé) | ✅ Terminé |
-| 2 | Étape 2 | Lobby (create/join session, QR code, polling) | A démarrer |
+| 2 | Étape 2 | Lobby (create/join session, QR code, polling) | ✅ Terminé |
 | 3 | Étape 3 | Modération (kick, ban, delete, start game) | A démarrer |
 | 4 | Étape 4 | Jeu (carte grille FlatList, état joueur) | A démarrer |
 | 5 | Étape 5 | Actions de jeu (move, attack, purchase, tours) | A démarrer |

@@ -35,8 +35,7 @@
 │  │   Feature Services (API calls)         │             │
 │  │  ├─ authService                        │             │
 │  │  ├─ sessionService                     │             │
-│  │  ├─ gameService                        │             │
-│  │  └─ qrService                          │             │
+│  │  └─ gameService                        │             │
 │  └────────────────────────────────────────┘             │
 │           ↓                                              │
 │  ┌────────────────────────────────────────┐             │
@@ -61,18 +60,20 @@ src/
 │   │
 │   ├── auth/                    ← Feature 1: Authentification
 │   │   ├── contexts/
-│   │   │   └── AuthContext.tsx  (Context + Reducer + Provider)
+│   │   │   └── AuthContext.tsx  (Context + Reducer + Provider + useAuth)
 │   │   ├── services/
 │   │   │   ├── authService.ts
 │   │   │   └── tokenStorage.ts
 │   │   ├── screens/
 │   │   │   ├── LoginScreen.tsx
 │   │   │   ├── SignUpScreen.tsx
-│   │   │   └── SplashScreen.tsx
-│   │   ├── components/
-│   │   │   └── LoginForm.tsx
+│   │   │   ├── SplashScreen.tsx
+│   │   │   └── ProfileScreen.tsx
+│   │   ├── styles/
+│   │   │   └── authStyles.ts   (Styles partagés Login/SignUp)
 │   │   ├── hooks/
-│   │   │   └── useAuth.ts       (Wrapper du context)
+│   │   │   ├── useLogin.ts      (Hook récupération API login)
+│   │   │   └── useRegister.ts   (Hook récupération API register)
 │   │   ├── types/
 │   │   │   └── auth.types.ts
 │   │   └── index.ts             (Export public)
@@ -81,8 +82,7 @@ src/
 │   │   ├── contexts/
 │   │   │   └── LobbyContext.tsx
 │   │   ├── services/
-│   │   │   ├── sessionService.ts
-│   │   │   └── qrService.ts
+│   │   │   └── sessionService.ts
 │   │   ├── screens/
 │   │   │   ├── LobbyHomeScreen.tsx
 │   │   │   ├── CreateSessionScreen.tsx
@@ -102,8 +102,7 @@ src/
 │   │   ├── contexts/
 │   │   │   └── GameContext.tsx
 │   │   ├── services/
-│   │   │   ├── gameService.ts
-│   │   │   └── mapService.ts
+│   │   │   └── gameService.ts
 │   │   ├── screens/
 │   │   │   ├── GameScreen.tsx
 │   │   │   └── GameOverScreen.tsx
@@ -120,32 +119,23 @@ src/
 │   │
 │   └── ui/                      ← Feature 4: UI state + composants globaux
 │       ├── contexts/
-│       │   └── UIContext.tsx    (Toasts, modals, alerts)
+│       │   └── UIContext.tsx    (Context + Reducer + Provider + useUI + showToast)
 │       ├── components/
-│       │   ├── Button.tsx
-│       │   ├── Input.tsx
-│       │   ├── Card.tsx
-│       │   ├── Toast.tsx
-│       │   └── Modal.tsx
-│       ├── hooks/
-│       │   ├── useToast.ts
-│       │   └── useModal.ts
+│       │   └── Toast.tsx        (ToastContainer overlay)
 │       └── index.ts
 │
 ├── shared/                      ← Partagé entre toutes les features
 │   ├── hooks/
-│   │   ├── useApi.ts            (Generic API hook avec error handling)
 │   │   └── usePolling.ts        (Generic polling hook, 30s min)
 │   ├── utils/
-│   │   ├── constants.ts         (API_BASE_URL, POLLING_INTERVAL...)
+│   │   ├── constants.ts         (API_BASE_URL, POLLING_INTERVAL, COLORS)
 │   │   ├── validation.ts
 │   │   ├── logger.ts
 │   │   └── errorHandler.ts
 │   ├── types/
-│   │   └── common.types.ts      (APIResponse, ErrorResponse...)
+│   │   └── common.types.ts      (ApiError)
 │   └── config/
-│       ├── apiClient.ts         (Axios instance + interceptors)
-│       └── appConfig.ts
+│       └── apiClient.ts         (Axios instance + interceptors + injection callbacks)
 │
 ├── navigation/
 │   ├── RootNavigator.tsx        (Auth → App conditional)
@@ -244,18 +234,19 @@ type AuthAction =
 
 #### LobbyContext
 ```typescript
+// Les joueurs sont inclus dans l'objet session retourné par l'API (session.players)
+// → pas besoin d'un champ players séparé
 interface LobbyState {
   currentSession: GameSession | null;
-  players: Player[];
   loading: boolean;
   error: string | null;
 }
 
 type LobbyAction =
   | { type: 'SET_SESSION'; payload: GameSession | null }
-  | { type: 'SET_PLAYERS'; payload: Player[] }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null };
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'CLEAR_SESSION' };
 ```
 
 #### GameContext
@@ -298,10 +289,12 @@ export default function App() {
   return (
     <UIProvider>
       <AuthProvider>
-        <LobbyProvider>
-          <GameProvider>
+        <LobbyProvider>        {/* ajouté au Sprint 2 */}
+          <GameProvider>       {/* ajouté au Sprint 4 */}
             <NavigationContainer>
+              <StatusBar style="light" />
               <RootNavigator />
+              <ToastContainer />
             </NavigationContainer>
           </GameProvider>
         </LobbyProvider>
@@ -391,59 +384,30 @@ export default apiClient;
 ### usePolling
 ```typescript
 // shared/hooks/usePolling.ts
-import { useEffect, useRef } from 'react';
-
+// Hook générique de polling HTTP — réutilisé dans lobby (liste joueurs) et game (état de jeu)
 export const usePolling = (
   callback: () => Promise<void>,
-  interval: number = 30000, // 30s minimum (rate limit API)
-  enabled: boolean = true
-) => {
+  interval: number = POLLING_INTERVAL_MS, // 30s par défaut
+  enabled: boolean = true,
+): void => {
+  // Ref pour toujours avoir la dernière version du callback
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
+  // Force minimum 30s (rate limit API : 20 req/min)
+  const safeInterval = Math.max(interval, POLLING_INTERVAL_MS);
+
   useEffect(() => {
     if (!enabled) return;
-
-    // Appel immédiat au montage
-    callbackRef.current();
-
-    const timer = setInterval(() => {
-      callbackRef.current();
-    }, interval);
-
-    return () => clearInterval(timer); // Cleanup au démontage
-  }, [enabled, interval]);
+    tick(); // Appel immédiat au montage
+    const timer = setInterval(tick, safeInterval);
+    return () => clearInterval(timer);
+  }, [enabled, safeInterval]);
 };
 ```
 
-### useApi
-```typescript
-// shared/hooks/useApi.ts
-import { useState } from 'react';
-
-export const useApi = <T>(apiCall: () => Promise<T>) => {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const execute = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await apiCall();
-      setData(result);
-      return result;
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Une erreur est survenue';
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { data, loading, error, execute };
-};
-```
+### Hooks spécifiques par feature
+Chaque feature implémente ses propres hooks de récupération API (`useLogin`, `useRegister`, `useLobby`, `useGame`) qui encapsulent : appel service + gestion loading/error + dispatch dans le context. Ce pattern est plus explicite qu'un hook générique `useApi` et permet un typage précis de chaque opération.
 
 ---
 

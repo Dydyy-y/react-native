@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ScrollView,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -15,6 +14,7 @@ import { AuthStackParamList } from '../../../navigation/NavigationTypes';
 import { useLogin } from '../hooks/useLogin';
 import { useUI } from '../../ui';
 import { COLORS } from '../../../shared/utils/constants';
+import { authStyles as styles } from '../styles/authStyles';
 
 type Props = StackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -49,7 +49,6 @@ export const LoginScreen = ({ navigation }: Props) => {
     if (!result.success && result.error) {
       showToast(result.error, 'error');
     }
-    // En cas de succès : AuthContext met à jour user → RootNavigator navigue vers AppTabs
   };
 
   return (
@@ -67,7 +66,6 @@ export const LoginScreen = ({ navigation }: Props) => {
         </View>
 
         <View style={styles.form}>
-          {/* Email ou nom d'utilisateur */}
           <View style={styles.fieldContainer}>
             <TextInput
               style={[styles.input, errors.emailOrUsername ? styles.inputError : null]}
@@ -85,7 +83,6 @@ export const LoginScreen = ({ navigation }: Props) => {
             ) : null}
           </View>
 
-          {/* Mot de passe */}
           <View style={styles.fieldContainer}>
             <TextInput
               style={[styles.input, errors.password ? styles.inputError : null]}
@@ -102,7 +99,6 @@ export const LoginScreen = ({ navigation }: Props) => {
             ) : null}
           </View>
 
-          {/* Bouton Se connecter */}
           <TouchableOpacity
             style={[styles.button, (!isFormValid || loading) ? styles.buttonDisabled : null]}
             onPress={handleSubmit}
@@ -115,7 +111,6 @@ export const LoginScreen = ({ navigation }: Props) => {
             )}
           </TouchableOpacity>
 
-          {/* Lien vers Inscription */}
           <TouchableOpacity
             onPress={() => navigation.navigate('SignUp')}
             disabled={loading}
@@ -130,78 +125,3 @@ export const LoginScreen = ({ navigation }: Props) => {
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  header: {
-    marginBottom: 40,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.white,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  form: {
-    width: '100%',
-  },
-  fieldContainer: {
-    marginBottom: 16,
-  },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 8,
-    padding: 14,
-    color: COLORS.text,
-    fontSize: 16,
-  },
-  inputError: {
-    borderColor: COLORS.error,
-  },
-  errorText: {
-    color: COLORS.error,
-    fontSize: 12,
-    marginTop: 4,
-    marginLeft: 4,
-  },
-  button: {
-    backgroundColor: COLORS.info,
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 20,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  linkText: {
-    textAlign: 'center',
-    color: COLORS.textSecondary,
-    fontSize: 14,
-  },
-  linkAccent: {
-    color: COLORS.info,
-    fontWeight: '600',
-  },
-});

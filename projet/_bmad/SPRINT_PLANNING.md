@@ -3,7 +3,7 @@
 **Date** : 24 mars 2026 (mis à jour 04 avril 2026)  
 **Durée Totale** : 2 semaines (jusqu'au 07 avril 2026 23h59)  
 **Equipe** : Individuel (Mathys)  
-**Status** : Sprint 1 terminé, Sprint 2 à démarrer
+**Status** : Sprint 1 terminé, Sprint 2 terminé, Sprint 3 à démarrer
 
 **Approche** : Agile + Context API + useReducer + Feature-Folder + TypeScript strict
 
@@ -30,20 +30,25 @@
 | Sprint | Étape consigne | Points | Heures | Dépend de | Status |
 |--------|---------------|--------|--------|-----------|--------|
 | 1 | Étape 1 — Auth | 13 | 6-8h | RIEN | ✅ Terminé |
-| 2 | Étape 2 — Lobby & QR | 21 | 8-10h | Sprint 1 | A démarrer |
+| 2 | Étape 2 — Lobby & QR | 21 | 8-10h | Sprint 1 | ✅ Terminé |
 | 3 | Étape 3 — Modération | 10 | 4-6h | Sprint 2 | A démarrer |
 | 4 | Étape 4 — Carte & État | 10 | 4-6h | Sprint 3 | A démarrer |
 | 5 | Étape 5 — Actions de jeu | 13 | 6-8h | Sprint 4 | A démarrer |
 | 6 | Étapes 5bis+6 — Fin & Profil | 8 | 4-6h | Sprint 5 | A démarrer |
 
-### Timeline
+### Timeline (mise à jour 04 avril)
+
+**Stratégie** : Qualité > quantité (consigne). Livrer une app fonctionnelle de bout en bout plutôt que des features à moitié finies.
 
 ```
-Vendredi 4 avril   : Sprint 2 (Lobby + QR + Polling)
-Samedi 5 avril     : Sprint 3 (Modération) + Sprint 4 (Carte)
-Dimanche 6 avril   : Sprint 5 (Actions de jeu)
-Lundi 7 avril      : Sprint 6 (Fin de partie + Profil) + Polish final
+Vendredi 4 avril   : Sprint 2 (Lobby + QR + Polling) — PRIORITÉ ABSOLUE
+Samedi 5 avril     : Sprint 3 (Modération + Démarrage) + Sprint 4 (Carte FlatList)
+Dimanche 6 avril   : Sprint 5 (Actions de jeu : move, attack, purchase)
+Lundi 7 avril AM   : Sprint 6 (Fin de partie + Profil + Historique)
+Lundi 7 avril PM   : Polish, tests manuels, README, vérification consigne
 ```
+
+**Point d'arrêt sûr** : Si le temps manque, s'arrêter après Sprint 4. L'app aura auth + lobby + modération + carte = fonctionnelle de bout en bout.
 
 ---
 
@@ -183,7 +188,7 @@ Lundi 7 avril      : Sprint 6 (Fin de partie + Profil) + Polish final
 **Durée** : 8-10 heures  
 **Dépendances** : Sprint 1 terminé  
 **Objectif** : Créer/rejoindre sessions, QR code, polling temps réel  
-**Status** : A démarrer
+**Status** : ✅ Terminé
 
 ### US 2.1 : Créer une session de jeu — 5 points
 
@@ -193,13 +198,13 @@ Lundi 7 avril      : Sprint 6 (Fin de partie + Profil) + Polish final
 
 1. **CreateSessionScreen — Interface**
    - [ ] Accessible depuis LobbyHomeScreen via bouton "Nouvelle session"
-   - [ ] Input `sessionName` : optionnel, placeholder "Nom de la partie"
+   - [ ] Input `sessionName` : placeholder "Nom de la partie"
    - [ ] Button "Créer la session"
    - [ ] Loading spinner pendant création
    - [ ] Error toast si erreur API
 
 2. **Appel API** (POST /sessions)
-   - [ ] Body : `{ name }`
+   - [ ] Body : `{ name }` (vérifier champs exacts dans la doc API)
    - [ ] Response : session avec `id`, `name`, `creator_id`, `state`, `code`
    - [ ] Session stockée dans LobbyContext via dispatch
 
@@ -210,6 +215,7 @@ Lundi 7 avril      : Sprint 6 (Fin de partie + Profil) + Polish final
 
 4. **State Management (Context API + useReducer)**
    - [ ] LobbyContext : `dispatch({ type: 'SET_SESSION', payload: session })`
+   - [ ] Les joueurs sont dans `session.players` (pas de champ séparé)
    - [ ] Loading/error gérés dans le hook
 
 **Fichiers à créer** :

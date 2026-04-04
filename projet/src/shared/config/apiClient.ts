@@ -41,10 +41,13 @@ apiClient.interceptors.request.use(
 );
 
 // Interceptor réponse : gestion 401 → logout automatique
+// On ignore les 401 sur les routes d'auth (login/register échouent normalement avec 401)
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && _onUnauthorized) {
+    const url = error.config?.url || '';
+    const isAuthRoute = url.startsWith('/auth/');
+    if (error.response?.status === 401 && _onUnauthorized && !isAuthRoute) {
       _onUnauthorized();
     }
     return Promise.reject(error);

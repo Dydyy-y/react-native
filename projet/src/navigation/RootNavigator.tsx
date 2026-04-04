@@ -1,10 +1,8 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { useAuth } from '../features/auth/contexts/AuthContext';
 import { SplashScreen } from '../features/auth/screens/SplashScreen';
 import { AuthStack } from './AuthStack';
 import { AppTabs } from './AppTabs';
-import { ToastContainer } from '../features/ui/components/Toast';
 
 /**
  * Navigateur racine — gère la navigation protégée (US 1.3) :
@@ -15,17 +13,7 @@ import { ToastContainer } from '../features/ui/components/Toast';
 export const RootNavigator = () => {
   const { state } = useAuth();
 
-  return (
-    <NavigationContainer>
-      {state.isLoading ? (
-        <SplashScreen />
-      ) : state.user ? (
-        <AppTabs />
-      ) : (
-        <AuthStack />
-      )}
-      {/* Overlay global des notifications toast */}
-      <ToastContainer />
-    </NavigationContainer>
-  );
+  if (state.isLoading) return <SplashScreen />;
+  if (!state.user) return <AuthStack />;
+  return <AppTabs />;
 };

@@ -128,8 +128,10 @@ Permettre aux joueurs de créer une nouvelle session de jeu, de rejoindre une se
 
 ### LobbyContext (Context API + useReducer)
 ```typescript
+// Les joueurs sont inclus dans l'objet session retourné par l'API (session.players)
+// → pas de champ players séparé, on évite la désynchronisation
 interface LobbyState {
-  currentSession: GameSession | null;
+  currentSession: GameSession | null; // contient .players, .creator_id, .state, .code
   loading: boolean;
   error: string | null;
 }
@@ -165,23 +167,23 @@ type LobbyAction =
 
 ```
 src/features/lobby/
-├── contexts/LobbyContext.tsx    (Context + Reducer + Provider)
-├── services/sessionService.ts
+├── contexts/LobbyContext.tsx    (Context + Reducer + Provider + useLobby)
+├── services/sessionService.ts   (create, join, leave, getSession, kick, ban, delete, start)
 ├── screens/
-│   ├── LobbyHomeScreen.tsx
-│   ├── CreateSessionScreen.tsx
-│   ├── JoinSessionScreen.tsx
-│   └── SessionDetailScreen.tsx
+│   ├── LobbyHomeScreen.tsx      (écran d'accueil lobby : boutons créer/rejoindre)
+│   ├── CreateSessionScreen.tsx  (création session + affichage QR code)
+│   ├── JoinSessionScreen.tsx    (scanner QR code)
+│   └── SessionDetailScreen.tsx  (détail session + polling + modération)
 ├── components/
-│   ├── PlayerList.tsx
-│   ├── QRDisplay.tsx
-│   └── QRScanner.tsx
-├── hooks/useLobby.ts
+│   ├── PlayerList.tsx           (liste joueurs FlatList)
+│   ├── QRDisplay.tsx            (affichage QR code d'invitation)
+│   └── QRScanner.tsx            (scanner QR code caméra)
+├── hooks/useLobby.ts            (hook récupération API lobby)
 ├── types/lobby.types.ts
 └── index.ts
 
 src/shared/hooks/
-└── usePolling.ts               (hook générique)
+└── usePolling.ts                (déjà créé — hook générique réutilisable)
 ```
 
 ---
