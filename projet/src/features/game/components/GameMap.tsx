@@ -8,6 +8,11 @@ interface GameMapProps {
   map: GameMapType;
   ships: Ship[];
   playerIds: number[];
+  /** Ensemble de "x,y" representant les cases a portee */
+  rangeCells: Set<string>;
+  /** "x,y" du vaisseau actuellement selectionne */
+  selectedCell: string | null;
+  onCellPress: (x: number, y: number) => void;
 }
 
 /** Donnees pre-calculees pour chaque cellule */
@@ -20,7 +25,14 @@ interface CellData {
 }
 
 /** Grille FlatList du jeu — fond uni, icones uniquement sur cases occupees */
-export const GameMap = ({ map, ships, playerIds }: GameMapProps) => {
+export const GameMap = ({
+  map,
+  ships,
+  playerIds,
+  rangeCells,
+  selectedCell,
+  onCellPress,
+}: GameMapProps) => {
   const screenWidth = Dimensions.get('window').width;
   const cellSize = Math.floor(screenWidth / map.width);
 
@@ -69,10 +81,15 @@ export const GameMap = ({ map, ships, playerIds }: GameMapProps) => {
         numColumns={map.width}
         renderItem={({ item }) => (
           <MapCell
+            x={item.x}
+            y={item.y}
             size={cellSize}
             hasResource={item.hasResource}
             ships={item.ships}
             playerIds={playerIds}
+            inRange={rangeCells.has(item.key)}
+            isSelected={selectedCell === item.key}
+            onPress={onCellPress}
           />
         )}
         scrollEnabled={false}

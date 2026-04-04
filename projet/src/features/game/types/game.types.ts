@@ -52,12 +52,36 @@ export interface ShipType {
   cost: number;
 }
 
+// ─── Actions de tour (envoyées au serveur) ────────────────────────────
+
+/** Action unitaire d'un tour */
+export type RoundAction =
+  | { type: 'move'; ship_id: number; target_x: number; target_y: number }
+  | { type: 'attack'; ship_id: number; target_x: number; target_y: number }
+  | { type: 'recruit'; ship_type_id: number; target_x: number; target_y: number };
+
+/** Erreur renvoyée par le serveur pour une action invalide */
+export interface ActionError {
+  index: number;
+  type: string;
+  message: string;
+  code: string;
+}
+
+/** Réponse POST /game-sessions/{id}/round-actions */
+export interface RoundActionsResponse {
+  validated: boolean;
+  errors: ActionError[];
+}
+
 // ─── State & Actions du GameContext ─────────────────────────────────────
 
 export interface GameState {
   sessionId: number | null;
   map: GameMap | null;
   gameStatus: GameStatus | null;
+  shipTypes: ShipType[];
+  pendingActions: RoundAction[];
   loading: boolean;
   error: string | null;
 }
@@ -66,6 +90,10 @@ export type GameAction =
   | { type: 'SET_SESSION_ID'; payload: number }
   | { type: 'SET_MAP'; payload: GameMap }
   | { type: 'SET_GAME_STATE'; payload: GameStatus }
+  | { type: 'SET_SHIP_TYPES'; payload: ShipType[] }
+  | { type: 'ADD_ACTION'; payload: RoundAction }
+  | { type: 'REMOVE_ACTION'; payload: number }
+  | { type: 'CLEAR_ACTIONS' }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'CLEAR_GAME' };

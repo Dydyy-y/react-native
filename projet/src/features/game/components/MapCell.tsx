@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Ship } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
@@ -8,16 +8,23 @@ import { COLORS } from '../../../shared/utils/constants';
 const PLAYER_COLORS = ['#2196F3', '#f44336', '#4CAF50', '#FF9800'];
 
 interface MapCellProps {
+  x: number;
+  y: number;
   size: number;
   hasResource: boolean;
   ships: Ship[];
   /** Liste ordonnee des player IDs pour attribuer les couleurs */
   playerIds: number[];
+  /** True si cette case est selectionnable (dans la portee) */
+  inRange: boolean;
+  /** True si cette case est le vaisseau selectionne */
+  isSelected: boolean;
+  onPress: (x: number, y: number) => void;
 }
 
 /** Cellule individuelle de la grille. Memo pour perf FlatList. */
 export const MapCell = memo(
-  ({ size, hasResource, ships, playerIds }: MapCellProps) => {
+  ({ x, y, size, hasResource, ships, playerIds, inRange, isSelected, onPress }: MapCellProps) => {
     const ship = ships.length > 0 ? ships[0] : null;
 
     // Couleur du vaisseau selon le joueur
@@ -30,10 +37,14 @@ export const MapCell = memo(
         : COLORS.white;
 
     return (
-      <View
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => onPress(x, y)}
         style={[
           styles.cell,
           { width: size, height: size },
+          isSelected && styles.selected,
+          inRange && styles.inRange,
         ]}
       >
         {/* Ressource : fond dore */}
@@ -55,7 +66,12 @@ export const MapCell = memo(
             />
           </View>
         )}
-      </View>
+
+        {/* Indicateur de portee (point lumineux) */}
+        {inRange && !ship && !hasResource && (
+          <View style={styles.rangeDot} />
+        )}
+      </TouchableOpacity>
     );
   },
 );
@@ -66,6 +82,15 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  selected: {
+    borderWidth: 2,
+    borderColor: COLORS.info,
+    backgroundColor: 'rgba(33,150,243,0.2)',
+  },
+  inRange: {
+    backgroundColor: 'rgba(76,175,80,0.15)',
+    borderColor: 'rgba(76,175,80,0.4)',
   },
   resource: {
     position: 'absolute',
@@ -78,5 +103,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  rangeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(76,175,80,0.5)',
   },
 });

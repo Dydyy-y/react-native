@@ -8,4 +8,7 @@ export type {
   ShipType,
   PlayerStats,
   GameState,
+  RoundAction,
+  RoundActionsResponse,
+  ActionError,
 } from './types/game.types';

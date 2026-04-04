@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useCallback } from 'react';
+import React, { useEffect, useMemo, useCallback, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useGame } from '../hooks/useGame';
@@ -15,18 +16,52 @@ import { useLobby } from '../../lobby';
 import { usePolling } from '../../../shared/hooks/usePolling';
 import { GameMap } from '../components/GameMap';
 import { PlayerStatsPanel } from '../components/PlayerStats';
+import { ShipInfo } from '../components/ShipInfo';
+import { ActionPanel, SelectionMode } from '../components/ActionPanel';
+import { ShipShop } from '../components/ShipShop';
+import { Ship } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
 
-/** Ecran principal du jeu — carte + stats + polling etat */
+/** Calcule les cases a portee (distance de Manhattan) */
+const computeRangeCells = (
+  cx: number,
+  cy: number,
+  range: number,
+  width: number,
+  height: number,
+): Set<string> => {
+  const cells = new Set<string>();
+  for (let dy = -range; dy <= range; dy++) {
+    for (let dx = -range; dx <= range; dx++) {
+      if (Math.abs(dx) + Math.abs(dy) > range) continue;
+      if (dx === 0 && dy === 0) continue;
+      const nx = cx + dx;
+      const ny = cy + dy;
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+        cells.add(`${nx},${ny}`);
+      }
+    }
+  }
+  return cells;
+};
+
+/** Ecran principal du jeu — carte + stats + actions + polling */
 export const GameScreen = () => {
   const {
     map,
     gameStatus,
+    shipTypes,
+    pendingActions,
     sessionId,
     loading,
     error,
     loadMap,
     loadState,
+    loadShipTypes,
+    addAction,
+    removeAction,
+    clearActions,
+    submitActions,
   } = useGame();
   const { state: authState } = useAuth();
   const { session } = useLobby();
@@ -34,10 +69,19 @@ export const GameScreen = () => {
 
   const currentUserId = Number(authState.user?.id);
 
+  // ─── Etats locaux pour l'interaction ────────────────────────────────
+  const [selectedShip, setSelectedShip] = useState<Ship | null>(null);
+  const [inspectedShip, setInspectedShip] = useState<Ship | null>(null);
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>(null);
+  const [showShop, setShowShop] = useState(false);
+
+  // Ref pour tracker le round courant (detection nouveau tour)
+  const prevRoundRef = useRef<number | null>(null);
+
   // Determiner le sessionId a utiliser (depuis GameContext ou LobbyContext)
   const activeSessionId = sessionId ?? session?.id ?? null;
 
-  // Charger carte + etat au montage quand sessionId est dispo
+  // ─── Chargement initial ────────────────────────────────────────────
   useEffect(() => {
     if (activeSessionId && !map) {
       loadMap();
@@ -50,7 +94,30 @@ export const GameScreen = () => {
     }
   }, [activeSessionId, gameStatus, loadState]);
 
-  // Polling de l'etat toutes les 30s
+  // Charger les types de vaisseaux une seule fois
+  useEffect(() => {
+    if (shipTypes.length === 0) {
+      loadShipTypes();
+    }
+  }, [shipTypes.length, loadShipTypes]);
+
+  // ─── Detection nouveau tour → reset des actions ────────────────────
+  useEffect(() => {
+    if (!gameStatus) return;
+    if (
+      prevRoundRef.current !== null &&
+      prevRoundRef.current !== gameStatus.round
+    ) {
+      // Nouveau tour : reset de l'UI
+      clearActions();
+      setSelectedShip(null);
+      setSelectionMode(null);
+      showToast(`Tour ${gameStatus.round} !`, 'info');
+    }
+    prevRoundRef.current = gameStatus.round;
+  }, [gameStatus?.round, clearActions, showToast, gameStatus]);
+
+  // ─── Polling etat toutes les 30s ──────────────────────────────────
   const pollState = useCallback(async () => {
     try {
       await loadState();
@@ -68,6 +135,8 @@ export const GameScreen = () => {
     }
   }, [gameStatus?.status, showToast]);
 
+  // ─── Calculs derives ───────────────────────────────────────────────
+
   // Liste unique des player IDs (pour couleurs coherentes)
   const playerIds = useMemo(() => {
     if (!gameStatus) return [];
@@ -81,6 +150,206 @@ export const GameScreen = () => {
     if (!gameStatus) return 0;
     return gameStatus.ships.filter((s) => s.player_id === currentUserId).length;
   }, [gameStatus, currentUserId]);
+
+  // Cases a portee selon le mode de selection actif
+  const rangeCells = useMemo(() => {
+    if (!selectionMode || !map) return new Set<string>();
+    if (selectionMode.kind === 'move') {
+      const shipType = shipTypes.find(
+        (t) => t.id === selectionMode.ship.ship_type_id,
+      );
+      return computeRangeCells(
+        selectionMode.ship.x,
+        selectionMode.ship.y,
+        shipType?.speed ?? 1,
+        map.width,
+        map.height,
+      );
+    }
+    if (selectionMode.kind === 'attack') {
+      const shipType = shipTypes.find(
+        (t) => t.id === selectionMode.ship.ship_type_id,
+      );
+      return computeRangeCells(
+        selectionMode.ship.x,
+        selectionMode.ship.y,
+        shipType?.attack_range ?? 1,
+        map.width,
+        map.height,
+      );
+    }
+    // recruit_placement : toute la carte (pas de portee)
+    return new Set<string>();
+  }, [selectionMode, map, shipTypes]);
+
+  // Case du vaisseau selectionne
+  const selectedCell = useMemo(() => {
+    if (!selectedShip) return null;
+    return `${selectedShip.x},${selectedShip.y}`;
+  }, [selectedShip]);
+
+  // Le joueur ne peut pas agir si actions deja soumises ou partie finie
+  const canAct =
+    gameStatus &&
+    !gameStatus.round_actions_submitted &&
+    gameStatus.status === 'running';
+
+  // Index rapide des vaisseaux par position
+  const shipsByPos = useMemo(() => {
+    if (!gameStatus) return new Map<string, Ship[]>();
+    const m = new Map<string, Ship[]>();
+    gameStatus.ships.forEach((s) => {
+      const key = `${s.x},${s.y}`;
+      const arr = m.get(key) || [];
+      arr.push(s);
+      m.set(key, arr);
+    });
+    return m;
+  }, [gameStatus]);
+
+  // ─── Handlers ──────────────────────────────────────────────────────
+
+  const handleCellPress = useCallback(
+    (x: number, y: number) => {
+      if (!gameStatus || !canAct) {
+        // En mode lecture seule, inspecter le vaisseau sur la case
+        const shipsOnCell = shipsByPos.get(`${x},${y}`) || [];
+        if (shipsOnCell.length > 0) {
+          setInspectedShip(shipsOnCell[0]);
+        }
+        return;
+      }
+
+      // Si on est en mode selection de cible (move, attack, recruit)
+      if (selectionMode) {
+        const key = `${x},${y}`;
+        const shipsOnTarget = shipsByPos.get(key) || [];
+
+        if (selectionMode.kind === 'move') {
+          if (!rangeCells.has(key)) {
+            showToast('Case hors de portee', 'error');
+            return;
+          }
+          // Verifier qu'aucun vaisseau du joueur n'a deja un move vers cette case
+          const alreadyTargeted = pendingActions.some(
+            (a) => a.type === 'move' && a.target_x === x && a.target_y === y,
+          );
+          if (alreadyTargeted) {
+            showToast('Un vaisseau se deplace deja vers cette case', 'error');
+            return;
+          }
+          addAction({
+            type: 'move',
+            ship_id: selectionMode.ship.id,
+            target_x: x,
+            target_y: y,
+          });
+          showToast('Deplacement ajoute', 'success');
+        } else if (selectionMode.kind === 'attack') {
+          if (!rangeCells.has(key)) {
+            showToast('Case hors de portee', 'error');
+            return;
+          }
+          // Verifier qu'il y a un vaisseau ennemi sur la case
+          const enemyShip = shipsOnTarget.find(
+            (s) => s.player_id !== currentUserId,
+          );
+          if (!enemyShip) {
+            showToast('Pas de vaisseau ennemi sur cette case', 'error');
+            return;
+          }
+          addAction({
+            type: 'attack',
+            ship_id: selectionMode.ship.id,
+            target_x: x,
+            target_y: y,
+          });
+          showToast('Attaque ajoutee', 'success');
+        } else if (selectionMode.kind === 'recruit_placement') {
+          // Verifier case libre (pas de vaisseau)
+          if (shipsOnTarget.length > 0) {
+            showToast('Case occupee par un vaisseau', 'error');
+            return;
+          }
+          addAction({
+            type: 'recruit',
+            ship_type_id: selectionMode.shipTypeId,
+            target_x: x,
+            target_y: y,
+          });
+          showToast('Recrutement ajoute', 'success');
+        }
+
+        // Reset mode selection
+        setSelectionMode(null);
+        setSelectedShip(null);
+        return;
+      }
+
+      // Pas en mode selection : tap sur une case
+      const shipsOnCell = shipsByPos.get(`${x},${y}`) || [];
+      if (shipsOnCell.length > 0) {
+        const ship = shipsOnCell[0];
+        if (ship.player_id === currentUserId) {
+          // Selectionner son propre vaisseau
+          setSelectedShip(ship);
+        } else {
+          // Inspecter un vaisseau ennemi
+          setInspectedShip(ship);
+        }
+      } else {
+        // Tap sur case vide : deselectionner
+        setSelectedShip(null);
+        setSelectionMode(null);
+      }
+    },
+    [
+      gameStatus,
+      canAct,
+      selectionMode,
+      rangeCells,
+      shipsByPos,
+      currentUserId,
+      pendingActions,
+      addAction,
+      showToast,
+    ],
+  );
+
+  /** Quand l'utilisateur clique "Actions" dans le ShipInfo modal */
+  const handleShipAction = useCallback((ship: Ship) => {
+    setInspectedShip(null);
+    setSelectedShip(ship);
+  }, []);
+
+  /** Achat d'un vaisseau : passe en mode placement */
+  const handleBuyShip = useCallback(
+    (shipTypeId: number) => {
+      setShowShop(false);
+      setSelectionMode({ kind: 'recruit_placement', shipTypeId });
+      showToast('Selectionnez une case pour deployer le vaisseau', 'info');
+    },
+    [showToast],
+  );
+
+  /** Soumission des actions du tour */
+  const handleSubmitActions = useCallback(async () => {
+    const result = await submitActions();
+    if (!result) return;
+
+    if (result.validated) {
+      showToast('Actions validees !', 'success');
+    } else {
+      // Afficher les erreurs du serveur
+      const errorMessages = result.errors
+        .map((e) => `Action ${e.index + 1}: ${e.message}`)
+        .join('\n');
+      Alert.alert(
+        'Erreur de validation',
+        `Corrigez les actions et renvoyez :\n\n${errorMessages}`,
+      );
+    }
+  }, [submitActions, showToast]);
 
   // ─── Etats de chargement / erreur ──────────────────────────────────
 
@@ -135,6 +404,8 @@ export const GameScreen = () => {
 
   // ─── Rendu principal ───────────────────────────────────────────────
 
+  const ore = gameStatus.resources?.ore ?? 0;
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -148,16 +419,67 @@ export const GameScreen = () => {
             <Text style={styles.finishedText}>Terminee</Text>
           </View>
         )}
+        {/* Bouton boutique */}
+        {canAct && (
+          <TouchableOpacity
+            style={styles.shopButton}
+            onPress={() => setShowShop(true)}
+          >
+            <Ionicons name="cart" size={18} color={COLORS.white} />
+          </TouchableOpacity>
+        )}
       </View>
+
+      {/* Instruction mode selection */}
+      {selectionMode && (
+        <View style={styles.instructionBanner}>
+          <Text style={styles.instructionText}>
+            {selectionMode.kind === 'move' && 'Selectionnez la case de destination'}
+            {selectionMode.kind === 'attack' && 'Selectionnez un vaisseau ennemi a attaquer'}
+            {selectionMode.kind === 'recruit_placement' && 'Selectionnez une case libre pour le deploiement'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setSelectionMode(null);
+              setSelectedShip(null);
+            }}
+          >
+            <Ionicons name="close-circle" size={20} color={COLORS.error} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <ScrollView style={styles.scrollContent}>
         {/* Carte */}
         <View style={styles.mapContainer}>
-          <GameMap map={map} ships={gameStatus.ships} playerIds={playerIds} />
+          <GameMap
+            map={map}
+            ships={gameStatus.ships}
+            playerIds={playerIds}
+            rangeCells={rangeCells}
+            selectedCell={selectedCell}
+            onCellPress={handleCellPress}
+          />
         </View>
 
         {/* Stats joueur */}
         <PlayerStatsPanel gameStatus={gameStatus} myShipCount={myShipCount} />
+
+        {/* Panneau d'actions */}
+        <ActionPanel
+          selectedShip={selectedShip}
+          shipTypes={shipTypes}
+          pendingActions={pendingActions}
+          actionsSubmitted={gameStatus.round_actions_submitted}
+          loading={loading}
+          onSetSelectionMode={setSelectionMode}
+          onRemoveAction={removeAction}
+          onSubmitActions={handleSubmitActions}
+          onDeselectShip={() => {
+            setSelectedShip(null);
+            setSelectionMode(null);
+          }}
+        />
 
         {/* Legende couleurs joueurs */}
         <View style={styles.legend}>
@@ -170,9 +492,7 @@ export const GameScreen = () => {
                     styles.legendDot,
                     {
                       backgroundColor:
-                        ['#2196F3', '#f44336', '#4CAF50', '#FF9800'][
-                          idx % 4
-                        ],
+                        ['#2196F3', '#f44336', '#4CAF50', '#FF9800'][idx % 4],
                     },
                   ]}
                 />
@@ -184,6 +504,24 @@ export const GameScreen = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Modals */}
+      <ShipInfo
+        ship={inspectedShip}
+        shipTypes={shipTypes}
+        currentUserId={currentUserId}
+        visible={!!inspectedShip}
+        onClose={() => setInspectedShip(null)}
+        onAction={handleShipAction}
+      />
+
+      <ShipShop
+        visible={showShop}
+        shipTypes={shipTypes}
+        ore={ore}
+        onBuy={handleBuyShip}
+        onClose={() => setShowShop(false)}
+      />
     </View>
   );
 };
@@ -225,6 +563,27 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  shopButton: {
+    backgroundColor: COLORS.accent,
+    borderRadius: 8,
+    padding: 8,
+  },
+  instructionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.info,
+  },
+  instructionText: {
+    color: COLORS.info,
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
   },
   scrollContent: {
     flex: 1,

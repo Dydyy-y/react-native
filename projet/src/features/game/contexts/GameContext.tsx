@@ -5,6 +5,8 @@ const initialState: GameState = {
   sessionId: null,
   map: null,
   gameStatus: null,
+  shipTypes: [],
+  pendingActions: [],
   loading: false,
   error: null,
 };
@@ -17,6 +19,17 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return { ...state, map: action.payload };
     case 'SET_GAME_STATE':
       return { ...state, gameStatus: action.payload };
+    case 'SET_SHIP_TYPES':
+      return { ...state, shipTypes: action.payload };
+    case 'ADD_ACTION':
+      return { ...state, pendingActions: [...state.pendingActions, action.payload] };
+    case 'REMOVE_ACTION':
+      return {
+        ...state,
+        pendingActions: state.pendingActions.filter((_, i) => i !== action.payload),
+      };
+    case 'CLEAR_ACTIONS':
+      return { ...state, pendingActions: [] };
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
     case 'SET_ERROR':
