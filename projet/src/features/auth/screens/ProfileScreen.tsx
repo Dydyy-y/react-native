@@ -4,11 +4,11 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { useUI } from '../../ui';
 import { COLORS } from '../../../shared/utils/constants';
+import { confirm } from '../../../shared/utils/confirm';
 
 /** Écran profil — affiche les infos utilisateur et le bouton de déconnexion */
 export const ProfileScreen = () => {
@@ -16,20 +16,13 @@ export const ProfileScreen = () => {
   const { showToast } = useUI();
 
   const handleLogout = () => {
-    Alert.alert(
+    confirm(
       'Déconnexion',
       'Êtes-vous sûr de vouloir vous déconnecter ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Se déconnecter',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            showToast('Déconnexion réussie', 'info');
-          },
-        },
-      ],
+      async () => {
+        await logout();
+        showToast('Déconnexion réussie', 'info');
+      },
     );
   };
 

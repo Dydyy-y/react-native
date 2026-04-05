@@ -16,7 +16,13 @@
       "Bash(npm view:*)",
       "Bash(npx expo:*)",
       "Bash(npx tsc:*)",
-      "WebFetch(domain:space-conquest-online.osc-fr1.scalingo.io)"
+      "WebFetch(domain:space-conquest-online.osc-fr1.scalingo.io)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://space-conquest-online.osc-fr1.scalingo.io/api/ship-types)",
+      "Bash(curl -s https://space-conquest-online.osc-fr1.scalingo.io/api/ship-types)",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" https://space-conquest-online.osc-fr1.scalingo.io/api/ship-types)",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" https://space-conquest-online.osc-fr1.scalingo.io/api/ships/types)",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" https://space-conquest-online.osc-fr1.scalingo.io/api/shiptypes)",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" https://space-conquest-online.osc-fr1.scalingo.io/api/game/ship-types)"
     ]
   }
 }

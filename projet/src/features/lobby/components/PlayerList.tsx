@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Player } from '../types/lobby.types';
 import { COLORS } from '../../../shared/utils/constants';
+import { confirm } from '../../../shared/utils/confirm';
 
 interface PlayerListProps {
   players: Player[];
@@ -16,24 +17,18 @@ interface PlayerListProps {
 /** Liste des joueurs dans le salon (FlatList) avec actions de moderation */
 export const PlayerList = ({ players, creatorId, isCreator, onKick, onBan }: PlayerListProps) => {
   const confirmKick = (player: Player) => {
-    Alert.alert(
+    confirm(
       'Expulser le joueur',
       `Voulez-vous expulser ${player.name} ? Il pourra rejoindre a nouveau.`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Expulser', style: 'destructive', onPress: () => onKick?.(player.id) },
-      ],
+      () => onKick?.(player.id),
     );
   };
 
   const confirmBan = (player: Player) => {
-    Alert.alert(
+    confirm(
       'Bannir le joueur',
       `Voulez-vous bannir ${player.name} ? Il ne pourra plus rejoindre cette session.`,
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Bannir', style: 'destructive', onPress: () => onBan?.(player.id) },
-      ],
+      () => onBan?.(player.id),
     );
   };
 

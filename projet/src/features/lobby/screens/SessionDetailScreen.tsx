@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
@@ -22,6 +21,7 @@ import { usePolling } from '../../../shared/hooks/usePolling';
 import { PlayerList } from '../components/PlayerList';
 import { QRDisplay } from '../components/QRDisplay';
 import { COLORS } from '../../../shared/utils/constants';
+import { confirm } from '../../../shared/utils/confirm';
 
 type Props = StackScreenProps<LobbyStackParamList, 'SessionDetail'>;
 
@@ -94,68 +94,48 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
   };
 
   const handleDelete = () => {
-    Alert.alert(
+    confirm(
       'Supprimer la session',
       'Tous les joueurs seront renvoyes au lobby. Continuer ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Supprimer',
-          style: 'destructive',
-          onPress: async () => {
-            const result = await deleteSession();
-            if (result.success) {
-              showToast('Session supprimee', 'info');
-              navigation.replace('LobbyHome');
-            } else {
-              showToast(result.error, 'error');
-            }
-          },
-        },
-      ],
+      async () => {
+        const result = await deleteSession();
+        if (result.success) {
+          showToast('Session supprimee', 'info');
+          navigation.replace('LobbyHome');
+        } else {
+          showToast(result.error, 'error');
+        }
+      },
     );
   };
 
   const handleStart = () => {
-    Alert.alert(
+    confirm(
       'Demarrer la partie',
       'La partie va commencer pour tous les joueurs. Continuer ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Demarrer',
-          onPress: async () => {
-            const result = await startGame();
-            if (!result.success) {
-              showToast(result.error, 'error');
-            }
-          },
-        },
-      ],
+      async () => {
+        const result = await startGame();
+        if (!result.success) {
+          showToast(result.error, 'error');
+        }
+      },
     );
   };
 
   // Quitter la session (non-createur)
   const handleLeave = () => {
-    Alert.alert(
+    confirm(
       'Quitter le salon',
       'Voulez-vous vraiment quitter cette session ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Quitter',
-          style: 'destructive',
-          onPress: async () => {
-            const result = await leaveSession();
-            if (result.success) {
-              showToast('Vous avez quitte la session', 'info');
-              navigation.replace('LobbyHome');
-            } else {
-              showToast(result.error ?? 'Erreur', 'error');
-            }
-          },
-        },
-      ],
+      async () => {
+        const result = await leaveSession();
+        if (result.success) {
+          showToast('Vous avez quitte la session', 'info');
+          navigation.replace('LobbyHome');
+        } else {
+          showToast(result.error ?? 'Erreur', 'error');
+        }
+      },
     );
   };
 

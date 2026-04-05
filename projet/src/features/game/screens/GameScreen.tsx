@@ -96,10 +96,10 @@ export const GameScreen = () => {
 
   // Charger les types de vaisseaux une seule fois
   useEffect(() => {
-    if (shipTypes.length === 0) {
+    if (activeSessionId && (!shipTypes || shipTypes.length === 0)) {
       loadShipTypes();
     }
-  }, [shipTypes.length, loadShipTypes]);
+  }, [activeSessionId, shipTypes, loadShipTypes]);
 
   // ─── Detection nouveau tour → reset des actions ────────────────────
   useEffect(() => {
@@ -138,18 +138,19 @@ export const GameScreen = () => {
   // ─── Calculs derives ───────────────────────────────────────────────
 
   // Liste unique des player IDs (pour couleurs coherentes)
+  const ships = gameStatus?.ships ?? [];
+
   const playerIds = useMemo(() => {
-    if (!gameStatus) return [];
+    if (ships.length === 0) return [];
     const ids = new Set<number>();
-    gameStatus.ships.forEach((s) => ids.add(s.player_id));
+    ships.forEach((s) => ids.add(s.player_id));
     return Array.from(ids).sort((a, b) => a - b);
-  }, [gameStatus]);
+  }, [ships]);
 
   // Nombre de vaisseaux du joueur actuel
   const myShipCount = useMemo(() => {
-    if (!gameStatus) return 0;
-    return gameStatus.ships.filter((s) => s.player_id === currentUserId).length;
-  }, [gameStatus, currentUserId]);
+    return ships.filter((s) => s.player_id === currentUserId).length;
+  }, [ships, currentUserId]);
 
   // Cases a portee selon le mode de selection actif
   const rangeCells = useMemo(() => {
@@ -196,16 +197,15 @@ export const GameScreen = () => {
 
   // Index rapide des vaisseaux par position
   const shipsByPos = useMemo(() => {
-    if (!gameStatus) return new Map<string, Ship[]>();
     const m = new Map<string, Ship[]>();
-    gameStatus.ships.forEach((s) => {
+    ships.forEach((s) => {
       const key = `${s.x},${s.y}`;
       const arr = m.get(key) || [];
       arr.push(s);
       m.set(key, arr);
     });
     return m;
-  }, [gameStatus]);
+  }, [ships]);
 
   // ─── Handlers ──────────────────────────────────────────────────────
 
@@ -454,7 +454,7 @@ export const GameScreen = () => {
         <View style={styles.mapContainer}>
           <GameMap
             map={map}
-            ships={gameStatus.ships}
+            ships={ships}
             playerIds={playerIds}
             rangeCells={rangeCells}
             selectedCell={selectedCell}

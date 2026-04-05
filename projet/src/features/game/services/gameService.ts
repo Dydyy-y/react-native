@@ -35,8 +35,12 @@ export const submitActions = async (
   return response.data;
 };
 
-/** Recuperer les types de vaisseaux : GET /ship-types */
+/** Recuperer les types de vaisseaux : GET /ships/types */
 export const getShipTypes = async (): Promise<ShipType[]> => {
-  const response = await apiClient.get<{ shipTypes: ShipType[] }>('/ship-types');
-  return response.data.shipTypes;
+  const response = await apiClient.get('/ships/types');
+  // L'API peut retourner { shipTypes: [...] } ou directement un tableau
+  const data = response.data;
+  if (Array.isArray(data)) return data;
+  if (data?.shipTypes && Array.isArray(data.shipTypes)) return data.shipTypes;
+  return [];
 };
