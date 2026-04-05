@@ -7,6 +7,7 @@ const initialState: GameState = {
   gameStatus: null,
   shipTypes: [],
   pendingActions: [],
+  playerNames: {},
   loading: false,
   error: null,
 };
@@ -15,6 +16,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'SET_SESSION_ID':
       return { ...state, sessionId: action.payload };
+    case 'SET_PLAYER_NAMES':
+      return { ...state, playerNames: action.payload };
     case 'SET_MAP':
       return { ...state, map: action.payload };
     case 'SET_GAME_STATE':

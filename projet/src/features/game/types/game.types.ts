@@ -124,12 +124,15 @@ export interface GameState {
   gameStatus: GameStatus | null;
   shipTypes: ShipType[];
   pendingActions: RoundAction[];
+  /** Noms des joueurs (player_id → name), transmis depuis le lobby au demarrage */
+  playerNames: Record<number, string>;
   loading: boolean;
   error: string | null;
 }
 
 export type GameAction =
   | { type: 'SET_SESSION_ID'; payload: number }
+  | { type: 'SET_PLAYER_NAMES'; payload: Record<number, string> }
   | { type: 'SET_MAP'; payload: GameMap }
   | { type: 'SET_GAME_STATE'; payload: GameStatus }
   | { type: 'SET_SHIP_TYPES'; payload: ShipType[] }

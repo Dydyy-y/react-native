@@ -14,6 +14,7 @@ import { AuthStackParamList } from '../../../navigation/NavigationTypes';
 import { useLogin } from '../hooks/useLogin';
 import { useUI } from '../../ui';
 import { COLORS } from '../../../shared/utils/constants';
+import { isValidEmail } from '../../../shared/utils/validation';
 import { authStyles as styles } from '../styles/authStyles';
 
 type Props = StackScreenProps<AuthStackParamList, 'Login'>;
@@ -30,8 +31,8 @@ export const LoginScreen = ({ navigation }: Props) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
 
   const getErrors = () => ({
-    email: touched.email && !email.trim()
-      ? 'L\'email est requis'
+    email: touched.email && !isValidEmail(email)
+      ? 'Adresse email invalide'
       : undefined,
     password: touched.password && password.length < 8
       ? 'Minimum 8 caracteres'
@@ -39,7 +40,7 @@ export const LoginScreen = ({ navigation }: Props) => {
   });
 
   const errors = getErrors();
-  const isFormValid = email.trim().length > 0 && password.length >= 8;
+  const isFormValid = isValidEmail(email) && password.length >= 8;
 
   const handleSubmit = async () => {
     setTouched({ email: true, password: true });

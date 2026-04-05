@@ -46,7 +46,7 @@ const LobbyNavigator = () => (
     <LobbyStack.Screen
       name="SessionDetail"
       component={SessionDetailScreen}
-      options={{ title: 'Salon', headerLeft: () => null }}
+      options={{ title: 'Salon', headerLeft: () => null, gestureEnabled: false }}
     />
   </LobbyStack.Navigator>
 );
@@ -62,7 +62,7 @@ const GameNavigator = () => (
     <GameStack.Screen
       name="GameOver"
       component={GameOverScreen}
-      options={{ title: 'Fin de partie', headerLeft: () => null }}
+      options={{ title: 'Fin de partie', headerLeft: () => null, gestureEnabled: false }}
     />
   </GameStack.Navigator>
 );

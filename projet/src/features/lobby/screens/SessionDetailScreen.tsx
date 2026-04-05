@@ -27,11 +27,11 @@ type Props = StackScreenProps<LobbyStackParamList, 'SessionDetail'>;
 
 /** Ecran de detail de la session — polling, liste joueurs, moderation, start */
 export const SessionDetailScreen = ({ navigation }: Props) => {
-  const { session, loading, refreshSession, leaveSession } = useLobby();
+  const { session, loading, refreshSession, leaveSession, dispatch } = useLobby();
   const { kickPlayer, banPlayer, deleteSession, startGame } = useModeration();
   const { state: authState } = useAuth();
   const { showToast } = useUI();
-  const { setSessionId } = useGame();
+  const { setSessionId, setPlayerNames } = useGame();
   const tabNavigation = useNavigation<BottomTabNavigationProp<AppTabsParamList>>();
 
   const isCreator = session?.creator.id === authState.user?.id;
@@ -56,10 +56,23 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
   useEffect(() => {
     if (session?.state === 'running') {
       setSessionId(session.id);
+      // Transmettre les noms des joueurs au GameContext pour la legende
+      const names: Record<number, string> = {};
+      session.players.forEach((p) => { names[p.id] = p.name; });
+      setPlayerNames(names);
       showToast('La partie commence !', 'info');
       tabNavigation.navigate('Game');
     }
-  }, [session?.state, session?.id, showToast, setSessionId, tabNavigation]);
+  }, [session?.state, session?.id, showToast, setSessionId, setPlayerNames, tabNavigation, session?.players]);
+
+  // Si la partie est terminee, retour au lobby
+  useEffect(() => {
+    if (session?.state === 'finished') {
+      showToast('Cette partie est terminee', 'info');
+      dispatch({ type: 'CLEAR_SESSION' });
+      navigation.replace('LobbyHome');
+    }
+  }, [session?.state, showToast, dispatch, navigation]);
 
   // Si le joueur n'est plus dans la liste (kick/ban), retour au lobby
   useEffect(() => {

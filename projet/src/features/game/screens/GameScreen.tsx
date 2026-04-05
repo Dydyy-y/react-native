@@ -10,10 +10,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { GameStackParamList } from '../../../navigation/NavigationTypes';
 import { useGame } from '../hooks/useGame';
 import { useAuth } from '../../auth';
 import { useUI } from '../../ui';
-import { useLobby } from '../../lobby';
 import { usePolling } from '../../../shared/hooks/usePolling';
 import { GameMap } from '../components/GameMap';
 import { PlayerStatsPanel } from '../components/PlayerStats';
@@ -53,6 +54,7 @@ export const GameScreen = () => {
     gameStatus,
     shipTypes,
     pendingActions,
+    playerNames,
     sessionId,
     loading,
     error,
@@ -65,7 +67,6 @@ export const GameScreen = () => {
     submitActions,
   } = useGame();
   const { state: authState } = useAuth();
-  const { session } = useLobby();
   const { showToast } = useUI();
 
   const currentUserId = authState.user?.id ?? -1;
@@ -79,8 +80,8 @@ export const GameScreen = () => {
   // Ref pour tracker le round courant (detection nouveau tour)
   const prevRoundRef = useRef<number | null>(null);
 
-  // Determiner le sessionId a utiliser (depuis GameContext ou LobbyContext)
-  const activeSessionId = sessionId ?? session?.id ?? null;
+  // SessionId provient uniquement du GameContext (set par setSessionId au demarrage)
+  const activeSessionId = sessionId;
 
   // ─── Chargement initial ────────────────────────────────────────────
   useEffect(() => {
@@ -135,7 +136,7 @@ export const GameScreen = () => {
   usePolling(pollState, 30000, shouldPoll);
 
   // Detecter fin de partie → naviguer vers GameOverScreen
-  const navigation = useNavigation<{ navigate: (screen: string, params?: Record<string, unknown>) => void }>();
+  const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
   useEffect(() => {
     if (gameStatus?.status === 'finished' && activeSessionId) {
       navigation.navigate('GameOver', { sessionId: activeSessionId });
@@ -418,7 +419,16 @@ export const GameScreen = () => {
 
   // ─── Rendu principal ───────────────────────────────────────────────
 
-  const ore = gameStatus.resources?.ore ?? 0;
+  // Minerai reel = minerai API - cout des achats en attente
+  const rawOre = gameStatus.resources?.ore ?? 0;
+  const pendingPurchaseCost = pendingActions.reduce((sum, a) => {
+    if (a.type === 'purchase') {
+      const st = shipTypes.find((t) => t.id === a.ship_type_id);
+      return sum + (st?.cost ?? 0);
+    }
+    return sum;
+  }, 0);
+  const ore = rawOre - pendingPurchaseCost;
 
   return (
     <View style={styles.container}>
@@ -522,7 +532,7 @@ export const GameScreen = () => {
                   ]}
                 />
                 <Text style={styles.legendText}>
-                  {pid === currentUserId ? 'Vous' : `Joueur ${pid}`}
+                  {pid === currentUserId ? 'Vous' : (playerNames[pid] ?? `Joueur ${pid}`)}
                 </Text>
               </View>
             ))}
@@ -535,7 +545,9 @@ export const GameScreen = () => {
         ship={inspectedShip}
         shipTypes={shipTypes}
         currentUserId={currentUserId}
+        playerNames={playerNames}
         visible={!!inspectedShip}
+        canAct={!!canAct}
         onClose={() => setInspectedShip(null)}
         onAction={handleShipAction}
       />

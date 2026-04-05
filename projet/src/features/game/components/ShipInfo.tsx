@@ -8,7 +8,11 @@ interface ShipInfoProps {
   ship: Ship | null;
   shipTypes: ShipType[];
   currentUserId: number;
+  /** Noms des joueurs (player_id → name) */
+  playerNames: Record<number, string>;
   visible: boolean;
+  /** Le joueur peut-il agir ce tour (non elimine, actions non soumises) */
+  canAct: boolean;
   onClose: () => void;
   /** Callback quand le joueur veut agir sur son propre vaisseau */
   onAction: (ship: Ship) => void;
@@ -19,7 +23,9 @@ export const ShipInfo = ({
   ship,
   shipTypes,
   currentUserId,
+  playerNames,
   visible,
+  canAct,
   onClose,
   onAction,
 }: ShipInfoProps) => {
@@ -69,7 +75,7 @@ export const ShipInfo = ({
                 { color: isOwn ? COLORS.success : COLORS.error },
               ]}
             >
-              {isOwn ? 'Votre vaisseau' : `Joueur ${ship.player_id}`}
+              {isOwn ? 'Votre vaisseau' : (playerNames[ship.player_id] ?? `Joueur ${ship.player_id}`)}
             </Text>
           </View>
 
@@ -89,8 +95,8 @@ export const ShipInfo = ({
             Position : ({ship.x}, {ship.y})
           </Text>
 
-          {/* Bouton d'action pour ses propres vaisseaux */}
-          {isOwn && (
+          {/* Bouton d'action pour ses propres vaisseaux (si le joueur peut agir) */}
+          {isOwn && canAct && (
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => onAction(ship)}

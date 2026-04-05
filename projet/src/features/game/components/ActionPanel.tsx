@@ -162,8 +162,8 @@ export const ActionPanel = ({
         </View>
       )}
 
-      {/* Bouton valider */}
-      {pendingActions.length > 0 && !actionsSubmitted && (
+      {/* Bouton valider (visible meme sans actions = passer le tour) */}
+      {!actionsSubmitted && (
         <TouchableOpacity
           style={[styles.submitButton, loading && styles.submitDisabled]}
           onPress={onSubmitActions}
@@ -174,7 +174,9 @@ export const ActionPanel = ({
           ) : (
             <>
               <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
-              <Text style={styles.submitText}>Valider mes actions</Text>
+              <Text style={styles.submitText}>
+                {pendingActions.length > 0 ? 'Valider mes actions' : 'Passer le tour'}
+              </Text>
             </>
           )}
         </TouchableOpacity>

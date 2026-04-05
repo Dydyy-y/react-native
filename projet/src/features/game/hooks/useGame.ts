@@ -20,6 +20,14 @@ export const useGame = () => {
     [dispatch],
   );
 
+  /** Enregistre les noms des joueurs (depuis le lobby au demarrage) */
+  const setPlayerNames = useCallback(
+    (names: Record<number, string>) => {
+      dispatch({ type: 'SET_PLAYER_NAMES', payload: names });
+    },
+    [dispatch],
+  );
+
   /** Charge la carte (une seule fois au montage) */
   const loadMap = useCallback(async () => {
     if (!state.sessionId) return;
@@ -112,10 +120,12 @@ export const useGame = () => {
     gameStatus: state.gameStatus,
     shipTypes: state.shipTypes,
     pendingActions: state.pendingActions,
+    playerNames: state.playerNames,
     sessionId: state.sessionId,
     loading: state.loading,
     error: state.error,
     setSessionId,
+    setPlayerNames,
     loadMap,
     loadState,
     loadShipTypes,

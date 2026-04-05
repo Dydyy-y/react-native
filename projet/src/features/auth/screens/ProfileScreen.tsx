@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ProfileStackParamList } from '../../../navigation/NavigationTypes';
 import { useAuth } from '../contexts/AuthContext';
 import { useUI } from '../../ui';
 import { updateProfile, UpdateProfileData } from '../services/authService';
@@ -21,7 +23,7 @@ import { getErrorMessage } from '../../../shared/utils/errorHandler';
 export const ProfileScreen = () => {
   const { state, dispatch, logout } = useAuth();
   const { showToast } = useUI();
-  const navigation = useNavigation<{ navigate: (screen: string) => void }>();
+  const navigation = useNavigation<StackNavigationProp<ProfileStackParamList>>();
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(state.user?.name ?? '');
