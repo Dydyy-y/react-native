@@ -68,7 +68,7 @@ export const GameScreen = () => {
   const { session } = useLobby();
   const { showToast } = useUI();
 
-  const currentUserId = Number(authState.user?.id);
+  const currentUserId = authState.user?.id ?? -1;
 
   // ─── Etats locaux pour l'interaction ────────────────────────────────
   const [selectedShip, setSelectedShip] = useState<Ship | null>(null);
@@ -127,7 +127,12 @@ export const GameScreen = () => {
     }
   }, [loadState]);
 
-  usePolling(pollState, 30000, !!activeSessionId && !!gameStatus);
+  // Polling : seulement apres soumission des actions ou si joueur elimine (pour observer)
+  const shouldPoll = !!activeSessionId && !!gameStatus && (
+    gameStatus.round_actions_submitted ||
+    !gameStatus.ships.some(s => s.player_id === currentUserId)
+  );
+  usePolling(pollState, 30000, shouldPoll);
 
   // Detecter fin de partie → naviguer vers GameOverScreen
   const navigation = useNavigation<{ navigate: (screen: string, params?: Record<string, unknown>) => void }>();
@@ -281,7 +286,7 @@ export const GameScreen = () => {
             return;
           }
           addAction({
-            type: 'recruit',
+            type: 'purchase',
             ship_type_id: selectionMode.shipTypeId,
             target_x: x,
             target_y: y,
@@ -473,7 +478,8 @@ export const GameScreen = () => {
         <View style={styles.mapContainer}>
           <GameMap
             map={map}
-            ships={ships}
+            shipsByPos={shipsByPos}
+            shipTypes={shipTypes}
             playerIds={playerIds}
             rangeCells={rangeCells}
             selectedCell={selectedCell}

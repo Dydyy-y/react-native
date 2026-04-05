@@ -57,14 +57,6 @@ export const useGame = () => {
     }
   }, [dispatch]);
 
-  /** Initialise le jeu complet (carte + etat) */
-  const initGame = useCallback(
-    async (sessionId: number) => {
-      dispatch({ type: 'SET_SESSION_ID', payload: sessionId });
-    },
-    [dispatch],
-  );
-
   /** Ajoute une action au tour en cours */
   const addAction = useCallback(
     (action: RoundAction) => {
@@ -127,7 +119,6 @@ export const useGame = () => {
     loadMap,
     loadState,
     loadShipTypes,
-    initGame,
     addAction,
     removeAction,
     clearActions,

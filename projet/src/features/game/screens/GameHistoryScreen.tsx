@@ -17,7 +17,7 @@ import { getErrorMessage } from '../../../shared/utils/errorHandler';
 /** Ecran historique des parties jouees */
 export const GameHistoryScreen = () => {
   const { state: authState } = useAuth();
-  const currentUserId = Number(authState.user?.id);
+  const currentUserId = authState.user?.id ?? -1;
 
   const [entries, setEntries] = useState<GameHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);

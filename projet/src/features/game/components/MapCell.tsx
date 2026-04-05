@@ -15,6 +15,8 @@ interface MapCellProps {
   ships: Ship[];
   /** Liste ordonnee des player IDs pour attribuer les couleurs */
   playerIds: number[];
+  /** Map ship_type_id → nom du type (resolu depuis l'API, pas hardcode) */
+  shipTypeNames: Map<number, string>;
   /** True si cette case est selectionnable (dans la portee) */
   inRange: boolean;
   /** True si cette case est le vaisseau selectionne */
@@ -24,8 +26,9 @@ interface MapCellProps {
 
 /** Cellule individuelle de la grille. Memo pour perf FlatList. */
 export const MapCell = memo(
-  ({ x, y, size, hasResource, ships, playerIds, inRange, isSelected, onPress }: MapCellProps) => {
+  ({ x, y, size, hasResource, ships, playerIds, shipTypeNames, inRange, isSelected, onPress }: MapCellProps) => {
     const ship = ships.length > 0 ? ships[0] : null;
+    const shipTypeName = ship ? shipTypeNames.get(ship.ship_type_id) ?? null : null;
 
     // Couleur du vaisseau selon le joueur
     const playerColorIndex = ship
@@ -59,7 +62,7 @@ export const MapCell = memo(
           <View style={styles.shipOverlay}>
             <Ionicons
               name={
-                ship.ship_type_id === 1 ? 'rocket' : 'construct'
+                shipTypeName === 'fighter' ? 'rocket' : 'construct'
               }
               size={size * 0.5}
               color={shipColor}

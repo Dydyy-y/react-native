@@ -7,7 +7,7 @@ import { AuthProvider } from './src/features/auth';
 import { LobbyProvider } from './src/features/lobby';
 import { GameProvider } from './src/features/game';
 import { RootNavigator } from './src/navigation/RootNavigator';
-import { ToastContainer } from './src/features/ui/components/Toast';
+import { ToastContainer } from './src/features/ui';
 
 export default function App() {
   return (

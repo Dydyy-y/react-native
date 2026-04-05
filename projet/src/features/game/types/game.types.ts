@@ -58,7 +58,7 @@ export interface ShipType {
 export type RoundAction =
   | { type: 'move'; ship_id: number; target_x: number; target_y: number }
   | { type: 'attack'; ship_id: number; target_x: number; target_y: number }
-  | { type: 'recruit'; ship_type_id: number; target_x: number; target_y: number };
+  | { type: 'purchase'; ship_type_id: number; target_x: number; target_y: number };
 
 /** Erreur renvoyée par le serveur pour une action invalide */
 export interface ActionError {

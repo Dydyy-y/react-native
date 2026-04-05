@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react';
 import { View, FlatList, Dimensions, StyleSheet } from 'react-native';
-import { GameMap as GameMapType, Ship, ResourceNode } from '../types/game.types';
+import { GameMap as GameMapType, Ship, ShipType, ResourceNode } from '../types/game.types';
 import { MapCell } from './MapCell';
 import { COLORS } from '../../../shared/utils/constants';
 
 interface GameMapProps {
   map: GameMapType;
-  ships: Ship[];
+  /** Index pre-calcule des vaisseaux par position "x,y" (evite le double calcul) */
+  shipsByPos: Map<string, Ship[]>;
+  shipTypes: ShipType[];
   playerIds: number[];
   /** Ensemble de "x,y" representant les cases a portee */
   rangeCells: Set<string>;
@@ -27,7 +29,8 @@ interface CellData {
 /** Grille FlatList du jeu — fond uni, icones uniquement sur cases occupees */
 export const GameMap = ({
   map,
-  ships,
+  shipsByPos,
+  shipTypes,
   playerIds,
   rangeCells,
   selectedCell,
@@ -43,17 +46,12 @@ export const GameMap = ({
     return set;
   }, [map.resource_nodes]);
 
-  // Index rapide des vaisseaux : "x,y" -> Ship[]
-  const shipMap = useMemo(() => {
-    const m = new Map<string, Ship[]>();
-    ships.forEach((s) => {
-      const key = `${s.x},${s.y}`;
-      const arr = m.get(key) || [];
-      arr.push(s);
-      m.set(key, arr);
-    });
+  // Map ship_type_id → nom (pour resolution d'icone sans hardcoder les IDs)
+  const shipTypeNames = useMemo(() => {
+    const m = new Map<number, string>();
+    shipTypes.forEach((t) => m.set(t.id, t.name));
     return m;
-  }, [ships]);
+  }, [shipTypes]);
 
   // Generer toutes les cellules (y puis x, car FlatList est row-major)
   const cells = useMemo(() => {
@@ -66,12 +64,12 @@ export const GameMap = ({
           x,
           y,
           hasResource: resourceSet.has(key),
-          ships: shipMap.get(key) || [],
+          ships: shipsByPos.get(key) || [],
         });
       }
     }
     return result;
-  }, [map.width, map.height, resourceSet, shipMap]);
+  }, [map.width, map.height, resourceSet, shipsByPos]);
 
   return (
     <View style={styles.container}>
@@ -87,6 +85,7 @@ export const GameMap = ({
             hasResource={item.hasResource}
             ships={item.ships}
             playerIds={playerIds}
+            shipTypeNames={shipTypeNames}
             inRange={rangeCells.has(item.key)}
             isSelected={selectedCell === item.key}
             onPress={onCellPress}

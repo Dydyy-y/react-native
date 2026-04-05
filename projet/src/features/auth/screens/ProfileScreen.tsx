@@ -67,8 +67,8 @@ export const ProfileScreen = () => {
       showToast('Les mots de passe ne correspondent pas', 'error');
       return;
     }
-    if (password && password.length < 6) {
-      showToast('Le mot de passe doit faire au moins 6 caracteres', 'error');
+    if (password && password.length < 8) {
+      showToast('Le mot de passe doit faire au moins 8 caracteres', 'error');
       return;
     }
 

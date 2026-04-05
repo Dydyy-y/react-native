@@ -34,7 +34,7 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
   const { setSessionId } = useGame();
   const tabNavigation = useNavigation<BottomTabNavigationProp<AppTabsParamList>>();
 
-  const isCreator = session?.creator.id === Number(authState.user?.id);
+  const isCreator = session?.creator.id === authState.user?.id;
   const isWaiting = session?.state === 'waiting';
 
   // Polling toutes les 30s
@@ -65,7 +65,7 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
   useEffect(() => {
     if (!session || !authState.user) return;
     const stillInSession = session.players.some(
-      (p) => p.id === Number(authState.user!.id),
+      (p) => p.id === authState.user?.id,
     );
     if (!stillInSession) {
       showToast('Vous avez ete retire de la session', 'info');

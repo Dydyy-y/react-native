@@ -26,7 +26,7 @@ export const GameOverScreen = () => {
   const navigation = useNavigation<{ navigate: (screen: string) => void }>();
   const { state: authState } = useAuth();
   const { clearGame } = useGame();
-  const currentUserId = Number(authState.user?.id);
+  const currentUserId = authState.user?.id ?? -1;
 
   const [stats, setStats] = useState<GameStats | null>(null);
   const [loading, setLoading] = useState(true);

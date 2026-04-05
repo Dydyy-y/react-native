@@ -10,8 +10,7 @@ import {
   JoinSessionScreen,
   SessionDetailScreen,
 } from '../features/lobby';
-import { GameScreen, GameOverScreen } from '../features/game';
-import { GameHistoryScreen } from '../features/game/screens/GameHistoryScreen';
+import { GameScreen, GameOverScreen, GameHistoryScreen } from '../features/game';
 import { COLORS } from '../shared/utils/constants';
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();

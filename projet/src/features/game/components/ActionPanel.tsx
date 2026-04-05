@@ -48,7 +48,7 @@ export const ActionPanel = ({
   const shipHasAction =
     selectedShip &&
     pendingActions.some(
-      (a) => a.type !== 'recruit' && 'ship_id' in a && a.ship_id === selectedShip.id,
+      (a) => a.type !== 'purchase' && 'ship_id' in a && a.ship_id === selectedShip.id,
     );
 
   const shipType = selectedShip
@@ -137,7 +137,7 @@ export const ActionPanel = ({
                       ? 'move'
                       : item.type === 'attack'
                         ? 'flash'
-                        : 'cart'
+                        : 'cart' /* purchase */
                   }
                   size={14}
                   color={
@@ -151,7 +151,7 @@ export const ActionPanel = ({
                 <Text style={styles.pendingText}>
                   {item.type === 'move' && `Deplacer #${'ship_id' in item ? item.ship_id : '?'} → (${item.target_x}, ${item.target_y})`}
                   {item.type === 'attack' && `Attaquer #${'ship_id' in item ? item.ship_id : '?'} → (${item.target_x}, ${item.target_y})`}
-                  {item.type === 'recruit' && `Recruter → (${item.target_x}, ${item.target_y})`}
+                  {item.type === 'purchase' && `Achat → (${item.target_x}, ${item.target_y})`}
                 </Text>
                 <TouchableOpacity onPress={() => onRemoveAction(index)}>
                   <Ionicons name="trash-outline" size={16} color={COLORS.error} />
