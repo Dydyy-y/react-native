@@ -1,9 +1,9 @@
 # Sprint Planning & Roadmap
 
-**Date** : 24 mars 2026 (mis à jour 04 avril 2026)  
+**Date** : 24 mars 2026 (mis à jour 05 avril 2026)  
 **Durée Totale** : 2 semaines (jusqu'au 07 avril 2026 23h59)  
 **Equipe** : Individuel (Mathys)  
-**Status** : Sprint 1 terminé, Sprint 2 terminé, Sprint 3 terminé, Sprint 4 terminé
+**Status** : Tous les sprints termines (1-6)
 
 **Approche** : Agile + Context API + useReducer + Feature-Folder + TypeScript strict
 
@@ -32,9 +32,9 @@
 | 1 | Étape 1 — Auth | 13 | 6-8h | RIEN | ✅ Terminé |
 | 2 | Étape 2 — Lobby & QR | 21 | 8-10h | Sprint 1 | ✅ Terminé |
 | 3 | Étape 3 — Modération | 10 | 4-6h | Sprint 2 | ✅ Terminé |
-| 4 | Étape 4 — Carte & État | 10 | 4-6h | Sprint 3 | A démarrer |
-| 5 | Étape 5 — Actions de jeu | 13 | 6-8h | Sprint 4 | A démarrer |
-| 6 | Étapes 5bis+6 — Fin & Profil | 8 | 4-6h | Sprint 5 | A démarrer |
+| 4 | Étape 4 — Carte & État | 10 | 4-6h | Sprint 3 | ✅ Terminé |
+| 5 | Étape 5 — Actions de jeu | 13 | 6-8h | Sprint 4 | ✅ Terminé |
+| 6 | Étapes 5bis+6 — Fin & Profil | 8 | 4-6h | Sprint 5 | ✅ Terminé |
 
 ### Timeline (mise à jour 04 avril)
 

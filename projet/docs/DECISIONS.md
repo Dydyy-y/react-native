@@ -22,6 +22,12 @@
 12. [Pas d'imports croisés entre features](#12-pas-dimports-croisés-entre-features)
 13. [Imbrication des Providers dans App.tsx](#13-imbrication-des-providers-dans-apptsx)
 14. [.gitignore : ce qu'on exclut et pourquoi](#14-gitignore--ce-quon-exclut-et-pourquoi)
+15. *(Sprint 4 — voir section 15)*
+16. [Detection d'elimination du joueur](#16-detection-delimination-du-joueur-sprint-6)
+17. [Ecran de fin de partie avec stats serveur](#17-ecran-de-fin-de-partie-avec-stats-serveur-sprint-6)
+18. [Modification du profil via PUT /profile](#18-modification-du-profil-via-put-profile-sprint-6)
+19. [Historique des parties](#19-historique-des-parties-sprint-6)
+20. [Correction endpoint /ship-types](#20-correction-endpoint-ship-types-sprint-5-fix)
 
 ---
 
@@ -698,4 +704,104 @@ La consigne impose FlatList pour la grille et recommande de ne pas afficher d'im
 
 ---
 
-*Derniere mise a jour : 04 avril 2026*
+## 16. Detection d'elimination du joueur (Sprint 6)
+
+**Contexte**
+Un joueur est elimine quand il n'a plus de vaisseaux. Il doit etre informe et ne plus pouvoir agir, mais peut continuer a observer la partie.
+
+**Decision**
+- Detection via `ships.filter(s => s.player_id === currentUserId).length === 0`
+- Bandeau rouge "Vous avez ete elimine" affiche dans le GameScreen
+- Variable `isEliminated` integree dans `canAct` pour desactiver toutes les actions
+- Le polling continue pour suivre l'evolution de la partie
+
+**Pourquoi ?**
+- Detection cote client suffisante car l'etat `ships` est fourni par le serveur
+- Pas besoin d'un flag serveur supplementaire
+
+**Consequences**
+- Le joueur elimine ne peut ni deplacer, ni attaquer, ni acheter
+- Le bouton boutique et les actions sont masques
+
+---
+
+## 17. Ecran de fin de partie avec stats serveur (Sprint 6)
+
+**Contexte**
+Quand `status` passe a `finished`, tous les joueurs doivent voir les resultats.
+
+**Decision**
+- Navigation automatique vers `GameOverScreen` quand `status === 'finished'`
+- Appel `GET /game-sessions/{id}/stats` pour recuperer le classement et le gagnant
+- Ecran affichant : victoire/defaite, gagnant, classement, stats par joueur
+- Bouton "Retour au lobby" qui nettoie le GameContext
+
+**Pourquoi ?**
+- L'endpoint `/stats` fournit les donnees de classement cote serveur
+- Navigation automatique evite au joueur de devoir manuellement quitter
+
+**Consequences**
+- Le GameNavigator devient un Stack (GameMain + GameOver)
+- Le GameContext est nettoye au retour au lobby
+
+---
+
+## 18. Modification du profil via PUT /profile (Sprint 6)
+
+**Contexte**
+Le joueur doit pouvoir modifier son nom, email et mot de passe.
+
+**Decision**
+- Mode affichage/edition toggle dans le meme ProfileScreen (pas de nouvel ecran)
+- Appel `PUT /profile` avec seulement les champs modifies
+- Validation locale (champs vides, mots de passe non concordants, longueur min)
+- Mise a jour du AuthContext apres succes
+
+**Pourquoi ?**
+- Un seul ecran evite la navigation supplementaire
+- Envoyer uniquement les champs modifies respecte le principe de moindre privilege
+
+**Consequences**
+- Le mot de passe est optionnel (vide = pas de changement)
+- Les erreurs serveur (email deja pris) sont affichees via toast
+
+---
+
+## 19. Historique des parties (Sprint 6)
+
+**Contexte**
+Le joueur doit pouvoir consulter ses parties passees avec les resultats.
+
+**Decision**
+- Ecran `GameHistoryScreen` accessible depuis le ProfileScreen
+- Appel `GET /game-sessions/history` avec pagination
+- Tap sur une partie → detail inline (expand) avec appel `GET /game-sessions/{id}/stats`
+- FlatList avec chargement progressif (onEndReached)
+
+**Pourquoi ?**
+- Detail inline plutot que navigation vers un nouvel ecran : plus fluide, moins de navigation
+- Pagination evite de charger tout l'historique d'un coup
+
+**Consequences**
+- Le ProfileNavigator devient un Stack (ProfileMain + GameHistory)
+- Les stats ne sont chargees qu'a la demande (tap sur une entree)
+
+---
+
+## 20. Correction endpoint /ship-types (Sprint 5 fix)
+
+**Contexte**
+L'endpoint des types de vaisseaux etait code `/ships/types` mais l'API expose `/ship-types`.
+
+**Decision**
+- Correction de l'URL dans `gameService.ts`
+
+**Pourquoi ?**
+- Verification de la documentation Swagger de l'API
+
+**Consequences**
+- Les types de vaisseaux sont correctement charges dans le ShipShop
+
+---
+
+*Derniere mise a jour : 05 avril 2026*

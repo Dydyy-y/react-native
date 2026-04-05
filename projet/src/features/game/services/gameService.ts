@@ -5,6 +5,8 @@ import {
   ShipType,
   RoundAction,
   RoundActionsResponse,
+  GameStats,
+  GameHistoryResponse,
 } from '../types/game.types';
 
 /** Recuperer la carte : GET /game-sessions/{id}/map */
@@ -35,9 +37,26 @@ export const submitActions = async (
   return response.data;
 };
 
-/** Recuperer les types de vaisseaux : GET /ships/types */
+/** Recuperer les stats de fin de partie : GET /game-sessions/{id}/stats */
+export const getGameStats = async (sessionId: number): Promise<GameStats> => {
+  const response = await apiClient.get<GameStats>(
+    `/game-sessions/${sessionId}/stats`,
+  );
+  return response.data;
+};
+
+/** Recuperer l'historique des parties : GET /game-sessions/history */
+export const getGameHistory = async (page = 1): Promise<GameHistoryResponse> => {
+  const response = await apiClient.get<GameHistoryResponse>(
+    '/game-sessions/history',
+    { params: { page } },
+  );
+  return response.data;
+};
+
+/** Recuperer les types de vaisseaux : GET /ship-types */
 export const getShipTypes = async (): Promise<ShipType[]> => {
-  const response = await apiClient.get('/ships/types');
+  const response = await apiClient.get('/ship-types');
   // L'API peut retourner { shipTypes: [...] } ou directement un tableau
   const data = response.data;
   if (Array.isArray(data)) return data;

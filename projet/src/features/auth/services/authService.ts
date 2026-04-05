@@ -33,3 +33,16 @@ export const getProfile = async (): Promise<User> => {
   const response = await apiClient.get<User>('/profile');
   return response.data;
 };
+
+/** Mise a jour du profil : PUT /profile */
+export interface UpdateProfileData {
+  name?: string;
+  email?: string;
+  password?: string;
+  password_confirmation?: string;
+}
+
+export const updateProfile = async (data: UpdateProfileData): Promise<User> => {
+  const response = await apiClient.put<User>('/profile', data);
+  return response.data;
+};

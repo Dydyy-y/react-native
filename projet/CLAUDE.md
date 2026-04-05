@@ -65,8 +65,8 @@ RootNavigator
 | 2 | Étape 2 | Lobby (create/join session, QR code, polling) | ✅ Terminé |
 | 3 | Étape 3 | Modération (kick, ban, delete, start game) | ✅ Terminé |
 | 4 | Étape 4 | Jeu (carte grille FlatList, état joueur) | ✅ Terminé |
-| 5 | Étape 5 | Actions de jeu (move, attack, purchase, tours) | A démarrer |
-| 6 | Étapes 5bis+6 | Fin de partie + profil + historique | A démarrer |
+| 5 | Étape 5 | Actions de jeu (move, attack, purchase, tours) | ✅ Terminé |
+| 6 | Étapes 5bis+6 | Fin de partie + profil + historique | ✅ Terminé |
 
 ## Règle de Documentation (OBLIGATOIRE)
 

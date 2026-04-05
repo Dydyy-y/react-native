@@ -74,6 +74,48 @@ export interface RoundActionsResponse {
   errors: ActionError[];
 }
 
+// ─── Stats de fin de partie (GET /game-sessions/{id}/stats) ─────────────
+
+/** Joueur dans le classement de fin */
+export interface GameStatsPlayer {
+  player_id: number;
+  name: string;
+  ships_destroyed: number;
+  resources_collected: number;
+}
+
+/** Gagnant de la partie */
+export interface GameStatsWinner {
+  player_id: number;
+  name: string;
+}
+
+/** Statistiques completes de la partie */
+export interface GameStats {
+  rounds: number;
+  players: GameStatsPlayer[];
+  winner: GameStatsWinner | null;
+}
+
+// ─── Historique des parties (GET /game-sessions/history) ─────────────────
+
+/** Session dans l'historique */
+export interface GameHistoryEntry {
+  id: number;
+  name: string;
+  status: string;
+  created_at: string;
+  winner?: GameStatsWinner | null;
+}
+
+/** Reponse paginee de l'historique */
+export interface GameHistoryResponse {
+  data: GameHistoryEntry[];
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
 // ─── State & Actions du GameContext ─────────────────────────────────────
 
 export interface GameState {

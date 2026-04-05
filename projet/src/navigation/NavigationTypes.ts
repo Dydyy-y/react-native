@@ -12,6 +12,12 @@ export type LobbyStackParamList = {
 
 export type GameStackParamList = {
   GameMain: undefined;
+  GameOver: { sessionId: number };
+};
+
+export type ProfileStackParamList = {
+  ProfileMain: undefined;
+  GameHistory: undefined;
 };
 
 export type AppTabsParamList = {

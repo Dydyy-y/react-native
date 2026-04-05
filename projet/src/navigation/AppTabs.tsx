@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { AppTabsParamList, LobbyStackParamList } from './NavigationTypes';
+import { AppTabsParamList, LobbyStackParamList, GameStackParamList, ProfileStackParamList } from './NavigationTypes';
 import { ProfileScreen } from '../features/auth/screens/ProfileScreen';
 import {
   LobbyHomeScreen,
@@ -10,22 +10,25 @@ import {
   JoinSessionScreen,
   SessionDetailScreen,
 } from '../features/lobby';
-import { GameScreen } from '../features/game';
+import { GameScreen, GameOverScreen } from '../features/game';
+import { GameHistoryScreen } from '../features/game/screens/GameHistoryScreen';
 import { COLORS } from '../shared/utils/constants';
 
 const Tab = createBottomTabNavigator<AppTabsParamList>();
 const LobbyStack = createStackNavigator<LobbyStackParamList>();
+const GameStack = createStackNavigator<GameStackParamList>();
+const ProfileStack = createStackNavigator<ProfileStackParamList>();
 
-// Stack Navigator pour le Lobby (4 écrans)
+const screenOptions = {
+  headerStyle: { backgroundColor: COLORS.surface },
+  headerTintColor: COLORS.white,
+  headerTitleStyle: { fontWeight: 'bold' as const },
+  cardStyle: { backgroundColor: COLORS.background },
+};
+
+// Stack Navigator pour le Lobby (4 ecrans)
 const LobbyNavigator = () => (
-  <LobbyStack.Navigator
-    screenOptions={{
-      headerStyle: { backgroundColor: COLORS.surface },
-      headerTintColor: COLORS.white,
-      headerTitleStyle: { fontWeight: 'bold' },
-      cardStyle: { backgroundColor: COLORS.background },
-    }}
-  >
+  <LobbyStack.Navigator screenOptions={screenOptions}>
     <LobbyStack.Screen
       name="LobbyHome"
       component={LobbyHomeScreen}
@@ -49,8 +52,37 @@ const LobbyNavigator = () => (
   </LobbyStack.Navigator>
 );
 
-// Game Navigator (Sprint 4)
-const GameNavigator = () => <GameScreen />;
+// Stack Navigator pour le Jeu (GameScreen + GameOverScreen)
+const GameNavigator = () => (
+  <GameStack.Navigator screenOptions={screenOptions}>
+    <GameStack.Screen
+      name="GameMain"
+      component={GameScreen}
+      options={{ headerShown: false }}
+    />
+    <GameStack.Screen
+      name="GameOver"
+      component={GameOverScreen}
+      options={{ title: 'Fin de partie', headerLeft: () => null }}
+    />
+  </GameStack.Navigator>
+);
+
+// Stack Navigator pour le Profil (ProfileScreen + GameHistoryScreen)
+const ProfileNavigator = () => (
+  <ProfileStack.Navigator screenOptions={screenOptions}>
+    <ProfileStack.Screen
+      name="ProfileMain"
+      component={ProfileScreen}
+      options={{ headerShown: false }}
+    />
+    <ProfileStack.Screen
+      name="GameHistory"
+      component={GameHistoryScreen}
+      options={{ title: 'Historique des parties' }}
+    />
+  </ProfileStack.Navigator>
+);
 
 export const AppTabs = () => (
   <Tab.Navigator
@@ -86,7 +118,7 @@ export const AppTabs = () => (
     />
     <Tab.Screen
       name="Profile"
-      component={ProfileScreen}
+      component={ProfileNavigator}
       options={{
         tabBarLabel: 'Profil',
         tabBarIcon: ({ color, size }) => (
@@ -96,4 +128,3 @@ export const AppTabs = () => (
     />
   </Tab.Navigator>
 );
-

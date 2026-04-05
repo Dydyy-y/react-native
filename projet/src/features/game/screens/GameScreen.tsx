@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useGame } from '../hooks/useGame';
 import { useAuth } from '../../auth';
 import { useUI } from '../../ui';
@@ -128,12 +129,13 @@ export const GameScreen = () => {
 
   usePolling(pollState, 30000, !!activeSessionId && !!gameStatus);
 
-  // Detecter fin de partie
+  // Detecter fin de partie → naviguer vers GameOverScreen
+  const navigation = useNavigation<{ navigate: (screen: string, params?: Record<string, unknown>) => void }>();
   useEffect(() => {
-    if (gameStatus?.status === 'finished') {
-      showToast('La partie est terminee !', 'info');
+    if (gameStatus?.status === 'finished' && activeSessionId) {
+      navigation.navigate('GameOver', { sessionId: activeSessionId });
     }
-  }, [gameStatus?.status, showToast]);
+  }, [gameStatus?.status, activeSessionId, navigation]);
 
   // ─── Calculs derives ───────────────────────────────────────────────
 
@@ -189,11 +191,18 @@ export const GameScreen = () => {
     return `${selectedShip.x},${selectedShip.y}`;
   }, [selectedShip]);
 
-  // Le joueur ne peut pas agir si actions deja soumises ou partie finie
+  // Le joueur est elimine s'il n'a plus de vaisseaux
+  const isEliminated = useMemo(() => {
+    if (!gameStatus || gameStatus.status !== 'running') return false;
+    return ships.filter((s) => s.player_id === currentUserId).length === 0;
+  }, [gameStatus, ships, currentUserId]);
+
+  // Le joueur ne peut pas agir si elimine, actions deja soumises, ou partie finie
   const canAct =
     gameStatus &&
     !gameStatus.round_actions_submitted &&
-    gameStatus.status === 'running';
+    gameStatus.status === 'running' &&
+    !isEliminated;
 
   // Index rapide des vaisseaux par position
   const shipsByPos = useMemo(() => {
@@ -430,6 +439,16 @@ export const GameScreen = () => {
         )}
       </View>
 
+      {/* Bandeau elimination */}
+      {isEliminated && (
+        <View style={styles.eliminatedBanner}>
+          <Ionicons name="skull-outline" size={20} color={COLORS.white} />
+          <Text style={styles.eliminatedText}>
+            Vous avez ete elimine ! Vous pouvez observer la partie.
+          </Text>
+        </View>
+      )}
+
       {/* Instruction mode selection */}
       {selectionMode && (
         <View style={styles.instructionBanner}>
@@ -654,5 +673,19 @@ const styles = StyleSheet.create({
   legendText: {
     color: COLORS.text,
     fontSize: 12,
+  },
+  eliminatedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#b71c1c',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  eliminatedText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
   },
 });
