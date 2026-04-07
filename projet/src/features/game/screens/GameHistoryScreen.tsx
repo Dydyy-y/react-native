@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -8,88 +8,18 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getGameHistory, getGameStats } from '../services/gameService';
 import { useAuth } from '../../auth';
-import { GameHistoryEntry, GameStats } from '../types/game.types';
+import { useGameHistory, useGameDetail } from '../hooks/useGameHistory';
+import { GameHistoryEntry } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
-import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 /** Ecran historique des parties jouees */
 export const GameHistoryScreen = () => {
   const { state: authState } = useAuth();
   const currentUserId = authState.user?.id ?? -1;
 
-  const [entries, setEntries] = useState<GameHistoryEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [lastPage, setLastPage] = useState(1);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  // Detail d'une partie selectionnee
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [detailStats, setDetailStats] = useState<GameStats | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-
-  const fetchHistory = useCallback(async (p: number) => {
-    try {
-      if (p === 1) setLoading(true);
-      else setLoadingMore(true);
-      const data = await getGameHistory(p);
-      if (p === 1) {
-        setEntries(data.data ?? []);
-      } else {
-        setEntries((prev) => [...prev, ...(data.data ?? [])]);
-      }
-      setLastPage(data.last_page);
-      setError(null);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchHistory(1);
-  }, [fetchHistory]);
-
-  const handleLoadMore = () => {
-    if (page < lastPage && !loadingMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchHistory(nextPage);
-    }
-  };
-
-  // Ref pour ignorer les reponses perimees lors de clics rapides
-  const lastRequestIdRef = useRef(0);
-
-  const handleSelectEntry = async (entry: GameHistoryEntry) => {
-    if (selectedId === entry.id) {
-      setSelectedId(null);
-      setDetailStats(null);
-      return;
-    }
-    const requestId = ++lastRequestIdRef.current;
-    setSelectedId(entry.id);
-    setDetailStats(null);
-    setDetailLoading(true);
-    try {
-      const stats = await getGameStats(entry.id);
-      // Ignorer si l'utilisateur a clique sur une autre entree entre-temps
-      if (requestId !== lastRequestIdRef.current) return;
-      setDetailStats(stats);
-    } catch {
-      if (requestId !== lastRequestIdRef.current) return;
-      setDetailStats(null);
-    } finally {
-      if (requestId === lastRequestIdRef.current) {
-        setDetailLoading(false);
-      }
-    }
-  };
+  const { entries, loading, error, loadingMore, loadMore, retry } = useGameHistory();
+  const { selectedId, stats: detailStats, loading: detailLoading, select: handleSelectEntry } = useGameDetail();
 
   const formatDate = (dateStr: string) => {
     try {
@@ -206,7 +136,7 @@ export const GameHistoryScreen = () => {
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity
           style={styles.retryButton}
-          onPress={() => fetchHistory(1)}
+          onPress={retry}
         >
           <Text style={styles.retryText}>Reessayer</Text>
         </TouchableOpacity>
@@ -233,7 +163,7 @@ export const GameHistoryScreen = () => {
         keyExtractor={(item) => String(item.id)}
         renderItem={renderEntry}
         contentContainerStyle={styles.listContent}
-        onEndReached={handleLoadMore}
+        onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListFooterComponent={
           loadingMore ? (

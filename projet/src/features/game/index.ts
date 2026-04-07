@@ -1,5 +1,7 @@
 export { GameProvider, useGameContext } from './contexts/GameContext';
 export { useGame } from './hooks/useGame';
+export { useGameStats } from './hooks/useGameStats';
+export { useGameHistory, useGameDetail } from './hooks/useGameHistory';
 export { GameScreen } from './screens/GameScreen';
 export { GameOverScreen } from './screens/GameOverScreen';
 export { GameHistoryScreen } from './screens/GameHistoryScreen';

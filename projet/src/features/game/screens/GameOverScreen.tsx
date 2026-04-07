@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -11,12 +11,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { AppTabsParamList } from '../../../navigation/NavigationTypes';
-import { getGameStats } from '../services/gameService';
+import { useGameStats } from '../hooks/useGameStats';
 import { useGame } from '../hooks/useGame';
 import { useAuth } from '../../auth';
-import { GameStats, GameStatsPlayer } from '../types/game.types';
+import { GameStatsPlayer } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
-import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 type GameOverRouteParams = {
   GameOver: { sessionId: number };
@@ -30,27 +29,8 @@ export const GameOverScreen = () => {
   const { clearGame } = useGame();
   const currentUserId = authState.user?.id ?? -1;
 
-  const [stats, setStats] = useState<GameStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const sessionId = route.params?.sessionId;
-
-  useEffect(() => {
-    if (!sessionId) return;
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const data = await getGameStats(sessionId);
-        setStats(data);
-      } catch (err) {
-        setError(getErrorMessage(err));
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
-  }, [sessionId]);
+  const { data: stats, loading, error } = useGameStats(sessionId);
 
   const handleReturnToLobby = () => {
     clearGame();
