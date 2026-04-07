@@ -1,15 +1,16 @@
 import React, { useMemo } from 'react';
-import { View, FlatList, Dimensions, StyleSheet } from 'react-native';
-import { GameMap as GameMapType, Ship, ShipType, ResourceNode } from '../types/game.types';
+import { View, FlatList, ScrollView, Dimensions, StyleSheet } from 'react-native';
+import { GameMap as GameMapType, Ship, ResourceNode } from '../types/game.types';
 import { MapCell } from './MapCell';
 import { COLORS } from '../../../shared/utils/constants';
+
+/** Taille minimale d'une cellule pour rester lisible */
+const MIN_CELL_SIZE = 36;
 
 interface GameMapProps {
   map: GameMapType;
   /** Index pre-calcule des vaisseaux par position "x,y" (evite le double calcul) */
   shipsByPos: Map<string, Ship[]>;
-  shipTypes: ShipType[];
-  playerIds: number[];
   /** Ensemble de "x,y" representant les cases a portee */
   rangeCells: Set<string>;
   /** "x,y" du vaisseau actuellement selectionne */
@@ -30,14 +31,14 @@ interface CellData {
 export const GameMap = ({
   map,
   shipsByPos,
-  shipTypes,
-  playerIds,
   rangeCells,
   selectedCell,
   onCellPress,
 }: GameMapProps) => {
-  const screenWidth = Dimensions.get('window').width;
-  const cellSize = Math.floor(screenWidth / map.width);
+  const screenWidth = Dimensions.get('window').width - 16; // padding du mapContainer
+  const naturalSize = Math.floor(screenWidth / map.width);
+  const cellSize = Math.max(naturalSize, MIN_CELL_SIZE);
+  const gridWidth = cellSize * map.width;
 
   // Index rapide des ressources : "x,y" -> true
   const resourceSet = useMemo(() => {
@@ -45,13 +46,6 @@ export const GameMap = ({
     map.resource_nodes.forEach((r: ResourceNode) => set.add(`${r.x},${r.y}`));
     return set;
   }, [map.resource_nodes]);
-
-  // Map ship_type_id → nom (pour resolution d'icone sans hardcoder les IDs)
-  const shipTypeNames = useMemo(() => {
-    const m = new Map<number, string>();
-    shipTypes.forEach((t) => m.set(t.id, t.name));
-    return m;
-  }, [shipTypes]);
 
   // Generer toutes les cellules (y puis x, car FlatList est row-major)
   const cells = useMemo(() => {
@@ -71,42 +65,46 @@ export const GameMap = ({
     return result;
   }, [map.width, map.height, resourceSet, shipsByPos]);
 
+  const needsScroll = gridWidth > screenWidth;
+
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={cells}
-        keyExtractor={(item) => item.key}
-        numColumns={map.width}
-        renderItem={({ item }) => (
-          <MapCell
-            x={item.x}
-            y={item.y}
-            size={cellSize}
-            hasResource={item.hasResource}
-            ships={item.ships}
-            playerIds={playerIds}
-            shipTypeNames={shipTypeNames}
-            inRange={rangeCells.has(item.key)}
-            isSelected={selectedCell === item.key}
-            onPress={onCellPress}
-          />
-        )}
-        scrollEnabled={false}
-        getItemLayout={(_data, index) => ({
-          length: cellSize,
-          offset: cellSize * Math.floor(index / map.width),
-          index,
-        })}
-      />
-    </View>
+    <ScrollView horizontal={needsScroll} style={styles.scrollContainer}>
+      <View style={[styles.container, { width: gridWidth }]}>
+        <FlatList
+          data={cells}
+          keyExtractor={(item) => item.key}
+          numColumns={map.width}
+          renderItem={({ item }) => (
+            <MapCell
+              x={item.x}
+              y={item.y}
+              size={cellSize}
+              hasResource={item.hasResource}
+              ships={item.ships}
+              inRange={rangeCells.has(item.key)}
+              isSelected={selectedCell === item.key}
+              onPress={onCellPress}
+            />
+          )}
+          scrollEnabled={false}
+          getItemLayout={(_data, index) => ({
+            length: cellSize,
+            offset: cellSize * Math.floor(index / map.width),
+            index,
+          })}
+        />
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
   container: {
     backgroundColor: COLORS.primary,
     alignItems: 'center',
-    borderRadius: 4,
-    overflow: 'hidden',
   },
 });

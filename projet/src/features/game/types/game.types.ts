@@ -12,6 +12,13 @@ export interface GameMap {
   resource_nodes: ResourceNode[];
 }
 
+/** Proprietaire d'un vaisseau (inclus dans la reponse API) */
+export interface ShipOwner {
+  id: number;
+  name: string;
+  color: string;
+}
+
 /** Vaisseau sur la carte */
 export interface Ship {
   id: number;
@@ -19,7 +26,9 @@ export interface Ship {
   x: number;
   y: number;
   health: number;
-  player_id: number;
+  owner_id: number;
+  owner: ShipOwner;
+  type: ShipType;
 }
 
 /** Stats cumulees du joueur */
@@ -41,7 +50,8 @@ export interface GameStatus {
 /** Type de vaisseau disponible a l'achat */
 export interface ShipType {
   id: number;
-  name: 'fighter' | 'miner';
+  name: string;
+  type: 'fighter' | 'miner';
   damage: number;
   attack_range: number;
   gathering_rate: number;

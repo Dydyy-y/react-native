@@ -4,19 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Ship } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
 
-/** Couleurs par joueur (max 4) */
-const PLAYER_COLORS = ['#2196F3', '#f44336', '#4CAF50', '#FF9800'];
-
 interface MapCellProps {
   x: number;
   y: number;
   size: number;
   hasResource: boolean;
   ships: Ship[];
-  /** Liste ordonnee des player IDs pour attribuer les couleurs */
-  playerIds: number[];
-  /** Map ship_type_id → nom du type (resolu depuis l'API, pas hardcode) */
-  shipTypeNames: Map<number, string>;
   /** True si cette case est selectionnable (dans la portee) */
   inRange: boolean;
   /** True si cette case est le vaisseau selectionne */
@@ -26,18 +19,11 @@ interface MapCellProps {
 
 /** Cellule individuelle de la grille. Memo pour perf FlatList. */
 export const MapCell = memo(
-  ({ x, y, size, hasResource, ships, playerIds, shipTypeNames, inRange, isSelected, onPress }: MapCellProps) => {
+  ({ x, y, size, hasResource, ships, inRange, isSelected, onPress }: MapCellProps) => {
     const ship = ships.length > 0 ? ships[0] : null;
-    const shipTypeName = ship ? shipTypeNames.get(ship.ship_type_id) ?? null : null;
 
-    // Couleur du vaisseau selon le joueur
-    const playerColorIndex = ship
-      ? playerIds.indexOf(ship.player_id)
-      : -1;
-    const shipColor =
-      playerColorIndex >= 0
-        ? PLAYER_COLORS[playerColorIndex % PLAYER_COLORS.length]
-        : COLORS.white;
+    // Couleur du vaisseau depuis l'API (owner.color)
+    const shipColor = ship?.owner?.color ?? COLORS.white;
 
     return (
       <TouchableOpacity
@@ -61,9 +47,7 @@ export const MapCell = memo(
         {ship && (
           <View style={styles.shipOverlay}>
             <Ionicons
-              name={
-                shipTypeName === 'fighter' ? 'rocket' : 'construct'
-              }
+              name={ship.type?.type === 'fighter' ? 'rocket' : 'construct'}
               size={size * 0.5}
               color={shipColor}
             />

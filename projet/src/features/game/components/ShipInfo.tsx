@@ -8,8 +8,6 @@ interface ShipInfoProps {
   ship: Ship | null;
   shipTypes: ShipType[];
   currentUserId: number;
-  /** Noms des joueurs (player_id → name) */
-  playerNames: Record<number, string>;
   visible: boolean;
   /** Le joueur peut-il agir ce tour (non elimine, actions non soumises) */
   canAct: boolean;
@@ -23,7 +21,6 @@ export const ShipInfo = ({
   ship,
   shipTypes,
   currentUserId,
-  playerNames,
   visible,
   canAct,
   onClose,
@@ -31,8 +28,8 @@ export const ShipInfo = ({
 }: ShipInfoProps) => {
   if (!ship) return null;
 
-  const shipType = shipTypes.find((t) => t.id === ship.ship_type_id);
-  const isOwn = ship.player_id === currentUserId;
+  const shipType = ship.type;
+  const isOwn = ship.owner_id === currentUserId;
 
   return (
     <Modal
@@ -50,12 +47,12 @@ export const ShipInfo = ({
           {/* Header */}
           <View style={styles.header}>
             <Ionicons
-              name={shipType?.name === 'fighter' ? 'rocket' : 'construct'}
+              name={shipType?.type === 'fighter' ? 'rocket' : 'construct'}
               size={24}
               color={isOwn ? COLORS.info : COLORS.error}
             />
             <Text style={styles.title}>
-              {shipType?.name === 'fighter' ? 'Chasseur' : 'Mineur'}
+              {shipType?.name ?? (shipType?.type === 'fighter' ? 'Chasseur' : 'Mineur')}
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Ionicons name="close" size={20} color={COLORS.textSecondary} />
@@ -75,7 +72,7 @@ export const ShipInfo = ({
                 { color: isOwn ? COLORS.success : COLORS.error },
               ]}
             >
-              {isOwn ? 'Votre vaisseau' : (playerNames[ship.player_id] ?? `Joueur ${ship.player_id}`)}
+              {isOwn ? 'Votre vaisseau' : ship.owner.name}
             </Text>
           </View>
 
@@ -85,7 +82,7 @@ export const ShipInfo = ({
             <StatItem icon="flash" label="Attaque" value={`${shipType?.damage ?? '?'}`} color="#FF9800" />
             <StatItem icon="locate" label="Portee atk" value={`${shipType?.attack_range ?? '?'}`} color="#FF9800" />
             <StatItem icon="speedometer" label="Vitesse" value={`${shipType?.speed ?? '?'}`} color={COLORS.info} />
-            {shipType?.name === 'miner' && (
+            {shipType?.type === 'miner' && (
               <StatItem icon="diamond" label="Recolte" value={`${shipType.gathering_rate}`} color="#FFD700" />
             )}
           </View>

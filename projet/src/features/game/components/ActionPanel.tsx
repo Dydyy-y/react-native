@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Ship, ShipType, RoundAction } from '../types/game.types';
+import { Ship, RoundAction } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
 
 /** Mode de selection sur la carte apres avoir choisi une action */
@@ -21,7 +21,6 @@ export type SelectionMode =
 interface ActionPanelProps {
   /** Vaisseau actuellement selectionne */
   selectedShip: Ship | null;
-  shipTypes: ShipType[];
   pendingActions: RoundAction[];
   actionsSubmitted: boolean;
   loading: boolean;
@@ -35,7 +34,6 @@ interface ActionPanelProps {
 /** Panneau d'actions : choix move/attack pour un vaisseau, liste des actions, bouton valider */
 export const ActionPanel = ({
   selectedShip,
-  shipTypes,
   pendingActions,
   actionsSubmitted,
   loading,
@@ -51,9 +49,7 @@ export const ActionPanel = ({
       (a) => a.type !== 'purchase' && 'ship_id' in a && a.ship_id === selectedShip.id,
     );
 
-  const shipType = selectedShip
-    ? shipTypes.find((t) => t.id === selectedShip.ship_type_id)
-    : null;
+  const shipType = selectedShip?.type ?? null;
 
   return (
     <View style={styles.container}>
@@ -72,12 +68,12 @@ export const ActionPanel = ({
         <View style={styles.shipActions}>
           <View style={styles.shipHeader}>
             <Ionicons
-              name={shipType?.name === 'fighter' ? 'rocket' : 'construct'}
+              name={shipType?.type === 'fighter' ? 'rocket' : 'construct'}
               size={16}
               color={COLORS.info}
             />
             <Text style={styles.shipName}>
-              {shipType?.name === 'fighter' ? 'Chasseur' : 'Mineur'} #{selectedShip.id}
+              {shipType?.name ?? 'Vaisseau'} #{selectedShip.id}
             </Text>
             <TouchableOpacity onPress={onDeselectShip}>
               <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
@@ -102,7 +98,7 @@ export const ActionPanel = ({
               </TouchableOpacity>
 
               {/* Attaque uniquement pour les fighters */}
-              {shipType?.name === 'fighter' && (
+              {shipType?.type === 'fighter' && (
                 <TouchableOpacity
                   style={styles.attackButton}
                   onPress={() =>

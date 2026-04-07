@@ -63,13 +63,13 @@ export const ShipShop = ({
                 <View style={styles.typeCard}>
                   <View style={styles.typeHeader}>
                     <Ionicons
-                      name={item.name === 'fighter' ? 'rocket' : 'construct'}
+                      name={item.type === 'fighter' ? 'rocket' : 'construct'}
                       size={24}
-                      color={item.name === 'fighter' ? COLORS.error : '#FFD700'}
+                      color={item.type === 'fighter' ? COLORS.error : '#FFD700'}
                     />
                     <View style={styles.typeInfo}>
                       <Text style={styles.typeName}>
-                        {item.name === 'fighter' ? 'Chasseur' : 'Mineur'}
+                        {item.name}
                       </Text>
                       <Text style={styles.typeCost}>
                         <Ionicons name="diamond" size={12} color="#FFD700" /> {item.cost} minerai
@@ -95,7 +95,7 @@ export const ShipShop = ({
                     <MiniStat label="Attaque" value={item.damage} />
                     <MiniStat label="Portee atk" value={item.attack_range} />
                     <MiniStat label="Vitesse" value={item.speed} />
-                    {item.name === 'miner' && (
+                    {item.type === 'miner' && (
                       <MiniStat label="Recolte" value={item.gathering_rate} />
                     )}
                   </View>

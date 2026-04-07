@@ -111,7 +111,11 @@ export const GameScreen = () => {
       clearActions();
       setSelectedShip(null);
       setSelectionMode(null);
-      showToast(`Tour ${gameStatus.round} !`, 'info');
+      // Ne pas afficher le toast si le joueur est elimine
+      const stillAlive = gameStatus.ships.some(s => s.owner_id === currentUserId);
+      if (stillAlive) {
+        showToast(`Tour ${gameStatus.round} !`, 'info');
+      }
     }
     prevRoundRef.current = gameStatus.round;
   }, [gameStatus?.round, clearActions, showToast, gameStatus]);
@@ -127,7 +131,7 @@ export const GameScreen = () => {
   // Polling : seulement apres soumission des actions ou si joueur elimine (pour observer)
   const shouldPoll = !!activeSessionId && !!gameStatus && (
     gameStatus.round_actions_submitted ||
-    !gameStatus.ships.some(s => s.player_id === currentUserId)
+    !gameStatus.ships.some(s => s.owner_id === currentUserId)
   );
   usePolling(pollState, 30000, shouldPoll);
 
@@ -139,46 +143,41 @@ export const GameScreen = () => {
     }
   }, [gameStatus?.status, activeSessionId, navigation]);
 
-  // Liste unique des player IDs (pour couleurs coherentes)
   const ships = gameStatus?.ships ?? [];
 
-  const playerIds = useMemo(() => {
-    if (ships.length === 0) return [];
-    const ids = new Set<number>();
+  // Map owner_id → { name, color } depuis les vaisseaux (source de verite)
+  const playerInfoMap = useMemo(() => {
+    const m = new Map<number, { name: string; color: string }>();
     ships.forEach((s) => {
-      if (s.player_id != null) ids.add(s.player_id);
+      if (s.owner && !m.has(s.owner_id)) {
+        m.set(s.owner_id, { name: s.owner.name, color: s.owner.color });
+      }
     });
-    return Array.from(ids).sort((a, b) => a - b);
+    return m;
   }, [ships]);
 
   // Nombre de vaisseaux du joueur actuel
   const myShipCount = useMemo(() => {
-    return ships.filter((s) => s.player_id === currentUserId).length;
+    return ships.filter((s) => s.owner_id === currentUserId).length;
   }, [ships, currentUserId]);
 
   // Cases a portee selon le mode de selection actif
   const rangeCells = useMemo(() => {
     if (!selectionMode || !map) return new Set<string>();
     if (selectionMode.kind === 'move') {
-      const shipType = shipTypes.find(
-        (t) => t.id === selectionMode.ship.ship_type_id,
-      );
       return computeRangeCells(
         selectionMode.ship.x,
         selectionMode.ship.y,
-        shipType?.speed ?? 1,
+        selectionMode.ship.type?.speed ?? 1,
         map.width,
         map.height,
       );
     }
     if (selectionMode.kind === 'attack') {
-      const shipType = shipTypes.find(
-        (t) => t.id === selectionMode.ship.ship_type_id,
-      );
       return computeRangeCells(
         selectionMode.ship.x,
         selectionMode.ship.y,
-        shipType?.attack_range ?? 1,
+        selectionMode.ship.type?.attack_range ?? 1,
         map.width,
         map.height,
       );
@@ -194,9 +193,11 @@ export const GameScreen = () => {
   }, [selectedShip]);
 
   // Le joueur est elimine s'il n'a plus de vaisseaux
+  // On ne considere pas l'elimination si aucun vaisseau n'est charge (etat initial)
   const isEliminated = useMemo(() => {
     if (!gameStatus || gameStatus.status !== 'running') return false;
-    return ships.filter((s) => s.player_id === currentUserId).length === 0;
+    if (ships.length === 0) return false; // pas encore de donnees chargees
+    return ships.filter((s) => s.owner_id === currentUserId).length === 0;
   }, [gameStatus, ships, currentUserId]);
 
   // Le joueur ne peut pas agir si elimine, actions deja soumises, ou partie finie
@@ -261,7 +262,7 @@ export const GameScreen = () => {
           }
           // Verifier qu'il y a un vaisseau ennemi sur la case
           const enemyShip = shipsOnTarget.find(
-            (s) => s.player_id !== currentUserId,
+            (s) => s.owner_id !== currentUserId,
           );
           if (!enemyShip) {
             showToast('Pas de vaisseau ennemi sur cette case', 'error');
@@ -299,7 +300,7 @@ export const GameScreen = () => {
       const shipsOnCell = shipsByPos.get(`${x},${y}`) || [];
       if (shipsOnCell.length > 0) {
         const ship = shipsOnCell[0];
-        if (ship.player_id === currentUserId) {
+        if (ship.owner_id === currentUserId) {
           // Selectionner son propre vaisseau
           setSelectedShip(ship);
         } else {
@@ -479,8 +480,6 @@ export const GameScreen = () => {
           <GameMap
             map={map}
             shipsByPos={shipsByPos}
-            shipTypes={shipTypes}
-            playerIds={playerIds}
             rangeCells={rangeCells}
             selectedCell={selectedCell}
             onCellPress={handleCellPress}
@@ -493,7 +492,6 @@ export const GameScreen = () => {
         {/* Panneau d'actions */}
         <ActionPanel
           selectedShip={selectedShip}
-          shipTypes={shipTypes}
           pendingActions={pendingActions}
           actionsSubmitted={gameStatus.round_actions_submitted}
           loading={loading}
@@ -510,19 +508,16 @@ export const GameScreen = () => {
         <View style={styles.legend}>
           <Text style={styles.legendTitle}>Joueurs</Text>
           <View style={styles.legendRow}>
-            {playerIds.map((pid, idx) => (
+            {Array.from(playerInfoMap.entries()).map(([pid, info]) => (
               <View key={`player-${pid}`} style={styles.legendItem}>
                 <View
                   style={[
                     styles.legendDot,
-                    {
-                      backgroundColor:
-                        ['#2196F3', '#f44336', '#4CAF50', '#FF9800'][idx % 4],
-                    },
+                    { backgroundColor: info.color },
                   ]}
                 />
                 <Text style={styles.legendText}>
-                  {pid === currentUserId ? 'Vous' : (playerNames[pid] ?? `Joueur ${pid}`)}
+                  {pid === currentUserId ? 'Vous' : info.name}
                 </Text>
               </View>
             ))}
@@ -535,7 +530,6 @@ export const GameScreen = () => {
         ship={inspectedShip}
         shipTypes={shipTypes}
         currentUserId={currentUserId}
-        playerNames={playerNames}
         visible={!!inspectedShip}
         canAct={!!canAct}
         onClose={() => setInspectedShip(null)}
