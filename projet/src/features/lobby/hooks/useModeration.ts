@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useLobbyContext } from '../contexts/LobbyContext';
 import * as sessionService from '../services/sessionService';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
+import { AxiosError } from 'axios';
 
 /**
  * Hook pour les actions de moderation du createur.
@@ -10,32 +11,42 @@ import { getErrorMessage } from '../../../shared/utils/errorHandler';
 export const useModeration = () => {
   const { state, dispatch } = useLobbyContext();
 
+  /** Rafraichit la session apres une action — gere le 404 si supprimee entre-temps */
+  const safeRefreshSession = useCallback(async (sessionId: number) => {
+    try {
+      const updated = await sessionService.getSession(sessionId);
+      dispatch({ type: 'SET_SESSION', payload: updated });
+    } catch (error) {
+      // Session supprimee entre-temps (404/403) → nettoyer
+      if (error instanceof AxiosError && (error.response?.status === 404 || error.response?.status === 403)) {
+        dispatch({ type: 'CLEAR_SESSION' });
+      }
+    }
+  }, [dispatch]);
+
   /** Expulser un joueur (kick) */
   const kickPlayer = useCallback(async (playerId: number) => {
     if (!state.currentSession) return { success: false as const, error: 'Aucune session' };
     try {
       await sessionService.kickPlayer(state.currentSession.id, playerId);
-      // Rafraichir la session pour mettre a jour la liste des joueurs
-      const updated = await sessionService.getSession(state.currentSession.id);
-      dispatch({ type: 'SET_SESSION', payload: updated });
+      await safeRefreshSession(state.currentSession.id);
       return { success: true as const };
     } catch (error) {
       return { success: false as const, error: getErrorMessage(error) };
     }
-  }, [dispatch, state.currentSession]);
+  }, [dispatch, state.currentSession, safeRefreshSession]);
 
   /** Bannir un joueur (ban) */
   const banPlayer = useCallback(async (playerId: number) => {
     if (!state.currentSession) return { success: false as const, error: 'Aucune session' };
     try {
       await sessionService.banPlayer(state.currentSession.id, playerId);
-      const updated = await sessionService.getSession(state.currentSession.id);
-      dispatch({ type: 'SET_SESSION', payload: updated });
+      await safeRefreshSession(state.currentSession.id);
       return { success: true as const };
     } catch (error) {
       return { success: false as const, error: getErrorMessage(error) };
     }
-  }, [dispatch, state.currentSession]);
+  }, [dispatch, state.currentSession, safeRefreshSession]);
 
   /** Supprimer la session */
   const deleteSession = useCallback(async () => {
@@ -54,14 +65,12 @@ export const useModeration = () => {
     if (!state.currentSession) return { success: false as const, error: 'Aucune session' };
     try {
       await sessionService.startGame(state.currentSession.id);
-      // Rafraichir pour obtenir le state "running"
-      const updated = await sessionService.getSession(state.currentSession.id);
-      dispatch({ type: 'SET_SESSION', payload: updated });
+      await safeRefreshSession(state.currentSession.id);
       return { success: true as const };
     } catch (error) {
       return { success: false as const, error: getErrorMessage(error) };
     }
-  }, [dispatch, state.currentSession]);
+  }, [dispatch, state.currentSession, safeRefreshSession]);
 
   return { kickPlayer, banPlayer, deleteSession, startGame };
 };

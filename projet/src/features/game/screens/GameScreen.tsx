@@ -108,22 +108,25 @@ export const GameScreen = () => {
       prevRoundRef.current !== null &&
       prevRoundRef.current !== gameStatus.round
     ) {
+      // Sauvegarder avant clearActions (eviter stale closure)
+      const hadPendingActions = pendingActions.length > 0;
+
       // Nouveau tour : avertir si des actions non soumises sont perdues
-      if (pendingActions.length > 0) {
+      if (hadPendingActions) {
         showToast('Nouveau tour — actions non soumises annulees', 'error');
       }
       // Reset de l'UI
       clearActions();
       setSelectedShip(null);
       setSelectionMode(null);
-      // Ne pas afficher le toast si le joueur est elimine
+      // Ne pas afficher le toast si le joueur est elimine ou avait des actions perdues
       const stillAlive = gameStatus.ships.some(s => s.owner_id === currentUserId);
-      if (stillAlive && pendingActions.length === 0) {
+      if (stillAlive && !hadPendingActions) {
         showToast(`Tour ${gameStatus.round} !`, 'info');
       }
     }
     prevRoundRef.current = gameStatus.round;
-  }, [gameStatus?.round, clearActions, showToast, gameStatus, pendingActions.length]);
+  }, [gameStatus?.round, clearActions, showToast, gameStatus, pendingActions.length, currentUserId]);
 
   const pollState = useCallback(async () => {
     try {
@@ -158,7 +161,13 @@ export const GameScreen = () => {
   }, [ships, selectedShip]);
 
   // Map owner_id → { name, color } — conserve les joueurs elimines dans la legende
+  // Reset quand la session change (nouvelle partie)
   const playerInfoMapRef = useRef(new Map<number, { name: string; color: string }>());
+  const prevSessionIdRef = useRef(activeSessionId);
+  if (prevSessionIdRef.current !== activeSessionId) {
+    playerInfoMapRef.current = new Map();
+    prevSessionIdRef.current = activeSessionId;
+  }
   const playerInfoMap = useMemo(() => {
     const m = playerInfoMapRef.current;
     ships.forEach((s) => {
@@ -219,6 +228,19 @@ export const GameScreen = () => {
     !gameStatus.round_actions_submitted &&
     gameStatus.status === 'running' &&
     !isEliminated;
+
+  // Minerai reel = minerai API - cout des achats en attente
+  const ore = useMemo(() => {
+    const rawOre = gameStatus?.resources?.ore ?? 0;
+    const pendingCost = pendingActions.reduce((sum, a) => {
+      if (a.type === 'purchase') {
+        const st = shipTypes.find((t) => t.id === a.ship_type_id);
+        return sum + (st?.cost ?? 0);
+      }
+      return sum;
+    }, 0);
+    return Math.max(0, rawOre - pendingCost);
+  }, [gameStatus?.resources?.ore, pendingActions, shipTypes]);
 
   // Index rapide des vaisseaux par position
   const shipsByPos = useMemo(() => {
@@ -307,6 +329,14 @@ export const GameScreen = () => {
           });
           showToast('Attaque ajoutee', 'success');
         } else if (selectionMode.kind === 'recruit_placement') {
+          // Verifier que le joueur a assez de minerai
+          const shipType = shipTypes.find((t) => t.id === selectionMode.shipTypeId);
+          const cost = shipType?.cost ?? 0;
+          if (cost > ore) {
+            showToast('Minerai insuffisant pour cet achat', 'error');
+            setSelectionMode(null);
+            return;
+          }
           // Verifier case libre (pas de vaisseau ni action pendante)
           if (shipsOnTarget.length > 0) {
             showToast('Case occupee par un vaisseau', 'error');
@@ -361,6 +391,8 @@ export const GameScreen = () => {
       pendingActions,
       addAction,
       showToast,
+      shipTypes,
+      ore,
     ],
   );
 
@@ -448,16 +480,6 @@ export const GameScreen = () => {
     );
   }
 
-  // Minerai reel = minerai API - cout des achats en attente
-  const rawOre = gameStatus.resources?.ore ?? 0;
-  const pendingPurchaseCost = pendingActions.reduce((sum, a) => {
-    if (a.type === 'purchase') {
-      const st = shipTypes.find((t) => t.id === a.ship_type_id);
-      return sum + (st?.cost ?? 0);
-    }
-    return sum;
-  }, 0);
-  const ore = Math.max(0, rawOre - pendingPurchaseCost);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>

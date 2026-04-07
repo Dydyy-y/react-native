@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useLobbyContext } from '../contexts/LobbyContext';
 import * as sessionService from '../services/sessionService';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
@@ -59,17 +59,22 @@ export const useLobby = () => {
     }
   }, [dispatch, state.currentSession]);
 
+  // Ref stable pour l'ID de session — evite de recreer refreshSession a chaque poll
+  const sessionIdRef = useRef(state.currentSession?.id);
+  sessionIdRef.current = state.currentSession?.id;
+
   /** Rafraîchir les données de la session (pour le polling) */
   const refreshSession = useCallback(async () => {
-    if (!state.currentSession) return;
+    const id = sessionIdRef.current;
+    if (!id) return;
     try {
-      const session = await sessionService.getSession(state.currentSession.id);
+      const session = await sessionService.getSession(id);
       dispatch({ type: 'SET_SESSION', payload: session });
     } catch (error) {
       // Erreurs gerees par le consommateur (SessionDetailScreen) via le throw
       throw error;
     }
-  }, [dispatch, state.currentSession]);
+  }, [dispatch]);
 
   return {
     session: state.currentSession,
