@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -128,11 +129,9 @@ export const GameScreen = () => {
     }
   }, [loadState]);
 
-  // Polling : seulement apres soumission des actions ou si joueur elimine (pour observer)
-  const shouldPoll = !!activeSessionId && !!gameStatus && (
-    gameStatus.round_actions_submitted ||
-    !gameStatus.ships.some(s => s.owner_id === currentUserId)
-  );
+  // Polling : toujours actif tant que la partie est en cours
+  // (necessaire pour detecter les changements de tour meme avant soumission)
+  const shouldPoll = !!activeSessionId && !!gameStatus && gameStatus.status === 'running';
   usePolling(pollState, 30000, shouldPoll);
 
   // Detecter fin de partie → naviguer vers GameOverScreen
@@ -422,7 +421,7 @@ export const GameScreen = () => {
   const ore = rawOre - pendingPurchaseCost;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <Ionicons name="planet-outline" size={20} color={COLORS.info} />
@@ -494,6 +493,7 @@ export const GameScreen = () => {
           selectedShip={selectedShip}
           pendingActions={pendingActions}
           actionsSubmitted={gameStatus.round_actions_submitted}
+          canAct={!!canAct}
           loading={loading}
           onSetSelectionMode={setSelectionMode}
           onRemoveAction={removeAction}
@@ -543,7 +543,7 @@ export const GameScreen = () => {
         onBuy={handleBuyShip}
         onClose={() => setShowShop(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

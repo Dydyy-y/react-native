@@ -23,6 +23,8 @@ interface ActionPanelProps {
   selectedShip: Ship | null;
   pendingActions: RoundAction[];
   actionsSubmitted: boolean;
+  /** Le joueur peut-il agir ce tour (non elimine, actions non soumises, partie en cours) */
+  canAct: boolean;
   loading: boolean;
   /** Callback pour definir le mode de selection sur la carte */
   onSetSelectionMode: (mode: SelectionMode) => void;
@@ -36,6 +38,7 @@ export const ActionPanel = ({
   selectedShip,
   pendingActions,
   actionsSubmitted,
+  canAct,
   loading,
   onSetSelectionMode,
   onRemoveAction,
@@ -63,8 +66,18 @@ export const ActionPanel = ({
         </View>
       )}
 
+      {/* Instruction quand aucun vaisseau n'est selectionne */}
+      {!selectedShip && canAct && (
+        <View style={styles.hintBanner}>
+          <Ionicons name="hand-left-outline" size={18} color={COLORS.info} />
+          <Text style={styles.hintText}>
+            Selectionnez un de vos vaisseaux sur la carte pour agir
+          </Text>
+        </View>
+      )}
+
       {/* Actions pour le vaisseau selectionne */}
-      {selectedShip && !actionsSubmitted && (
+      {selectedShip && canAct && (
         <View style={styles.shipActions}>
           <View style={styles.shipHeader}>
             <Ionicons
@@ -116,7 +129,7 @@ export const ActionPanel = ({
       )}
 
       {/* Liste des actions en attente */}
-      {pendingActions.length > 0 && !actionsSubmitted && (
+      {pendingActions.length > 0 && canAct && (
         <View style={styles.pendingSection}>
           <Text style={styles.pendingTitle}>
             Actions en attente ({pendingActions.length})
@@ -159,7 +172,7 @@ export const ActionPanel = ({
       )}
 
       {/* Bouton valider (visible meme sans actions = passer le tour) */}
-      {!actionsSubmitted && (
+      {canAct && (
         <TouchableOpacity
           style={[styles.submitButton, loading && styles.submitDisabled]}
           onPress={onSubmitActions}
@@ -202,6 +215,21 @@ const styles = StyleSheet.create({
     color: COLORS.info,
     fontSize: 14,
     fontWeight: '600',
+  },
+  hintBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: 8,
+    padding: 14,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  hintText: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    flex: 1,
   },
   shipActions: {
     backgroundColor: COLORS.surface,

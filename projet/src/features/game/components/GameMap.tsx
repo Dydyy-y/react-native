@@ -47,6 +47,9 @@ export const GameMap = ({
     return set;
   }, [map.resource_nodes]);
 
+  // Tableau vide stable pour les cellules sans vaisseaux (evite de casser memo)
+  const emptyShips: Ship[] = useMemo(() => [], []);
+
   // Generer toutes les cellules (y puis x, car FlatList est row-major)
   const cells = useMemo(() => {
     const result: CellData[] = [];
@@ -58,12 +61,12 @@ export const GameMap = ({
           x,
           y,
           hasResource: resourceSet.has(key),
-          ships: shipsByPos.get(key) || [],
+          ships: shipsByPos.get(key) || emptyShips,
         });
       }
     }
     return result;
-  }, [map.width, map.height, resourceSet, shipsByPos]);
+  }, [map.width, map.height, resourceSet, shipsByPos, emptyShips]);
 
   const needsScroll = gridWidth > screenWidth;
 

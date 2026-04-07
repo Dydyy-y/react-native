@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -52,9 +52,13 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
 
   usePolling(pollCallback, 30000, !!session);
 
+  // Ref pour ne declencher la redirection qu'une seule fois
+  const hasRedirectedToGame = useRef(false);
+
   // Redirection si la session passe en "running" (partie demarree)
   useEffect(() => {
-    if (session?.state === 'running') {
+    if (session?.state === 'running' && !hasRedirectedToGame.current) {
+      hasRedirectedToGame.current = true;
       setSessionId(session.id);
       // Transmettre les noms des joueurs au GameContext pour la legende
       const names: Record<number, string> = {};
