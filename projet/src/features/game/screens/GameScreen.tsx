@@ -145,7 +145,9 @@ export const GameScreen = () => {
   const playerIds = useMemo(() => {
     if (ships.length === 0) return [];
     const ids = new Set<number>();
-    ships.forEach((s) => ids.add(s.player_id));
+    ships.forEach((s) => {
+      if (s.player_id != null) ids.add(s.player_id);
+    });
     return Array.from(ids).sort((a, b) => a - b);
   }, [ships]);
 
@@ -509,7 +511,7 @@ export const GameScreen = () => {
           <Text style={styles.legendTitle}>Joueurs</Text>
           <View style={styles.legendRow}>
             {playerIds.map((pid, idx) => (
-              <View key={pid} style={styles.legendItem}>
+              <View key={`player-${pid}`} style={styles.legendItem}>
                 <View
                   style={[
                     styles.legendDot,

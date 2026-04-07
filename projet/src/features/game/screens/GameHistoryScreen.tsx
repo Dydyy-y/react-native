@@ -37,9 +37,9 @@ export const GameHistoryScreen = () => {
       else setLoadingMore(true);
       const data = await getGameHistory(p);
       if (p === 1) {
-        setEntries(data.data);
+        setEntries(data.data ?? []);
       } else {
-        setEntries((prev) => [...prev, ...data.data]);
+        setEntries((prev) => [...prev, ...(data.data ?? [])]);
       }
       setLastPage(data.last_page);
       setError(null);
