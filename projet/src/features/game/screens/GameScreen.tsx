@@ -71,7 +71,6 @@ export const GameScreen = () => {
 
   const currentUserId = authState.user?.id ?? -1;
 
-  // ─── Etats locaux pour l'interaction ────────────────────────────────
   const [selectedShip, setSelectedShip] = useState<Ship | null>(null);
   const [inspectedShip, setInspectedShip] = useState<Ship | null>(null);
   const [selectionMode, setSelectionMode] = useState<SelectionMode>(null);
@@ -83,7 +82,6 @@ export const GameScreen = () => {
   // SessionId provient uniquement du GameContext (set par setSessionId au demarrage)
   const activeSessionId = sessionId;
 
-  // ─── Chargement initial ────────────────────────────────────────────
   useEffect(() => {
     if (activeSessionId && !map) {
       loadMap();
@@ -103,7 +101,6 @@ export const GameScreen = () => {
     }
   }, [activeSessionId, shipTypes, loadShipTypes]);
 
-  // ─── Detection nouveau tour → reset des actions ────────────────────
   useEffect(() => {
     if (!gameStatus) return;
     if (
@@ -119,7 +116,6 @@ export const GameScreen = () => {
     prevRoundRef.current = gameStatus.round;
   }, [gameStatus?.round, clearActions, showToast, gameStatus]);
 
-  // ─── Polling etat toutes les 30s ──────────────────────────────────
   const pollState = useCallback(async () => {
     try {
       await loadState();
@@ -142,8 +138,6 @@ export const GameScreen = () => {
       navigation.navigate('GameOver', { sessionId: activeSessionId });
     }
   }, [gameStatus?.status, activeSessionId, navigation]);
-
-  // ─── Calculs derives ───────────────────────────────────────────────
 
   // Liste unique des player IDs (pour couleurs coherentes)
   const ships = gameStatus?.ships ?? [];
@@ -221,8 +215,6 @@ export const GameScreen = () => {
     });
     return m;
   }, [ships]);
-
-  // ─── Handlers ──────────────────────────────────────────────────────
 
   const handleCellPress = useCallback(
     (x: number, y: number) => {
@@ -366,8 +358,6 @@ export const GameScreen = () => {
     }
   }, [submitActions, showToast]);
 
-  // ─── Etats de chargement / erreur ──────────────────────────────────
-
   if (!activeSessionId) {
     return (
       <View style={styles.centerContainer}>
@@ -416,8 +406,6 @@ export const GameScreen = () => {
       </View>
     );
   }
-
-  // ─── Rendu principal ───────────────────────────────────────────────
 
   // Minerai reel = minerai API - cout des achats en attente
   const rawOre = gameStatus.resources?.ore ?? 0;

@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { LobbyState, LobbyAction } from '../types/lobby.types';
 
-// ─── Reducer ──────────────────────────────────────────────────────────────────
-
 const initialState: LobbyState = {
   currentSession: null,
   loading: false,
@@ -24,16 +22,12 @@ const lobbyReducer = (state: LobbyState, action: LobbyAction): LobbyState => {
   }
 };
 
-// ─── Context ──────────────────────────────────────────────────────────────────
-
 interface LobbyContextType {
   state: LobbyState;
   dispatch: React.Dispatch<LobbyAction>;
 }
 
 const LobbyContext = createContext<LobbyContextType>(null!);
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
 
 export const LobbyProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(lobbyReducer, initialState);

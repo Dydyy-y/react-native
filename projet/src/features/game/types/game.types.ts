@@ -1,5 +1,3 @@
-// ─── Types de la feature Game (Sprint 4) ────────────────────────────────
-
 /** Noeud de ressource sur la carte */
 export interface ResourceNode {
   x: number;
@@ -52,8 +50,6 @@ export interface ShipType {
   cost: number;
 }
 
-// ─── Actions de tour (envoyées au serveur) ────────────────────────────
-
 /** Action unitaire d'un tour */
 export type RoundAction =
   | { type: 'move'; ship_id: number; target_x: number; target_y: number }
@@ -73,8 +69,6 @@ export interface RoundActionsResponse {
   validated: boolean;
   errors: ActionError[];
 }
-
-// ─── Stats de fin de partie (GET /game-sessions/{id}/stats) ─────────────
 
 /** Joueur dans le classement de fin */
 export interface GameStatsPlayer {
@@ -97,8 +91,6 @@ export interface GameStats {
   winner: GameStatsWinner | null;
 }
 
-// ─── Historique des parties (GET /game-sessions/history) ─────────────────
-
 /** Session dans l'historique */
 export interface GameHistoryEntry {
   id: number;
@@ -115,8 +107,6 @@ export interface GameHistoryResponse {
   last_page: number;
   total: number;
 }
-
-// ─── State & Actions du GameContext ─────────────────────────────────────
 
 export interface GameState {
   sessionId: number | null;

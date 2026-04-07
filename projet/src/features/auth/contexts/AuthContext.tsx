@@ -13,8 +13,6 @@ import { getProfile } from '../services/authService';
 import { configureApiClient } from '../../../shared/config/apiClient';
 import { logger } from '../../../shared/utils/logger';
 
-// ─── State & Actions ──────────────────────────────────────────────────────────
-
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -56,8 +54,6 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
-// ─── Context ──────────────────────────────────────────────────────────────────
-
 interface AuthContextType {
   state: AuthState;
   dispatch: React.Dispatch<AuthAction>;
@@ -65,8 +61,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>(null!);
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);

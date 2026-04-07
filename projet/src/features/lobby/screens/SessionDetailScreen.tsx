@@ -86,8 +86,6 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
     }
   }, [session?.players, authState.user, showToast, navigation, session]);
 
-  // ─── Actions createur ────────────────────────────────────────────
-
   const handleKick = async (playerId: number) => {
     const result = await kickPlayer(playerId);
     if (result.success) {
@@ -151,8 +149,6 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
       },
     );
   };
-
-  // ─── Rendu ────────────────────────────────────────────────────────
 
   if (!session) {
     return (
