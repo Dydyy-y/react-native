@@ -55,7 +55,6 @@ export const GameScreen = () => {
     gameStatus,
     shipTypes,
     pendingActions,
-    playerNames,
     sessionId,
     loading,
     error,
@@ -136,9 +135,8 @@ export const GameScreen = () => {
     }
   }, [loadState]);
 
-  // Polling : toujours actif tant que la partie est en cours
-  // (necessaire pour detecter les changements de tour meme avant soumission)
-  const shouldPoll = !!activeSessionId && !!gameStatus && gameStatus.status === 'running';
+  // Polling : actif uniquement apres soumission des actions (conforme consigne etape 5)
+  const shouldPoll = !!activeSessionId && !!gameStatus && gameStatus.status === 'running' && gameStatus.round_actions_submitted;
   const { consecutiveErrors: pollErrors } = usePolling(pollState, 30000, shouldPoll);
 
   // Detecter fin de partie → nettoyer et naviguer vers GameOverScreen
@@ -206,7 +204,7 @@ export const GameScreen = () => {
     }
     // recruit_placement : toute la carte (pas de portee)
     return new Set<string>();
-  }, [selectionMode, map, shipTypes]);
+  }, [selectionMode, map]);
 
   // Case du vaisseau selectionne
   const selectedCell = useMemo(() => {
@@ -282,6 +280,14 @@ export const GameScreen = () => {
           }
           if (!rangeCells.has(key)) {
             showToast('Case hors de portee', 'error');
+            return;
+          }
+          // Verifier qu'un vaisseau allie n'occupe pas deja la case
+          const friendlyOnTarget = shipsOnTarget.some(
+            (s) => s.owner_id === currentUserId,
+          );
+          if (friendlyOnTarget) {
+            showToast('Un de vos vaisseaux occupe deja cette case', 'error');
             return;
           }
           // Verifier qu'aucune action ne cible deja cette case (move ou purchase)

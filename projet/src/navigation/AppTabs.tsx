@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { AppTabsParamList, LobbyStackParamList, GameStackParamList, ProfileStackParamList } from './NavigationTypes';
-import { ProfileScreen } from '../features/auth/screens/ProfileScreen';
+import { ProfileScreen } from '../features/auth';
 import {
   LobbyHomeScreen,
   CreateSessionScreen,

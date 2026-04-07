@@ -110,8 +110,8 @@ export const ActionPanel = ({
                 <Text style={styles.rangeText}>({shipType?.speed ?? '?'} cases)</Text>
               </TouchableOpacity>
 
-              {/* Attaque uniquement pour les fighters */}
-              {shipType?.type === 'fighter' && (
+              {/* Attaque disponible si le vaisseau a des degats et une portee d'attaque */}
+              {(shipType?.damage ?? 0) > 0 && (shipType?.attack_range ?? 0) > 0 && (
                 <TouchableOpacity
                   style={styles.attackButton}
                   onPress={() =>

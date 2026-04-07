@@ -53,8 +53,7 @@ apiClient.interceptors.response.use(
       try {
         await _onUnauthorized();
       } finally {
-        // Reset apres un court delai pour permettre un futur logout si necessaire
-        setTimeout(() => { _isLoggingOut = false; }, 1000);
+        _isLoggingOut = false;
       }
     }
     return Promise.reject(error);

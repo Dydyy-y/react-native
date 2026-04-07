@@ -14,7 +14,6 @@ import { AppTabsParamList } from '../../../navigation/NavigationTypes';
 import { getGameStats } from '../services/gameService';
 import { useGame } from '../hooks/useGame';
 import { useAuth } from '../../auth';
-import { useLobbyContext } from '../../lobby';
 import { GameStats, GameStatsPlayer } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
@@ -29,7 +28,6 @@ export const GameOverScreen = () => {
   const navigation = useNavigation<BottomTabNavigationProp<AppTabsParamList>>();
   const { state: authState } = useAuth();
   const { clearGame } = useGame();
-  const { dispatch: lobbyDispatch } = useLobbyContext();
   const currentUserId = authState.user?.id ?? -1;
 
   const [stats, setStats] = useState<GameStats | null>(null);
@@ -56,7 +54,6 @@ export const GameOverScreen = () => {
 
   const handleReturnToLobby = () => {
     clearGame();
-    lobbyDispatch({ type: 'CLEAR_SESSION' });
     navigation.navigate('Lobby');
   };
 
