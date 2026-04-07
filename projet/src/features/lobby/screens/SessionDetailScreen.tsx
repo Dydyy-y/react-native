@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -37,23 +37,39 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
   const isCreator = session?.creator.id === authState.user?.id;
   const isWaiting = session?.state === 'waiting';
 
+  // Guard contre le double-tap sur les actions de moderation
+  const [moderationLoading, setModerationLoading] = useState(false);
+
   // Polling toutes les 30s
+  // La gestion du 404 (session supprimee) est dans useLobby.refreshSession
+  // qui dispatch CLEAR_SESSION — on detecte session=null ci-dessous
   const pollCallback = useCallback(async () => {
     try {
       await refreshSession();
     } catch (error) {
       const axiosError = error as { response?: { status?: number } };
-      if (axiosError.response?.status === 404) {
-        showToast('Session supprimee', 'error');
-        navigation.replace('LobbyHome');
+      if (axiosError.response?.status === 404 || axiosError.response?.status === 403) {
+        dispatch({ type: 'CLEAR_SESSION' });
       }
     }
-  }, [refreshSession, showToast, navigation]);
+  }, [refreshSession, dispatch]);
 
-  usePolling(pollCallback, 30000, !!session);
+  const { consecutiveErrors: pollErrors } = usePolling(pollCallback, 30000, !!session);
 
   // Ref pour ne declencher la redirection qu'une seule fois
   const hasRedirectedToGame = useRef(false);
+  // Ref indiquant si on a deja visite cette session (evite redirect au premier rendu)
+  const hasLoadedSession = useRef(false);
+
+  // Si la session devient null apres avoir ete chargee (404/supprimee), retour lobby
+  useEffect(() => {
+    if (session) {
+      hasLoadedSession.current = true;
+    } else if (hasLoadedSession.current && !hasRedirectedToGame.current) {
+      showToast('Session supprimee', 'error');
+      navigation.replace('LobbyHome');
+    }
+  }, [session, showToast, navigation]);
 
   // Redirection si la session passe en "running" (partie demarree)
   useEffect(() => {
@@ -64,10 +80,12 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
       const names: Record<number, string> = {};
       session.players.forEach((p) => { names[p.id] = p.name; });
       setPlayerNames(names);
+      // Couper le polling lobby pour eviter le double polling (lobby + game)
+      dispatch({ type: 'CLEAR_SESSION' });
       showToast('La partie commence !', 'info');
       tabNavigation.navigate('Game');
     }
-  }, [session?.state, session?.id, showToast, setSessionId, setPlayerNames, tabNavigation, session?.players]);
+  }, [session?.state, session?.id, showToast, setSessionId, setPlayerNames, tabNavigation, session?.players, dispatch]);
 
   // Si la partie est terminee, retour au lobby
   useEffect(() => {
@@ -79,32 +97,47 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
   }, [session?.state, showToast, dispatch, navigation]);
 
   // Si le joueur n'est plus dans la liste (kick/ban), retour au lobby
+  // On ignore si la session est en running/finished (gere par les effets ci-dessus)
   useEffect(() => {
     if (!session || !authState.user) return;
+    if (session.state !== 'waiting') return;
     const stillInSession = session.players.some(
       (p) => p.id === authState.user?.id,
     );
     if (!stillInSession) {
-      showToast('Vous avez ete retire de la session', 'info');
+      showToast('Vous avez ete expulse ou banni de la session', 'error');
+      dispatch({ type: 'CLEAR_SESSION' });
       navigation.replace('LobbyHome');
     }
-  }, [session?.players, authState.user, showToast, navigation, session]);
+  }, [session?.players, authState.user, showToast, navigation, session, dispatch]);
 
   const handleKick = async (playerId: number) => {
-    const result = await kickPlayer(playerId);
-    if (result.success) {
-      showToast('Joueur expulse', 'info');
-    } else {
-      showToast(result.error, 'error');
+    if (moderationLoading) return;
+    setModerationLoading(true);
+    try {
+      const result = await kickPlayer(playerId);
+      if (result.success) {
+        showToast('Joueur expulse', 'info');
+      } else {
+        showToast(result.error, 'error');
+      }
+    } finally {
+      setModerationLoading(false);
     }
   };
 
   const handleBan = async (playerId: number) => {
-    const result = await banPlayer(playerId);
-    if (result.success) {
-      showToast('Joueur banni', 'info');
-    } else {
-      showToast(result.error, 'error');
+    if (moderationLoading) return;
+    setModerationLoading(true);
+    try {
+      const result = await banPlayer(playerId);
+      if (result.success) {
+        showToast('Joueur banni', 'info');
+      } else {
+        showToast(result.error, 'error');
+      }
+    } finally {
+      setModerationLoading(false);
     }
   };
 
@@ -165,6 +198,16 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
+      {/* Bandeau connexion perdue */}
+      {pollErrors >= 2 && (
+        <View style={styles.connectionLostBanner}>
+          <Ionicons name="cloud-offline-outline" size={18} color={COLORS.white} />
+          <Text style={styles.connectionLostText}>
+            Connexion perdue — tentative de reconnexion...
+          </Text>
+        </View>
+      )}
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Salon : {session.name}</Text>
@@ -178,9 +221,15 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
         </View>
       </View>
 
-      {/* QR Code d'invitation (createur, session en attente) */}
-      {isCreator && isWaiting && (
+      {/* QR Code d'invitation (createur, session en attente, pas pleine) */}
+      {isCreator && isWaiting && session.players.length < 4 && (
         <QRDisplay inviteCode={session.invite_code} />
+      )}
+      {isCreator && isWaiting && session.players.length >= 4 && (
+        <View style={styles.sessionFullBanner}>
+          <Ionicons name="checkmark-circle" size={18} color={COLORS.success} />
+          <Text style={styles.sessionFullText}>Session complete (4/4 joueurs)</Text>
+        </View>
       )}
 
       {/* Liste des joueurs avec actions moderation */}
@@ -323,5 +372,35 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  connectionLostBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#b71c1c',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  connectionLostText: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
+  },
+  sessionFullBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    margin: 16,
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.success,
+    gap: 8,
+  },
+  sessionFullText: {
+    color: COLORS.success,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

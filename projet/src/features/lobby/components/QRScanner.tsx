@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
 import { COLORS } from '../../../shared/utils/constants';
@@ -12,6 +12,14 @@ export const QRScanner = ({ onScanned }: QRScannerProps) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const processedRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup du timeout au demontage
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const handleBarCodeScanned = (result: BarcodeScanningResult) => {
     // Empêcher les scans multiples
@@ -22,8 +30,11 @@ export const QRScanner = ({ onScanned }: QRScannerProps) => {
   };
 
   const handleScanAgain = () => {
-    processedRef.current = false;
-    setScanned(false);
+    // Delai de 1.5s pour laisser le temps de retirer le QR du cadre
+    timerRef.current = setTimeout(() => {
+      processedRef.current = false;
+      setScanned(false);
+    }, 1500);
   };
 
   // Permission non encore demandée

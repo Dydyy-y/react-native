@@ -95,6 +95,7 @@ export const GameMap = ({
             offset: cellSize * Math.floor(index / map.width),
             index,
           })}
+          key={`grid-${map.width}`}
         />
       </View>
     </ScrollView>

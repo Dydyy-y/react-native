@@ -2,6 +2,7 @@ import { AxiosError } from 'axios';
 
 /** Traduction des messages d'erreur API courants en francais */
 const ERROR_TRANSLATIONS: Record<string, string> = {
+  // Auth
   'Invalid credentials': 'Email ou mot de passe incorrect',
   'The name field is required.': 'Le nom est requis',
   'The email field is required.': "L'email est requis",
@@ -10,6 +11,23 @@ const ERROR_TRANSLATIONS: Record<string, string> = {
   'The name has already been taken.': 'Ce nom est deja utilise',
   'The password confirmation does not match.': 'Les mots de passe ne correspondent pas',
   'The email field must be a valid email address.': "L'adresse email n'est pas valide",
+  // Lobby
+  'Session not found': 'Session introuvable',
+  'Session not found.': 'Session introuvable',
+  'Session is full': 'La session est complete (4/4 joueurs)',
+  'Session is full.': 'La session est complete (4/4 joueurs)',
+  'Player already in session': 'Vous etes deja dans cette session',
+  'Player already in session.': 'Vous etes deja dans cette session',
+  'Player is banned': 'Vous avez ete banni de cette session',
+  'Player is banned.': 'Vous avez ete banni de cette session',
+  'Player is banned from this session': 'Vous avez ete banni de cette session',
+  'Player is banned from this session.': 'Vous avez ete banni de cette session',
+  'Session has already started': 'La partie a deja demarre',
+  'Session has already started.': 'La partie a deja demarre',
+  'Not enough players': 'Pas assez de joueurs pour demarrer',
+  'Not enough players.': 'Pas assez de joueurs pour demarrer',
+  'You are not the owner of this session': "Vous n'etes pas le createur de cette session",
+  'You are not the owner of this session.': "Vous n'etes pas le createur de cette session",
 };
 
 /** Traduit un message d'erreur individuel */

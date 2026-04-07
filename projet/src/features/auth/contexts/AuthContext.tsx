@@ -25,6 +25,7 @@ type AuthAction =
   | { type: 'SET_TOKEN'; payload: string | null }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_AUTH'; payload: { user: User; token: string } }
   | { type: 'LOGOUT' }
   | { type: 'CLEAR_ERROR' };
 
@@ -45,6 +46,8 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
       return { ...state, isLoading: action.payload };
     case 'SET_ERROR':
       return { ...state, error: action.payload };
+    case 'SET_AUTH':
+      return { ...state, user: action.payload.user, token: action.payload.token };
     case 'LOGOUT':
       return { ...state, user: null, token: null, error: null };
     case 'CLEAR_ERROR':
@@ -90,12 +93,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         // Valide le token avec l'API et recupere l'utilisateur
         const user = await getProfile();
-        dispatch({ type: 'SET_TOKEN', payload: token });
-        dispatch({ type: 'SET_USER', payload: user });
+        dispatch({ type: 'SET_AUTH', payload: { user, token } });
       } catch (error) {
         logger.error('Token validation failed:', error);
-        // Token invalide ou expiré → nettoyage
+        // Token invalide ou expiré → nettoyage complet (SecureStore + state)
         await removeToken();
+        dispatch({ type: 'SET_TOKEN', payload: null });
+        dispatch({ type: 'SET_USER', payload: null });
       } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
       }

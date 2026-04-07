@@ -108,18 +108,22 @@ export const GameScreen = () => {
       prevRoundRef.current !== null &&
       prevRoundRef.current !== gameStatus.round
     ) {
-      // Nouveau tour : reset de l'UI
+      // Nouveau tour : avertir si des actions non soumises sont perdues
+      if (pendingActions.length > 0) {
+        showToast('Nouveau tour — actions non soumises annulees', 'error');
+      }
+      // Reset de l'UI
       clearActions();
       setSelectedShip(null);
       setSelectionMode(null);
       // Ne pas afficher le toast si le joueur est elimine
       const stillAlive = gameStatus.ships.some(s => s.owner_id === currentUserId);
-      if (stillAlive) {
+      if (stillAlive && pendingActions.length === 0) {
         showToast(`Tour ${gameStatus.round} !`, 'info');
       }
     }
     prevRoundRef.current = gameStatus.round;
-  }, [gameStatus?.round, clearActions, showToast, gameStatus]);
+  }, [gameStatus?.round, clearActions, showToast, gameStatus, pendingActions.length]);
 
   const pollState = useCallback(async () => {
     try {
@@ -132,27 +136,37 @@ export const GameScreen = () => {
   // Polling : toujours actif tant que la partie est en cours
   // (necessaire pour detecter les changements de tour meme avant soumission)
   const shouldPoll = !!activeSessionId && !!gameStatus && gameStatus.status === 'running';
-  usePolling(pollState, 30000, shouldPoll);
+  const { consecutiveErrors: pollErrors } = usePolling(pollState, 30000, shouldPoll);
 
-  // Detecter fin de partie → naviguer vers GameOverScreen
+  // Detecter fin de partie → nettoyer et naviguer vers GameOverScreen
   const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
   useEffect(() => {
     if (gameStatus?.status === 'finished' && activeSessionId) {
+      clearActions();
       navigation.navigate('GameOver', { sessionId: activeSessionId });
     }
-  }, [gameStatus?.status, activeSessionId, navigation]);
+  }, [gameStatus?.status, activeSessionId, navigation, clearActions]);
 
   const ships = gameStatus?.ships ?? [];
 
-  // Map owner_id → { name, color } depuis les vaisseaux (source de verite)
+  // Nettoyer selectedShip si le vaisseau a ete detruit
+  useEffect(() => {
+    if (selectedShip && !ships.find(s => s.id === selectedShip.id)) {
+      setSelectedShip(null);
+      setSelectionMode(null);
+    }
+  }, [ships, selectedShip]);
+
+  // Map owner_id → { name, color } — conserve les joueurs elimines dans la legende
+  const playerInfoMapRef = useRef(new Map<number, { name: string; color: string }>());
   const playerInfoMap = useMemo(() => {
-    const m = new Map<number, { name: string; color: string }>();
+    const m = playerInfoMapRef.current;
     ships.forEach((s) => {
       if (s.owner && !m.has(s.owner_id)) {
         m.set(s.owner_id, { name: s.owner.name, color: s.owner.color });
       }
     });
-    return m;
+    return new Map(m);
   }, [ships]);
 
   // Nombre de vaisseaux du joueur actuel
@@ -235,13 +249,22 @@ export const GameScreen = () => {
         const shipsOnTarget = shipsByPos.get(key) || [];
 
         if (selectionMode.kind === 'move') {
+          // Verifier qu'une seule action par vaisseau
+          const shipAlreadyHasAction = pendingActions.some(
+            (a) => a.type !== 'purchase' && 'ship_id' in a && a.ship_id === selectionMode.ship.id,
+          );
+          if (shipAlreadyHasAction) {
+            showToast('Ce vaisseau a deja une action ce tour', 'error');
+            setSelectionMode(null);
+            return;
+          }
           if (!rangeCells.has(key)) {
             showToast('Case hors de portee', 'error');
             return;
           }
-          // Verifier qu'aucun vaisseau du joueur n'a deja un move vers cette case
+          // Verifier qu'aucune action ne cible deja cette case (move ou purchase)
           const alreadyTargeted = pendingActions.some(
-            (a) => a.type === 'move' && a.target_x === x && a.target_y === y,
+            (a) => (a.type === 'move' || a.type === 'purchase') && a.target_x === x && a.target_y === y,
           );
           if (alreadyTargeted) {
             showToast('Un vaisseau se deplace deja vers cette case', 'error');
@@ -255,6 +278,15 @@ export const GameScreen = () => {
           });
           showToast('Deplacement ajoute', 'success');
         } else if (selectionMode.kind === 'attack') {
+          // Verifier qu'une seule action par vaisseau
+          const shipAlreadyHasAction = pendingActions.some(
+            (a) => a.type !== 'purchase' && 'ship_id' in a && a.ship_id === selectionMode.ship.id,
+          );
+          if (shipAlreadyHasAction) {
+            showToast('Ce vaisseau a deja une action ce tour', 'error');
+            setSelectionMode(null);
+            return;
+          }
           if (!rangeCells.has(key)) {
             showToast('Case hors de portee', 'error');
             return;
@@ -275,9 +307,16 @@ export const GameScreen = () => {
           });
           showToast('Attaque ajoutee', 'success');
         } else if (selectionMode.kind === 'recruit_placement') {
-          // Verifier case libre (pas de vaisseau)
+          // Verifier case libre (pas de vaisseau ni action pendante)
           if (shipsOnTarget.length > 0) {
             showToast('Case occupee par un vaisseau', 'error');
+            return;
+          }
+          const cellAlreadyTargeted = pendingActions.some(
+            (a) => (a.type === 'move' || a.type === 'purchase') && a.target_x === x && a.target_y === y,
+          );
+          if (cellAlreadyTargeted) {
+            showToast('Une action cible deja cette case', 'error');
             return;
           }
           addAction({
@@ -418,7 +457,7 @@ export const GameScreen = () => {
     }
     return sum;
   }, 0);
-  const ore = rawOre - pendingPurchaseCost;
+  const ore = Math.max(0, rawOre - pendingPurchaseCost);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -443,6 +482,16 @@ export const GameScreen = () => {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Bandeau connexion perdue */}
+      {pollErrors >= 2 && (
+        <View style={styles.connectionLostBanner}>
+          <Ionicons name="cloud-offline-outline" size={18} color={COLORS.white} />
+          <Text style={styles.connectionLostText}>
+            Connexion perdue — tentative de reconnexion...
+          </Text>
+        </View>
+      )}
 
       {/* Bandeau elimination */}
       {isEliminated && (
@@ -687,6 +736,20 @@ const styles = StyleSheet.create({
   eliminatedText: {
     color: COLORS.white,
     fontSize: 14,
+    fontWeight: '600',
+    flex: 1,
+  },
+  connectionLostBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#b71c1c',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  connectionLostText: {
+    color: COLORS.white,
+    fontSize: 13,
     fontWeight: '600',
     flex: 1,
   },

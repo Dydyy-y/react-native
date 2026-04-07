@@ -2,7 +2,7 @@ import axios, { InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from '../utils/constants';
 
 type TokenGetter = () => Promise<string | null>;
-type UnauthorizedHandler = () => void;
+type UnauthorizedHandler = () => void | Promise<void>;
 
 // Configurés par AuthProvider au montage (pattern injection de dépendances)
 let _getToken: TokenGetter | null = null;
@@ -42,13 +42,20 @@ apiClient.interceptors.request.use(
 
 // Interceptor réponse : gestion 401 → logout automatique
 // On ignore les 401 sur les routes d'auth (login/register échouent normalement avec 401)
+let _isLoggingOut = false;
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const url = error.config?.url || '';
     const isAuthRoute = url.startsWith('/auth/');
-    if (error.response?.status === 401 && _onUnauthorized && !isAuthRoute) {
-      _onUnauthorized();
+    if (error.response?.status === 401 && _onUnauthorized && !isAuthRoute && !_isLoggingOut) {
+      _isLoggingOut = true;
+      try {
+        await _onUnauthorized();
+      } finally {
+        // Reset apres un court delai pour permettre un futur logout si necessaire
+        setTimeout(() => { _isLoggingOut = false; }, 1000);
+      }
     }
     return Promise.reject(error);
   },

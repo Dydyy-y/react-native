@@ -27,7 +27,7 @@ interface LobbyContextType {
   dispatch: React.Dispatch<LobbyAction>;
 }
 
-const LobbyContext = createContext<LobbyContextType>(null!);
+const LobbyContext = createContext<LobbyContextType | null>(null);
 
 export const LobbyProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(lobbyReducer, initialState);
@@ -39,4 +39,8 @@ export const LobbyProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useLobbyContext = () => useContext(LobbyContext);
+export const useLobbyContext = (): LobbyContextType => {
+  const ctx = useContext(LobbyContext);
+  if (!ctx) throw new Error('useLobbyContext must be used within LobbyProvider');
+  return ctx;
+};

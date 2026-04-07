@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -63,23 +63,31 @@ export const GameHistoryScreen = () => {
     }
   };
 
+  // Ref pour ignorer les reponses perimees lors de clics rapides
+  const lastRequestIdRef = useRef(0);
+
   const handleSelectEntry = async (entry: GameHistoryEntry) => {
     if (selectedId === entry.id) {
       setSelectedId(null);
       setDetailStats(null);
       return;
     }
+    const requestId = ++lastRequestIdRef.current;
     setSelectedId(entry.id);
     setDetailStats(null);
     setDetailLoading(true);
     try {
       const stats = await getGameStats(entry.id);
+      // Ignorer si l'utilisateur a clique sur une autre entree entre-temps
+      if (requestId !== lastRequestIdRef.current) return;
       setDetailStats(stats);
     } catch {
-      // Stats non disponibles (partie pas finie, etc.)
+      if (requestId !== lastRequestIdRef.current) return;
       setDetailStats(null);
     } finally {
-      setDetailLoading(false);
+      if (requestId === lastRequestIdRef.current) {
+        setDetailLoading(false);
+      }
     }
   };
 

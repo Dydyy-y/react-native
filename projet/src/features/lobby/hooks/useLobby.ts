@@ -66,12 +66,7 @@ export const useLobby = () => {
       const session = await sessionService.getSession(state.currentSession.id);
       dispatch({ type: 'SET_SESSION', payload: session });
     } catch (error) {
-      // 404 = session supprimée, on clear
-      const axiosError = error as { response?: { status?: number } };
-      if (axiosError.response?.status === 404) {
-        dispatch({ type: 'CLEAR_SESSION' });
-      }
-      // Autres erreurs : on laisse passer, retry au prochain intervalle
+      // Erreurs gerees par le consommateur (SessionDetailScreen) via le throw
       throw error;
     }
   }, [dispatch, state.currentSession]);

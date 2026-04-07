@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Ship } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
@@ -21,6 +21,7 @@ interface MapCellProps {
 export const MapCell = memo(
   ({ x, y, size, hasResource, ships, inRange, isSelected, onPress }: MapCellProps) => {
     const ship = ships.length > 0 ? ships[0] : null;
+    const hasMultipleShips = ships.length > 1;
 
     // Couleur du vaisseau depuis l'API (owner.color)
     const shipColor = ship?.owner?.color ?? COLORS.white;
@@ -47,10 +48,23 @@ export const MapCell = memo(
         {ship && (
           <View style={styles.shipOverlay}>
             <Ionicons
-              name={ship.type?.type === 'fighter' ? 'rocket' : 'construct'}
+              name={
+                ship.type?.type === 'fighter'
+                  ? 'rocket'
+                  : ship.type?.type === 'miner'
+                    ? 'hammer'
+                    : 'construct'
+              }
               size={size * 0.5}
               color={shipColor}
             />
+          </View>
+        )}
+
+        {/* Badge indiquant plusieurs vaisseaux sur la meme case */}
+        {hasMultipleShips && (
+          <View style={styles.stackBadge}>
+            <Text style={styles.stackText}>{ships.length}</Text>
           </View>
         )}
 
@@ -96,5 +110,22 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: 'rgba(76,175,80,0.5)',
+  },
+  stackBadge: {
+    position: 'absolute',
+    top: 1,
+    right: 1,
+    backgroundColor: COLORS.error,
+    borderRadius: 6,
+    minWidth: 12,
+    height: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 2,
+  },
+  stackText: {
+    color: COLORS.white,
+    fontSize: 8,
+    fontWeight: 'bold',
   },
 });
