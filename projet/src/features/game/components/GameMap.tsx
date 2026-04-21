@@ -4,7 +4,7 @@ import { GameMap as GameMapType, Ship, ResourceNode } from '../types/game.types'
 import { MapCell } from './MapCell';
 import { COLORS } from '../../../shared/utils/constants';
 
-/** Taille minimale d'une cellule pour rester lisible */
+// En-dessous de 36px les icones de vaisseaux deviennent illisibles
 const MIN_CELL_SIZE = 36;
 
 interface GameMapProps {
@@ -27,7 +27,11 @@ interface CellData {
   ships: Ship[];
 }
 
-/** Grille FlatList du jeu — fond uni, icones uniquement sur cases occupees */
+/**
+ * Grille du jeu rendue avec FlatList. Calcule la taille des cellules
+ * pour s'adapter a l'ecran, avec scroll horizontal si la carte est trop large.
+ * Les donnees (ressources, vaisseaux) sont pre-indexees en amont pour perf.
+ */
 export const GameMap = ({
   map,
   shipsByPos,
@@ -47,10 +51,12 @@ export const GameMap = ({
     return set;
   }, [map.resource_nodes]);
 
-  // Tableau vide stable pour les cellules sans vaisseaux (evite de casser memo)
+  // Reference stable [] pour eviter que React.memo re-rende les cellules vides
+  // (une nouvelle ref [] a chaque render casserait la comparaison shallow)
   const emptyShips: Ship[] = useMemo(() => [], []);
 
-  // Generer toutes les cellules (y puis x, car FlatList est row-major)
+  // Pre-calcul de toutes les cellules de la grille.
+  // Iteration y puis x car FlatList affiche en lignes (row-major).
   const cells = useMemo(() => {
     const result: CellData[] = [];
     for (let y = 0; y < map.height; y++) {

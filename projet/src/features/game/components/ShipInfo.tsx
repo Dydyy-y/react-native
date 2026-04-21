@@ -16,7 +16,6 @@ interface ShipInfoProps {
   onAction: (ship: Ship) => void;
 }
 
-/** Modal affichant les infos detaillees d'un vaisseau */
 export const ShipInfo = ({
   ship,
   shipTypes,
@@ -44,7 +43,6 @@ export const ShipInfo = ({
         onPress={onClose}
       >
         <TouchableOpacity activeOpacity={1} style={styles.container}>
-          {/* Header */}
           <View style={styles.header}>
             <Ionicons
               name={shipType?.type === 'fighter' ? 'rocket' : 'construct'}
@@ -59,7 +57,6 @@ export const ShipInfo = ({
             </TouchableOpacity>
           </View>
 
-          {/* Proprietaire */}
           <View style={styles.ownerRow}>
             <Ionicons
               name="person"
@@ -76,7 +73,6 @@ export const ShipInfo = ({
             </Text>
           </View>
 
-          {/* Stats */}
           <View style={styles.statsGrid}>
             <StatItem icon="heart" label="PV" value={`${ship.health}/${shipType?.base_health ?? '?'}`} color={COLORS.error} />
             <StatItem icon="flash" label="Attaque" value={`${shipType?.damage ?? '?'}`} color="#FF9800" />
@@ -87,12 +83,10 @@ export const ShipInfo = ({
             )}
           </View>
 
-          {/* Position */}
           <Text style={styles.positionText}>
             Position : ({ship.x}, {ship.y})
           </Text>
 
-          {/* Bouton d'action pour ses propres vaisseaux (si le joueur peut agir) */}
           {isOwn && canAct && (
             <TouchableOpacity
               style={styles.actionButton}
@@ -108,7 +102,6 @@ export const ShipInfo = ({
   );
 };
 
-/** Petit composant stat reutilisable */
 const StatItem = ({
   icon,
   label,

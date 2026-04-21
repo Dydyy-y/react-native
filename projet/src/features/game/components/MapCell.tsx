@@ -12,18 +12,22 @@ interface MapCellProps {
   ships: Ship[];
   /** True si cette case est selectionnable (dans la portee) */
   inRange: boolean;
-  /** True si cette case est le vaisseau selectionne */
   isSelected: boolean;
   onPress: (x: number, y: number) => void;
 }
 
-/** Cellule individuelle de la grille. Memo pour perf FlatList. */
+/**
+ * Cellule de la grille de jeu.
+ * Memo evite les re-rendus inutiles : la FlatList contient width*height cellules,
+ * donc sans memo chaque changement d'etat re-rendrait toute la carte.
+ * Affiche en superposition : fond de ressource → icone vaisseau → badge stack → point de portee
+ */
 export const MapCell = memo(
   ({ x, y, size, hasResource, ships, inRange, isSelected, onPress }: MapCellProps) => {
     const ship = ships.length > 0 ? ships[0] : null;
     const hasMultipleShips = ships.length > 1;
 
-    // Couleur du vaisseau depuis l'API (owner.color)
+    // Couleur du vaisseau fournie par l'API (chaque joueur a sa couleur)
     const shipColor = ship?.owner?.color ?? COLORS.white;
 
     return (
@@ -37,14 +41,12 @@ export const MapCell = memo(
           inRange && styles.inRange,
         ]}
       >
-        {/* Ressource : fond dore */}
         {hasResource && (
           <View style={[styles.resource, { width: size - 2, height: size - 2 }]}>
             <Ionicons name="diamond" size={size * 0.4} color="#FFD700" />
           </View>
         )}
 
-        {/* Vaisseau : affiche au-dessus de la ressource */}
         {ship && (
           <View style={styles.shipOverlay}>
             <Ionicons
@@ -61,14 +63,12 @@ export const MapCell = memo(
           </View>
         )}
 
-        {/* Badge indiquant plusieurs vaisseaux sur la meme case */}
         {hasMultipleShips && (
           <View style={styles.stackBadge}>
             <Text style={styles.stackText}>{ships.length}</Text>
           </View>
         )}
 
-        {/* Indicateur de portee (point lumineux) */}
         {inRange && !ship && !hasResource && (
           <View style={styles.rangeDot} />
         )}

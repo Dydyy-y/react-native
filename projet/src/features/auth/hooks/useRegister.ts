@@ -28,10 +28,9 @@ export const useRegister = (): UseRegisterReturn => {
     setLoading(true);
     try {
       const response = await register(name, email, password);
-      // Sauvegarde securisee du token
       await saveToken(response.access_token);
       dispatch({ type: 'SET_TOKEN', payload: response.access_token });
-      // Recuperer le profil utilisateur (l'API ne le retourne pas dans la reponse register)
+      // L'API register ne retourne que le token, pas le profil → appel supplementaire
       const user = await getProfile();
       dispatch({ type: 'SET_USER', payload: user });
       return { success: true };

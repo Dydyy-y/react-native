@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios';
 
-/** Traduction des messages d'erreur API courants en francais */
+// L'API retourne ses erreurs en anglais. Cette table traduit les messages
+// les plus courants pour les afficher dans les toasts.
 const ERROR_TRANSLATIONS: Record<string, string> = {
   // Auth
   'Invalid credentials': 'Email ou mot de passe incorrect',
@@ -30,16 +31,19 @@ const ERROR_TRANSLATIONS: Record<string, string> = {
   'You are not the owner of this session.': "Vous n'etes pas le createur de cette session",
 };
 
-/** Traduit un message d'erreur individuel */
 const translateMessage = (message: string): string =>
   ERROR_TRANSLATIONS[message] ?? message;
 
-/** Extrait un message d'erreur lisible depuis n'importe quelle erreur */
+/**
+ * Extrait un message d'erreur lisible depuis n'importe quel type d'erreur.
+ * Gere 3 formats : erreurs Axios (avec reponse API), erreurs JS, et inconnus.
+ */
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof AxiosError) {
     const data = error.response?.data;
 
-    // Format Laravel : { message: "msg", errors: { field: ["msg1", "msg2"] } }
+    // L'API Laravel retourne les erreurs de validation dans ce format :
+    // { message: "msg", errors: { field: ["msg1", "msg2"] } }
     if (data?.errors && typeof data.errors === 'object') {
       const allErrors: string[] = [];
       for (const field of Object.keys(data.errors)) {
@@ -51,13 +55,11 @@ export const getErrorMessage = (error: unknown): string => {
       if (allErrors.length > 0) return allErrors.join('\n');
     }
 
-    // Message simple
     if (typeof data?.message === 'string') return translateMessage(data.message);
     if (Array.isArray(data?.message)) {
       return data.message.map(translateMessage).join('\n');
     }
 
-    // Erreur reseau (pas de reponse du serveur)
     if (!error.response) return 'Erreur reseau — verifiez votre connexion internet';
 
     return error.message || 'Une erreur serveur est survenue';

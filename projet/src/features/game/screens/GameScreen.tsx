@@ -25,7 +25,12 @@ import { ShipShop } from '../components/ShipShop';
 import { Ship } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
 
-/** Calcule les cases a portee (distance de Manhattan) */
+/**
+ * Calcule toutes les cases accessibles depuis (cx, cy) dans un rayon donne.
+ * Utilise la distance de Manhattan : |dx| + |dy| <= range.
+ * Exclut la case d'origine et les cases hors limites de la carte.
+ * Retourne un Set de cles "x,y" pour une recherche O(1).
+ */
 const computeRangeCells = (
   cx: number,
   cy: number,
@@ -48,8 +53,16 @@ const computeRangeCells = (
   return cells;
 };
 
-/** Ecran principal du jeu — carte + stats + actions + polling */
+/**
+ * Ecran principal du jeu. Gere :
+ * - L'affichage de la carte, des stats et du panneau d'actions
+ * - Le systeme de selection : tap vaisseau → choisir action → tap cible
+ * - Les validations cote client avant d'ajouter une action (portee, case libre, etc.)
+ * - Le polling de l'etat du jeu apres soumission des actions
+ * - La detection de changement de tour et de fin de partie
+ */
 export const GameScreen = () => {
+  // --- Donnees du jeu depuis le GameContext ---
   const {
     map,
     gameStatus,
@@ -71,16 +84,18 @@ export const GameScreen = () => {
 
   const currentUserId = authState.user?.id ?? -1;
 
-  const [selectedShip, setSelectedShip] = useState<Ship | null>(null);
-  const [inspectedShip, setInspectedShip] = useState<Ship | null>(null);
-  const [selectionMode, setSelectionMode] = useState<SelectionMode>(null);
-  const [showShop, setShowShop] = useState(false);
+  // --- Etat local de l'UI de jeu ---
+  const [selectedShip, setSelectedShip] = useState<Ship | null>(null);       // Vaisseau du joueur selectionne
+  const [inspectedShip, setInspectedShip] = useState<Ship | null>(null);     // Vaisseau inspecte (modal info)
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>(null);   // Mode de ciblage actif (move/attack/recruit)
+  const [showShop, setShowShop] = useState(false);                           // Modal boutique ouverte
 
-  // Ref pour tracker le round courant (detection nouveau tour)
+  // Permet de detecter un changement de tour pour notifier le joueur
   const prevRoundRef = useRef<number | null>(null);
 
-  // SessionId provient uniquement du GameContext (set par setSessionId au demarrage)
   const activeSessionId = sessionId;
+
+  // --- Chargement initial des donnees (carte, etat, types de vaisseaux) ---
 
   useEffect(() => {
     if (activeSessionId && !map) {
@@ -94,31 +109,29 @@ export const GameScreen = () => {
     }
   }, [activeSessionId, gameStatus, loadState]);
 
-  // Charger les types de vaisseaux une seule fois
   useEffect(() => {
     if (activeSessionId && (!shipTypes || shipTypes.length === 0)) {
       loadShipTypes();
     }
   }, [activeSessionId, shipTypes, loadShipTypes]);
 
+  // --- Detection de changement de tour ---
+  // Quand le round change : on reset les actions/selections et on notifie le joueur.
+  // Si le joueur avait des actions non soumises, elles sont perdues (avertissement).
   useEffect(() => {
     if (!gameStatus) return;
     if (
       prevRoundRef.current !== null &&
       prevRoundRef.current !== gameStatus.round
     ) {
-      // Sauvegarder avant clearActions (eviter stale closure)
       const hadPendingActions = pendingActions.length > 0;
 
-      // Nouveau tour : avertir si des actions non soumises sont perdues
       if (hadPendingActions) {
         showToast('Nouveau tour — actions non soumises annulees', 'error');
       }
-      // Reset de l'UI
       clearActions();
       setSelectedShip(null);
       setSelectionMode(null);
-      // Ne pas afficher le toast si le joueur est elimine ou avait des actions perdues
       const stillAlive = gameStatus.ships.some(s => s.owner_id === currentUserId);
       if (stillAlive && !hadPendingActions) {
         showToast(`Tour ${gameStatus.round} !`, 'info');
@@ -127,19 +140,21 @@ export const GameScreen = () => {
     prevRoundRef.current = gameStatus.round;
   }, [gameStatus?.round, clearActions, showToast, gameStatus, pendingActions.length, currentUserId]);
 
+  // --- Polling de l'etat du jeu ---
+  // Le polling s'active uniquement apres avoir soumis ses actions
+  // pour attendre la resolution du tour par le serveur.
   const pollState = useCallback(async () => {
     try {
       await loadState();
     } catch {
-      // Erreur geree dans le hook
+      // L'erreur est geree dans useGame (dispatch SET_ERROR)
     }
   }, [loadState]);
 
-  // Polling : actif uniquement apres soumission des actions (conforme consigne etape 5)
   const shouldPoll = !!activeSessionId && !!gameStatus && gameStatus.status === 'running' && gameStatus.round_actions_submitted;
   const { consecutiveErrors: pollErrors } = usePolling(pollState, 30000, shouldPoll);
 
-  // Detecter fin de partie → nettoyer et naviguer vers GameOverScreen
+  // --- Fin de partie : redirection vers l'ecran de resultats ---
   const navigation = useNavigation<StackNavigationProp<GameStackParamList>>();
   useEffect(() => {
     if (gameStatus?.status === 'finished' && activeSessionId) {
@@ -150,7 +165,7 @@ export const GameScreen = () => {
 
   const ships = gameStatus?.ships ?? [];
 
-  // Nettoyer selectedShip si le vaisseau a ete detruit
+  // Si le vaisseau selectionne a ete detruit entre deux tours, deselectionner
   useEffect(() => {
     if (selectedShip && !ships.find(s => s.id === selectedShip.id)) {
       setSelectedShip(null);
@@ -158,8 +173,9 @@ export const GameScreen = () => {
     }
   }, [ships, selectedShip]);
 
-  // Map owner_id → { name, color } — conserve les joueurs elimines dans la legende
-  // Reset quand la session change (nouvelle partie)
+  // --- Legende des joueurs ---
+  // On conserve les infos (nom, couleur) des joueurs meme apres elimination
+  // pour qu'ils restent visibles dans la legende. Reset a chaque nouvelle partie.
   const playerInfoMapRef = useRef(new Map<number, { name: string; color: string }>());
   const prevSessionIdRef = useRef(activeSessionId);
   if (prevSessionIdRef.current !== activeSessionId) {
@@ -181,7 +197,9 @@ export const GameScreen = () => {
     return ships.filter((s) => s.owner_id === currentUserId).length;
   }, [ships, currentUserId]);
 
-  // Cases a portee selon le mode de selection actif
+  // --- Calculs derives pour le rendu ---
+
+  // Cases surbrillees selon le mode : vitesse pour move, portee pour attack
   const rangeCells = useMemo(() => {
     if (!selectionMode || !map) return new Set<string>();
     if (selectionMode.kind === 'move') {
@@ -206,28 +224,26 @@ export const GameScreen = () => {
     return new Set<string>();
   }, [selectionMode, map]);
 
-  // Case du vaisseau selectionne
   const selectedCell = useMemo(() => {
     if (!selectedShip) return null;
     return `${selectedShip.x},${selectedShip.y}`;
   }, [selectedShip]);
 
-  // Le joueur est elimine s'il n'a plus de vaisseaux
-  // On ne considere pas l'elimination si aucun vaisseau n'est charge (etat initial)
+  // Pas d'elimination tant que les vaisseaux ne sont pas charges (etat initial)
   const isEliminated = useMemo(() => {
     if (!gameStatus || gameStatus.status !== 'running') return false;
     if (ships.length === 0) return false; // pas encore de donnees chargees
     return ships.filter((s) => s.owner_id === currentUserId).length === 0;
   }, [gameStatus, ships, currentUserId]);
 
-  // Le joueur ne peut pas agir si elimine, actions deja soumises, ou partie finie
   const canAct =
     gameStatus &&
     !gameStatus.round_actions_submitted &&
     gameStatus.status === 'running' &&
     !isEliminated;
 
-  // Minerai reel = minerai API - cout des achats en attente
+  // Le minerai affiche tient compte des achats en file d'attente
+  // pour eviter que le joueur depense plus que ce qu'il a
   const ore = useMemo(() => {
     const rawOre = gameStatus?.resources?.ore ?? 0;
     const pendingCost = pendingActions.reduce((sum, a) => {
@@ -240,7 +256,7 @@ export const GameScreen = () => {
     return Math.max(0, rawOre - pendingCost);
   }, [gameStatus?.resources?.ore, pendingActions, shipTypes]);
 
-  // Index rapide des vaisseaux par position
+  // Index "x,y" → Ship[] pour un acces O(1) lors du tap sur une case
   const shipsByPos = useMemo(() => {
     const m = new Map<string, Ship[]>();
     ships.forEach((s) => {
@@ -252,6 +268,11 @@ export const GameScreen = () => {
     return m;
   }, [ships]);
 
+  // --- Gestion du tap sur une case de la carte ---
+  // Trois cas possibles :
+  //   1. Mode lecture seule (elimine ou actions soumises) → inspecter le vaisseau
+  //   2. Mode selection actif (move/attack/recruit) → valider la cible
+  //   3. Aucun mode → selectionner un vaisseau ou deselectionner
   const handleCellPress = useCallback(
     (x: number, y: number) => {
       if (!gameStatus || !canAct) {
@@ -268,8 +289,9 @@ export const GameScreen = () => {
         const key = `${x},${y}`;
         const shipsOnTarget = shipsByPos.get(key) || [];
 
+        // --- Validation du deplacement ---
         if (selectionMode.kind === 'move') {
-          // Verifier qu'une seule action par vaisseau
+          // Un seul move/attack par vaisseau par tour
           const shipAlreadyHasAction = pendingActions.some(
             (a) => a.type !== 'purchase' && 'ship_id' in a && a.ship_id === selectionMode.ship.id,
           );
@@ -282,7 +304,6 @@ export const GameScreen = () => {
             showToast('Case hors de portee', 'error');
             return;
           }
-          // Verifier qu'un vaisseau allie n'occupe pas deja la case
           const friendlyOnTarget = shipsOnTarget.some(
             (s) => s.owner_id === currentUserId,
           );
@@ -290,7 +311,7 @@ export const GameScreen = () => {
             showToast('Un de vos vaisseaux occupe deja cette case', 'error');
             return;
           }
-          // Verifier qu'aucune action ne cible deja cette case (move ou purchase)
+          // Empecher 2 actions vers la meme case (move ou purchase)
           const alreadyTargeted = pendingActions.some(
             (a) => (a.type === 'move' || a.type === 'purchase') && a.target_x === x && a.target_y === y,
           );
@@ -305,8 +326,8 @@ export const GameScreen = () => {
             target_y: y,
           });
           showToast('Deplacement ajoute', 'success');
+        // --- Validation de l'attaque ---
         } else if (selectionMode.kind === 'attack') {
-          // Verifier qu'une seule action par vaisseau
           const shipAlreadyHasAction = pendingActions.some(
             (a) => a.type !== 'purchase' && 'ship_id' in a && a.ship_id === selectionMode.ship.id,
           );
@@ -319,7 +340,6 @@ export const GameScreen = () => {
             showToast('Case hors de portee', 'error');
             return;
           }
-          // Verifier qu'il y a un vaisseau ennemi sur la case
           const enemyShip = shipsOnTarget.find(
             (s) => s.owner_id !== currentUserId,
           );
@@ -334,8 +354,8 @@ export const GameScreen = () => {
             target_y: y,
           });
           showToast('Attaque ajoutee', 'success');
+        // --- Validation du placement d'achat ---
         } else if (selectionMode.kind === 'recruit_placement') {
-          // Verifier que le joueur a assez de minerai
           const shipType = shipTypes.find((t) => t.id === selectionMode.shipTypeId);
           const cost = shipType?.cost ?? 0;
           if (cost > ore) {
@@ -343,7 +363,6 @@ export const GameScreen = () => {
             setSelectionMode(null);
             return;
           }
-          // Verifier case libre (pas de vaisseau ni action pendante)
           if (shipsOnTarget.length > 0) {
             showToast('Case occupee par un vaisseau', 'error');
             return;
@@ -402,13 +421,13 @@ export const GameScreen = () => {
     ],
   );
 
-  /** Quand l'utilisateur clique "Actions" dans le ShipInfo modal */
+  // Ferme le modal d'inspection et passe en mode action sur le vaisseau
   const handleShipAction = useCallback((ship: Ship) => {
     setInspectedShip(null);
     setSelectedShip(ship);
   }, []);
 
-  /** Achat d'un vaisseau : passe en mode placement */
+  // Apres achat en boutique, passe en mode placement pour choisir la case
   const handleBuyShip = useCallback(
     (shipTypeId: number) => {
       setShowShop(false);
@@ -418,7 +437,8 @@ export const GameScreen = () => {
     [showToast],
   );
 
-  /** Soumission des actions du tour */
+  // Envoie les actions au serveur. En cas d'erreur de validation serveur,
+  // on affiche les details pour que le joueur puisse corriger.
   const handleSubmitActions = useCallback(async () => {
     const result = await submitActions();
     if (!result) return;
@@ -426,7 +446,6 @@ export const GameScreen = () => {
     if (result.validated) {
       showToast('Actions validees !', 'success');
     } else {
-      // Afficher les erreurs du serveur
       const errorMessages = result.errors
         .map((e) => `Action ${e.index + 1}: ${e.message}`)
         .join('\n');
@@ -436,6 +455,8 @@ export const GameScreen = () => {
       );
     }
   }, [submitActions, showToast]);
+
+  // --- Etats de chargement / erreur / pas de session ---
 
   if (!activeSessionId) {
     return (
@@ -489,7 +510,6 @@ export const GameScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
       <View style={styles.header}>
         <Ionicons name="planet-outline" size={20} color={COLORS.info} />
         <Text style={styles.headerTitle}>
@@ -500,7 +520,6 @@ export const GameScreen = () => {
             <Text style={styles.finishedText}>Terminee</Text>
           </View>
         )}
-        {/* Bouton boutique */}
         {canAct && (
           <TouchableOpacity
             style={styles.shopButton}
@@ -511,7 +530,6 @@ export const GameScreen = () => {
         )}
       </View>
 
-      {/* Bandeau connexion perdue */}
       {pollErrors >= 2 && (
         <View style={styles.connectionLostBanner}>
           <Ionicons name="cloud-offline-outline" size={18} color={COLORS.white} />
@@ -521,7 +539,6 @@ export const GameScreen = () => {
         </View>
       )}
 
-      {/* Bandeau elimination */}
       {isEliminated && (
         <View style={styles.eliminatedBanner}>
           <Ionicons name="skull-outline" size={20} color={COLORS.white} />
@@ -531,7 +548,6 @@ export const GameScreen = () => {
         </View>
       )}
 
-      {/* Instruction mode selection */}
       {selectionMode && (
         <View style={styles.instructionBanner}>
           <Text style={styles.instructionText}>
@@ -551,7 +567,6 @@ export const GameScreen = () => {
       )}
 
       <ScrollView style={styles.scrollContent}>
-        {/* Carte */}
         <View style={styles.mapContainer}>
           <GameMap
             map={map}
@@ -562,10 +577,8 @@ export const GameScreen = () => {
           />
         </View>
 
-        {/* Stats joueur */}
         <PlayerStatsPanel gameStatus={gameStatus} myShipCount={myShipCount} />
 
-        {/* Panneau d'actions */}
         <ActionPanel
           selectedShip={selectedShip}
           pendingActions={pendingActions}
@@ -581,7 +594,6 @@ export const GameScreen = () => {
           }}
         />
 
-        {/* Legende couleurs joueurs */}
         <View style={styles.legend}>
           <Text style={styles.legendTitle}>Joueurs</Text>
           <View style={styles.legendRow}>
@@ -602,7 +614,6 @@ export const GameScreen = () => {
         </View>
       </ScrollView>
 
-      {/* Modals */}
       <ShipInfo
         ship={inspectedShip}
         shipTypes={shipTypes}

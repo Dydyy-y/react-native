@@ -7,14 +7,18 @@ interface QRScannerProps {
   onScanned: (code: string) => void;
 }
 
-/** Scanner QR code via la caméra (expo-camera CameraView) */
+/**
+ * Scanner QR code via la camera (expo-camera).
+ * processedRef empeche les scans multiples (le callback se declenche en boucle
+ * tant que le QR est visible). Apres un scan, un delai de 1.5s laisse le temps
+ * a l'utilisateur de retirer le QR du cadre avant de rescanner.
+ */
 export const QRScanner = ({ onScanned }: QRScannerProps) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const processedRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Cleanup du timeout au demontage
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -22,7 +26,6 @@ export const QRScanner = ({ onScanned }: QRScannerProps) => {
   }, []);
 
   const handleBarCodeScanned = (result: BarcodeScanningResult) => {
-    // Empêcher les scans multiples
     if (processedRef.current) return;
     processedRef.current = true;
     setScanned(true);
@@ -37,7 +40,6 @@ export const QRScanner = ({ onScanned }: QRScannerProps) => {
     }, 1500);
   };
 
-  // Permission non encore demandée
   if (!permission) {
     return (
       <View style={styles.centered}>
@@ -46,7 +48,6 @@ export const QRScanner = ({ onScanned }: QRScannerProps) => {
     );
   }
 
-  // Permission refusée
   if (!permission.granted) {
     return (
       <View style={styles.centered}>
@@ -69,7 +70,6 @@ export const QRScanner = ({ onScanned }: QRScannerProps) => {
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       />
 
-      {/* Overlay avec cadre de scan */}
       <View style={styles.overlay}>
         <View style={styles.scanFrame} />
         <Text style={styles.hint}>

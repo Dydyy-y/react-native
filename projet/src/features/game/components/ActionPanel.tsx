@@ -11,11 +11,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { Ship, RoundAction } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
 
-/** Mode de selection sur la carte apres avoir choisi une action */
+/**
+ * Mode de ciblage actif sur la carte.
+ * Quand le joueur choisit "Deplacer" ou "Attaquer", la carte passe en mode
+ * selection : les cases a portee sont surbrillees et le prochain tap
+ * sur une case valide cree l'action correspondante.
+ */
 export type SelectionMode =
-  | { kind: 'move'; ship: Ship }
-  | { kind: 'attack'; ship: Ship }
-  | { kind: 'recruit_placement'; shipTypeId: number }
+  | { kind: 'move'; ship: Ship }              // Deplacement : tap une case dans la portee de vitesse
+  | { kind: 'attack'; ship: Ship }            // Attaque : tap un ennemi dans la portee d'attaque
+  | { kind: 'recruit_placement'; shipTypeId: number }  // Achat : tap une case libre
   | null;
 
 interface ActionPanelProps {
@@ -33,7 +38,11 @@ interface ActionPanelProps {
   onDeselectShip: () => void;
 }
 
-/** Panneau d'actions : choix move/attack pour un vaisseau, liste des actions, bouton valider */
+/**
+ * Panneau d'actions en bas de l'ecran de jeu.
+ * Affiche selon l'etat : banniere d'attente, hint de selection,
+ * boutons move/attack, liste des actions en file, ou bouton de validation.
+ */
 export const ActionPanel = ({
   selectedShip,
   pendingActions,
@@ -45,7 +54,7 @@ export const ActionPanel = ({
   onSubmitActions,
   onDeselectShip,
 }: ActionPanelProps) => {
-  // Verifier si le vaisseau selectionne a deja une action ce tour
+  // Verifie si le vaisseau a deja une action ce tour (max 1 move/attack par vaisseau)
   const shipHasAction =
     selectedShip &&
     pendingActions.some(
@@ -56,7 +65,6 @@ export const ActionPanel = ({
 
   return (
     <View style={styles.container}>
-      {/* Attente entre tours */}
       {actionsSubmitted && (
         <View style={styles.waitingBanner}>
           <ActivityIndicator size="small" color={COLORS.info} />
@@ -66,7 +74,6 @@ export const ActionPanel = ({
         </View>
       )}
 
-      {/* Instruction quand aucun vaisseau n'est selectionne */}
       {!selectedShip && canAct && (
         <View style={styles.hintBanner}>
           <Ionicons name="hand-left-outline" size={18} color={COLORS.info} />
@@ -76,7 +83,6 @@ export const ActionPanel = ({
         </View>
       )}
 
-      {/* Actions pour le vaisseau selectionne */}
       {selectedShip && canAct && (
         <View style={styles.shipActions}>
           <View style={styles.shipHeader}>
@@ -110,7 +116,6 @@ export const ActionPanel = ({
                 <Text style={styles.rangeText}>({shipType?.speed ?? '?'} cases)</Text>
               </TouchableOpacity>
 
-              {/* Attaque disponible si le vaisseau a des degats et une portee d'attaque */}
               {(shipType?.damage ?? 0) > 0 && (shipType?.attack_range ?? 0) > 0 && (
                 <TouchableOpacity
                   style={styles.attackButton}
@@ -128,7 +133,6 @@ export const ActionPanel = ({
         </View>
       )}
 
-      {/* Liste des actions en attente */}
       {pendingActions.length > 0 && canAct && (
         <View style={styles.pendingSection}>
           <Text style={styles.pendingTitle}>
@@ -171,7 +175,7 @@ export const ActionPanel = ({
         </View>
       )}
 
-      {/* Bouton valider (visible meme sans actions = passer le tour) */}
+      {/* Visible meme sans actions = permet de passer le tour */}
       {canAct && (
         <TouchableOpacity
           style={[styles.submitButton, loading && styles.submitDisabled]}

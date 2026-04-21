@@ -14,7 +14,6 @@ interface PlayerListProps {
   onBan?: (playerId: number) => void;
 }
 
-/** Liste des joueurs dans le salon (FlatList) avec actions de moderation */
 export const PlayerList = ({ players, creatorId, isCreator, onKick, onBan }: PlayerListProps) => {
   const confirmKick = (player: Player) => {
     confirm(
@@ -48,7 +47,6 @@ export const PlayerList = ({ players, creatorId, isCreator, onKick, onBan }: Pla
             <Text style={styles.badge}>Createur</Text>
           )}
 
-          {/* Actions de moderation (createur uniquement, pas sur soi-meme) */}
           {isCreator && item.id !== creatorId && (
             <View style={styles.actions}>
               <TouchableOpacity

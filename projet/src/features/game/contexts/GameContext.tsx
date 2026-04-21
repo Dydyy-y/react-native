@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useMemo } from 'react';
 import { GameState, GameAction } from '../types/game.types';
 
+// Etat initial du jeu, utilise aussi par CLEAR_GAME pour reset entre les parties
 const initialState: GameState = {
   sessionId: null,
   map: null,
@@ -12,6 +13,8 @@ const initialState: GameState = {
   error: null,
 };
 
+// Reducer pur : chaque action met a jour une partie du state sans effet de bord.
+// Les appels API sont faits dans useGame.ts qui dispatch ensuite ici.
 const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'SET_SESSION_ID':

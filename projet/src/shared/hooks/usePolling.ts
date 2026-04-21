@@ -23,7 +23,8 @@ export const usePolling = (
   interval: number = POLLING_INTERVAL_MS,
   enabled: boolean = true,
 ): { consecutiveErrors: number } => {
-  // Ref pour toujours avoir la derniere version du callback sans relancer l'effet
+  // On stocke le callback dans une ref pour que l'intervalle utilise
+  // toujours la version la plus recente sans avoir a relancer le setInterval
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
@@ -32,16 +33,16 @@ export const usePolling = (
   const [consecutiveErrors, setConsecutiveErrors] = useState(0);
   const consecutiveErrorsRef = useRef(0);
 
-  // Protection contre les appels concurrents (reseau lent > 30s)
+  // Si le reseau est lent (requete > 30s), on evite de lancer un 2e appel
   const isRunningRef = useRef(false);
 
-  // Suivi de l'etat de l'app (foreground/background)
+  // Pause le polling quand l'app est en arriere-plan (economie batterie + quota API)
   const appActiveRef = useRef(AppState.currentState === 'active');
 
+  // Execution d'un tick : verifie les gardes puis appelle le callback
   const tick = useCallback(async () => {
-    // Ne pas executer si en arriere-plan ou deja en cours
-    if (!appActiveRef.current) return;
-    if (isRunningRef.current) return;
+    if (!appActiveRef.current) return;   // app en arriere-plan
+    if (isRunningRef.current) return;    // requete precedente toujours en cours
     if (consecutiveErrorsRef.current >= MAX_CONSECUTIVE_ERRORS) return;
 
     isRunningRef.current = true;
@@ -64,11 +65,11 @@ export const usePolling = (
       return;
     }
 
-    // Gestion AppState : pause en background, reprise en foreground
+    // Quand l'app revient au premier plan, on relance un tick immediatement
+    // pour rattraper le retard accumule en arriere-plan
     const handleAppState = (nextState: AppStateStatus) => {
       const wasActive = appActiveRef.current;
       appActiveRef.current = nextState === 'active';
-      // Reprendre immediatement au retour en foreground
       if (!wasActive && appActiveRef.current) {
         tick();
       }

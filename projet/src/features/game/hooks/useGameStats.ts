@@ -3,10 +3,7 @@ import { getGameStats } from '../services/gameService';
 import { GameStats } from '../types/game.types';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
-/**
- * Hook de récupération des stats de fin de partie.
- * Conforme à la consigne : les requêtes de récupération doivent être sous forme de hooks.
- */
+/** Hook de recuperation des stats de fin de partie */
 export const useGameStats = (sessionId: number | undefined) => {
   const [data, setData] = useState<GameStats | null>(null);
   const [loading, setLoading] = useState(true);

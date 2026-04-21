@@ -19,7 +19,9 @@ import { COLORS } from '../../../shared/utils/constants';
 import { confirm } from '../../../shared/utils/confirm';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
-/** Ecran profil — affichage, modification, deconnexion */
+// Ecran profil : affichage des infos utilisateur, mode edition inline, et deconnexion.
+// Bascule entre un mode lecture (infos) et un mode edition (formulaire)
+// via le state local `editing`.
 export const ProfileScreen = () => {
   const { state, dispatch, logout } = useAuth();
   const { showToast } = useUI();
@@ -55,8 +57,9 @@ export const ProfileScreen = () => {
     setEditing(false);
   };
 
+  // Construit un objet partiel avec uniquement les champs modifies
+  // puis envoie la mise a jour a l'API
   const handleSave = async () => {
-    // Validation basique
     if (!name.trim()) {
       showToast('Le nom est requis', 'error');
       return;
@@ -82,7 +85,6 @@ export const ProfileScreen = () => {
       data.password_confirmation = passwordConfirm;
     }
 
-    // Rien n'a change
     if (Object.keys(data).length === 0) {
       setEditing(false);
       return;
@@ -112,7 +114,6 @@ export const ProfileScreen = () => {
         </View>
 
         {!editing ? (
-          /* ─── Mode affichage ──────────────────── */
           <>
             <View style={styles.field}>
               <Text style={styles.label}>Nom</Text>
@@ -128,7 +129,6 @@ export const ProfileScreen = () => {
             </TouchableOpacity>
           </>
         ) : (
-          /* ─── Mode edition ────────────────────── */
           <>
             <View style={styles.field}>
               <Text style={styles.label}>Nom</Text>
@@ -204,7 +204,6 @@ export const ProfileScreen = () => {
         )}
       </View>
 
-      {/* Bouton historique des parties */}
       <TouchableOpacity
         style={styles.historyButton}
         onPress={() => navigation.navigate('GameHistory')}

@@ -13,7 +13,8 @@ import { useGameHistory, useGameDetail } from '../hooks/useGameHistory';
 import { GameHistoryEntry } from '../types/game.types';
 import { COLORS } from '../../../shared/utils/constants';
 
-/** Ecran historique des parties jouees */
+// Ecran d'historique : liste paginee des parties jouees avec pagination infinie.
+// Au tap sur une partie, affiche les stats detaillees en inline (accordeon).
 export const GameHistoryScreen = () => {
   const { state: authState } = useAuth();
   const currentUserId = authState.user?.id ?? -1;
@@ -81,7 +82,6 @@ export const GameHistoryScreen = () => {
           />
         </View>
 
-        {/* Detail inline */}
         {isSelected && (
           <View style={styles.detailContainer}>
             {detailLoading && (

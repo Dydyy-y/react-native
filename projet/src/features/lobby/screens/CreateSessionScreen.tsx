@@ -19,7 +19,6 @@ import { COLORS } from '../../../shared/utils/constants';
 
 type Props = StackScreenProps<LobbyStackParamList, 'CreateSession'>;
 
-/** Ecran de creation de session + affichage QR code */
 export const CreateSessionScreen = ({ navigation }: Props) => {
   const { session, loading, createSession } = useLobby();
   const { showToast } = useUI();
@@ -33,7 +32,6 @@ export const CreateSessionScreen = ({ navigation }: Props) => {
     }
   };
 
-  // Si la session est créée, afficher le QR code + bouton pour aller au salon
   if (session) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -52,7 +50,6 @@ export const CreateSessionScreen = ({ navigation }: Props) => {
     );
   }
 
-  // Formulaire de creation
   return (
     <KeyboardAvoidingView
       style={styles.keyboardView}

@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { COLORS } from '../../../shared/utils/constants';
 
-/** Écran affiché pendant la vérification du token stocké au démarrage */
 export const SplashScreen = () => (
   <View style={styles.container}>
     <Text style={styles.title}>🚀 Space Conquest Online</Text>

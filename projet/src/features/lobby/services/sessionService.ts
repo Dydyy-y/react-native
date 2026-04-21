@@ -1,3 +1,5 @@
+// Services d'appel a l'API pour la gestion des sessions de jeu (lobby).
+// Chaque fonction correspond a un endpoint REST du backend Laravel.
 import apiClient from '../../../shared/config/apiClient';
 import { GameSession } from '../types/lobby.types';
 

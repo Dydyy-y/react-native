@@ -5,14 +5,13 @@ import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import { RoundAction, RoundActionsResponse } from '../types/game.types';
 
 /**
- * Hook principal pour le jeu.
- * Expose les donnees (map, gameStatus, shipTypes, pendingActions)
- * et les actions (loadMap, loadState, loadShipTypes, addAction, removeAction, submitActions).
+ * Hook principal pour le jeu. Facade entre GameScreen et GameContext.
+ * Encapsule les appels API (gameService) et les dispatch dans le reducer.
+ * Les donnees retournees viennent du state, les actions font fetch + dispatch.
  */
 export const useGame = () => {
   const { state, dispatch } = useGameContext();
 
-  /** Initialise la session de jeu dans le context */
   const setSessionId = useCallback(
     (id: number) => {
       dispatch({ type: 'SET_SESSION_ID', payload: id });
@@ -20,7 +19,6 @@ export const useGame = () => {
     [dispatch],
   );
 
-  /** Enregistre les noms des joueurs (depuis le lobby au demarrage) */
   const setPlayerNames = useCallback(
     (names: Record<number, string>) => {
       dispatch({ type: 'SET_PLAYER_NAMES', payload: names });
@@ -28,7 +26,6 @@ export const useGame = () => {
     [dispatch],
   );
 
-  /** Charge la carte (une seule fois au montage) */
   const loadMap = useCallback(async () => {
     if (!state.sessionId) return;
     try {
@@ -43,7 +40,6 @@ export const useGame = () => {
     }
   }, [dispatch, state.sessionId]);
 
-  /** Charge l'etat de la partie (appel initial + polling) */
   const loadState = useCallback(async () => {
     if (!state.sessionId) return;
     try {
@@ -55,7 +51,6 @@ export const useGame = () => {
     }
   }, [dispatch, state.sessionId]);
 
-  /** Charge les types de vaisseaux (une seule fois) */
   const loadShipTypes = useCallback(async () => {
     try {
       const types = await gameService.getShipTypes();
@@ -65,7 +60,6 @@ export const useGame = () => {
     }
   }, [dispatch]);
 
-  /** Ajoute une action au tour en cours */
   const addAction = useCallback(
     (action: RoundAction) => {
       dispatch({ type: 'ADD_ACTION', payload: action });
@@ -73,7 +67,6 @@ export const useGame = () => {
     [dispatch],
   );
 
-  /** Supprime une action par son index */
   const removeAction = useCallback(
     (index: number) => {
       dispatch({ type: 'REMOVE_ACTION', payload: index });
@@ -81,12 +74,12 @@ export const useGame = () => {
     [dispatch],
   );
 
-  /** Vide toutes les actions en attente */
   const clearActions = useCallback(() => {
     dispatch({ type: 'CLEAR_ACTIONS' });
   }, [dispatch]);
 
-  /** Soumet les actions du tour au serveur */
+  // Envoie les actions au serveur. Si validees, vide la file et recharge
+  // l'etat pour que round_actions_submitted passe a true (active le polling).
   const submitActions = useCallback(async (): Promise<RoundActionsResponse | null> => {
     if (!state.sessionId) return null;
     try {
@@ -97,7 +90,6 @@ export const useGame = () => {
       );
       if (result.validated) {
         dispatch({ type: 'CLEAR_ACTIONS' });
-        // Recharger l'etat pour refléter round_actions_submitted = true
         const newState = await gameService.getGameState(state.sessionId);
         dispatch({ type: 'SET_GAME_STATE', payload: newState });
       }
@@ -110,7 +102,6 @@ export const useGame = () => {
     }
   }, [dispatch, state.sessionId, state.pendingActions]);
 
-  /** Nettoie l'etat du jeu */
   const clearGame = useCallback(() => {
     dispatch({ type: 'CLEAR_GAME' });
   }, [dispatch]);

@@ -1,3 +1,5 @@
+// Services d'appel a l'API pour le jeu.
+// Chaque fonction correspond a un endpoint REST et retourne les donnees typees.
 import apiClient from '../../../shared/config/apiClient';
 import {
   GameMap,
@@ -57,7 +59,7 @@ export const getGameHistory = async (page = 1): Promise<GameHistoryResponse> => 
 /** Recuperer les types de vaisseaux : GET /ship-types */
 export const getShipTypes = async (): Promise<ShipType[]> => {
   const response = await apiClient.get('/ship-types');
-  // L'API peut retourner { shipTypes: [...] } ou directement un tableau
+  // Le format de reponse varie selon la version de l'API : tableau direct ou objet wrapper
   const data = response.data;
   if (Array.isArray(data)) return data;
   if (data?.shipTypes && Array.isArray(data.shipTypes)) return data.shipTypes;

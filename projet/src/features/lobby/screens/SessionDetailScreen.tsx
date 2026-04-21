@@ -25,7 +25,13 @@ import { confirm } from '../../../shared/utils/confirm';
 
 type Props = StackScreenProps<LobbyStackParamList, 'SessionDetail'>;
 
-/** Ecran de detail de la session — polling, liste joueurs, moderation, start */
+/**
+ * Ecran du salon d'attente. Responsabilites :
+ * - Polling toutes les 30s pour synchroniser la liste des joueurs
+ * - Gestion des transitions d'etat : waiting → running → finished
+ * - Actions de moderation (kick, ban, delete) pour le createur
+ * - Redirection automatique vers le jeu quand la partie demarre
+ */
 export const SessionDetailScreen = ({ navigation }: Props) => {
   const { session, loading, refreshSession, leaveSession, dispatch } = useLobby();
   const { kickPlayer, banPlayer, deleteSession, startGame } = useModeration();
@@ -37,12 +43,11 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
   const isCreator = session?.creator.id === authState.user?.id;
   const isWaiting = session?.state === 'waiting';
 
-  // Guard contre le double-tap sur les actions de moderation
+  // Empeche les double-clics sur kick/ban pendant le chargement
   const [moderationLoading, setModerationLoading] = useState(false);
 
-  // Polling toutes les 30s
-  // La gestion du 404 (session supprimee) est dans useLobby.refreshSession
-  // qui dispatch CLEAR_SESSION — on detecte session=null ci-dessous
+  // --- Polling : rafraichit la session toutes les 30s ---
+  // Si la session a ete supprimee (404/403), on nettoie et redirige
   const pollCallback = useCallback(async () => {
     try {
       await refreshSession();
@@ -56,12 +61,12 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
 
   const { consecutiveErrors: pollErrors } = usePolling(pollCallback, 30000, !!session);
 
-  // Ref pour ne declencher la redirection qu'une seule fois
+  // --- Gestion des redirections ---
+  // Ces refs evitent les redirections multiples ou au premier rendu
   const hasRedirectedToGame = useRef(false);
-  // Ref indiquant si on a deja visite cette session (evite redirect au premier rendu)
   const hasLoadedSession = useRef(false);
 
-  // Si la session devient null apres avoir ete chargee (404/supprimee), retour lobby
+  // Session supprimee par le createur ou 404 → retour au lobby
   useEffect(() => {
     if (session) {
       hasLoadedSession.current = true;
@@ -71,23 +76,23 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
     }
   }, [session, showToast, navigation]);
 
-  // Redirection si la session passe en "running" (partie demarree)
+  // Partie demarree → initialiser le GameContext et naviguer vers l'onglet Game
   useEffect(() => {
     if (session?.state === 'running' && !hasRedirectedToGame.current) {
       hasRedirectedToGame.current = true;
       setSessionId(session.id);
-      // Transmettre les noms des joueurs au GameContext pour la legende
+      // Les noms servent a la legende des couleurs dans GameScreen
       const names: Record<number, string> = {};
       session.players.forEach((p) => { names[p.id] = p.name; });
       setPlayerNames(names);
-      // Couper le polling lobby pour eviter le double polling (lobby + game)
+      // On vide la session lobby pour couper son polling (le jeu a le sien)
       dispatch({ type: 'CLEAR_SESSION' });
       showToast('La partie commence !', 'info');
       tabNavigation.navigate('Game');
     }
   }, [session?.state, session?.id, showToast, setSessionId, setPlayerNames, tabNavigation, session?.players, dispatch]);
 
-  // Si la partie est terminee, retour au lobby
+  // Partie deja terminee → retour au lobby
   useEffect(() => {
     if (session?.state === 'finished') {
       showToast('Cette partie est terminee', 'info');
@@ -96,8 +101,8 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
     }
   }, [session?.state, showToast, dispatch, navigation]);
 
-  // Si le joueur n'est plus dans la liste (kick/ban), retour au lobby
-  // On ignore si la session est en running/finished (gere par les effets ci-dessus)
+  // Detection kick/ban : si le joueur n'est plus dans la liste, retour lobby
+  // (uniquement en etat "waiting", les autres etats sont geres ci-dessus)
   useEffect(() => {
     if (!session || !authState.user) return;
     if (session.state !== 'waiting') return;
@@ -170,7 +175,8 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
     );
   };
 
-  // Quitter la session (non-createur)
+  // --- Actions utilisateur ---
+
   const handleLeave = () => {
     confirm(
       'Quitter le salon',
@@ -198,7 +204,6 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      {/* Bandeau connexion perdue */}
       {pollErrors >= 2 && (
         <View style={styles.connectionLostBanner}>
           <Ionicons name="cloud-offline-outline" size={18} color={COLORS.white} />
@@ -208,7 +213,6 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
         </View>
       )}
 
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Salon : {session.name}</Text>
         <View style={styles.infoRow}>
@@ -221,7 +225,6 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
         </View>
       </View>
 
-      {/* QR Code d'invitation (createur, session en attente, pas pleine) */}
       {isCreator && isWaiting && session.players.length < 4 && (
         <QRDisplay inviteCode={session.invite_code} />
       )}
@@ -232,7 +235,6 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
         </View>
       )}
 
-      {/* Liste des joueurs avec actions moderation */}
       <View style={styles.listSection}>
         <Text style={styles.sectionTitle}>
           <Ionicons name="people" size={16} color={COLORS.info} /> Joueurs
@@ -246,9 +248,7 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
         />
       </View>
 
-      {/* Footer — actions */}
       <View style={styles.footer}>
-        {/* Bouton Demarrer (createur, >= 2 joueurs) */}
         {isCreator && isWaiting && (
           <TouchableOpacity
             style={[
@@ -268,7 +268,6 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
           </TouchableOpacity>
         )}
 
-        {/* Bouton Quitter (non-createur, session en attente) */}
         {!isCreator && isWaiting && (
           <TouchableOpacity
             style={[styles.actionButton, styles.leaveButton]}
@@ -280,7 +279,6 @@ export const SessionDetailScreen = ({ navigation }: Props) => {
           </TouchableOpacity>
         )}
 
-        {/* Bouton Supprimer (createur, session en attente) */}
         {isCreator && isWaiting && (
           <TouchableOpacity
             style={[styles.actionButton, styles.deleteButton]}

@@ -7,7 +7,6 @@ import { COLORS } from '../../../shared/utils/constants';
 
 type Props = StackScreenProps<LobbyStackParamList, 'LobbyHome'>;
 
-/** Ecran d'accueil du lobby — boutons "Nouvelle session" et "Rejoindre" */
 export const LobbyHomeScreen = ({ navigation }: Props) => (
   <View style={styles.container}>
     <View style={styles.header}>

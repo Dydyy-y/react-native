@@ -4,14 +4,13 @@ import { API_BASE_URL } from '../utils/constants';
 type TokenGetter = () => Promise<string | null>;
 type UnauthorizedHandler = () => void | Promise<void>;
 
-// Configurés par AuthProvider au montage (pattern injection de dépendances)
+// Callbacks injectes par AuthProvider au montage.
+// Ce pattern evite une dependance circulaire entre apiClient et AuthContext :
+// l'apiClient n'importe pas le context, c'est le context qui s'enregistre ici.
 let _getToken: TokenGetter | null = null;
 let _onUnauthorized: UnauthorizedHandler | null = null;
 
-/**
- * Configure le client Axios avec les callbacks d'auth.
- * Appelé une seule fois par AuthProvider.
- */
+// Appele une seule fois par AuthProvider au montage
 export const configureApiClient = (
   getToken: TokenGetter,
   onUnauthorized: UnauthorizedHandler,
@@ -26,7 +25,7 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Interceptor requête : ajout automatique du token Bearer
+// Interceptor requete : injecte le header Authorization sur chaque appel
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     if (_getToken) {
@@ -40,8 +39,9 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Interceptor réponse : gestion 401 → logout automatique
-// On ignore les 401 sur les routes d'auth (login/register échouent normalement avec 401)
+// Interceptor reponse : si l'API renvoie 401, on deconnecte automatiquement.
+// Exception : les routes /auth/* (login/register) qui retournent 401 normalement.
+// _isLoggingOut empeche les appels recursifs si plusieurs requetes echouent en 401.
 let _isLoggingOut = false;
 apiClient.interceptors.response.use(
   (response) => response,

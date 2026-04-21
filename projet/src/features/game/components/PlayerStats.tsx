@@ -9,7 +9,6 @@ interface PlayerStatsProps {
   myShipCount: number;
 }
 
-/** Panneau d'affichage des stats du joueur */
 export const PlayerStatsPanel = ({ gameStatus, myShipCount }: PlayerStatsProps) => {
   const ore = gameStatus.resources?.ore ?? 0;
   const shipsDestroyed = gameStatus.stats?.ships_destroyed ?? 0;
@@ -17,7 +16,6 @@ export const PlayerStatsPanel = ({ gameStatus, myShipCount }: PlayerStatsProps) 
 
   return (
     <View style={styles.container}>
-      {/* Ligne 1 : tour + minerai */}
       <View style={styles.row}>
         <View style={styles.stat}>
           <Ionicons name="sync-outline" size={16} color={COLORS.info} />
@@ -36,7 +34,6 @@ export const PlayerStatsPanel = ({ gameStatus, myShipCount }: PlayerStatsProps) 
         </View>
       </View>
 
-      {/* Ligne 2 : stats cumulees + status actions */}
       <View style={styles.row}>
         <View style={styles.stat}>
           <Ionicons name="skull-outline" size={16} color={COLORS.error} />

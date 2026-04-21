@@ -19,7 +19,6 @@ interface ShipShopProps {
   onClose: () => void;
 }
 
-/** Modal boutique : liste les types de vaisseaux et permet l'achat */
 export const ShipShop = ({
   visible,
   shipTypes,
@@ -40,7 +39,6 @@ export const ShipShop = ({
         onPress={onClose}
       >
         <TouchableOpacity activeOpacity={1} style={styles.container}>
-          {/* Header */}
           <View style={styles.header}>
             <Ionicons name="cart" size={22} color={COLORS.info} />
             <Text style={styles.title}>Chantier spatial</Text>
@@ -53,7 +51,6 @@ export const ShipShop = ({
             </TouchableOpacity>
           </View>
 
-          {/* Liste des types */}
           <FlatList
             data={shipTypes}
             keyExtractor={(item) => `ship-type-${item.id}`}
@@ -89,7 +86,6 @@ export const ShipShop = ({
                     </TouchableOpacity>
                   </View>
 
-                  {/* Stats du type */}
                   <View style={styles.typeStats}>
                     <MiniStat label="PV" value={item.base_health} />
                     <MiniStat label="Attaque" value={item.damage} />

@@ -21,7 +21,8 @@ type GameOverRouteParams = {
   GameOver: { sessionId: number };
 };
 
-/** Ecran de fin de partie — classement, stats, gagnant */
+// Ecran de fin de partie : affiche le classement, les stats de chaque joueur,
+// et un header victoire/defaite selon si le joueur est le gagnant.
 export const GameOverScreen = () => {
   const route = useRoute<RouteProp<GameOverRouteParams, 'GameOver'>>();
   const navigation = useNavigation<BottomTabNavigationProp<AppTabsParamList>>();
@@ -91,7 +92,6 @@ export const GameOverScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* En-tete victoire/defaite */}
       <View style={[styles.resultHeader, isWinner ? styles.winHeader : styles.loseHeader]}>
         <Ionicons
           name={isWinner ? 'trophy' : 'sad-outline'}
@@ -111,7 +111,6 @@ export const GameOverScreen = () => {
         </Text>
       </View>
 
-      {/* Classement */}
       <Text style={styles.sectionTitle}>Classement</Text>
       <FlatList
         data={stats.players}
@@ -121,7 +120,6 @@ export const GameOverScreen = () => {
         contentContainerStyle={styles.listContent}
       />
 
-      {/* Bouton retour */}
       <TouchableOpacity style={styles.lobbyButton} onPress={handleReturnToLobby}>
         <Ionicons name="arrow-back" size={18} color={COLORS.white} />
         <Text style={styles.lobbyButtonText}>Retour au lobby</Text>

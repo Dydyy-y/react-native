@@ -13,10 +13,11 @@ import { getProfile } from '../services/authService';
 import { configureApiClient } from '../../../shared/config/apiClient';
 import { logger } from '../../../shared/utils/logger';
 
+// Etat global d'authentification, partage dans toute l'app via le context
 interface AuthState {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
+  user: User | null;       // Profil utilisateur connecte (null si non authentifie)
+  token: string | null;    // JWT stocke en memoire (SecureStore est le stockage persistant)
+  isLoading: boolean;      // true pendant la verification du token au demarrage
   error: string | null;
 }
 
@@ -65,24 +66,32 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+/**
+ * Provider d'authentification. Au montage :
+ * 1. Configure l'apiClient avec les callbacks (getToken pour les headers, logout sur 401)
+ * 2. Verifie si un token est deja stocke dans SecureStore
+ * 3. Si oui, valide le token aupres de l'API et recupere le profil
+ */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+  // Supprime le token du SecureStore et reset l'etat
   const logout = useCallback(async () => {
     await removeToken();
     dispatch({ type: 'LOGOUT' });
   }, []);
 
-  // Ref pour éviter les closures périmées dans la config de l'apiClient
+  // logoutRef evite que l'apiClient capture une version perimee de logout
+  // car configureApiClient n'est appele qu'une seule fois au montage
   const logoutRef = useRef(logout);
   logoutRef.current = logout;
 
-  // Configure l'apiClient avec les callbacks d'auth (une seule fois au montage)
+  // Injection des callbacks d'auth dans l'instance Axios partagee
   useEffect(() => {
     configureApiClient(getToken, () => logoutRef.current());
   }, []);
 
-  // Vérifie le token stocké au démarrage de l'app
+  // Verification du token stocke au demarrage de l'app
   useEffect(() => {
     const checkStoredToken = async () => {
       try {
@@ -91,7 +100,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           dispatch({ type: 'SET_LOADING', payload: false });
           return;
         }
-        // Valide le token avec l'API et recupere l'utilisateur
         const user = await getProfile();
         dispatch({ type: 'SET_AUTH', payload: { user, token } });
       } catch (error) {
@@ -115,6 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+// Hook pour acceder a l'etat d'auth et aux actions (dispatch, logout)
 export const useAuth = (): AuthContextType => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');

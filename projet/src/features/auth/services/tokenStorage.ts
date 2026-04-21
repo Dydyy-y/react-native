@@ -8,7 +8,9 @@ import { TOKEN_KEY } from '../../../shared/utils/constants';
  */
 const isWeb = Platform.OS === 'web';
 
-/** Sauvegarde le token JWT dans le stockage sécurisé (hardware-encrypted) */
+// Chaque fonction teste isWeb car SecureStore n'est pas disponible sur navigateur.
+// En production (iOS/Android), le token est chiffre par le hardware du device.
+
 export const saveToken = async (token: string): Promise<void> => {
   if (isWeb) {
     localStorage.setItem(TOKEN_KEY, token);
@@ -17,7 +19,6 @@ export const saveToken = async (token: string): Promise<void> => {
   await SecureStore.setItemAsync(TOKEN_KEY, token);
 };
 
-/** Récupère le token JWT depuis le stockage sécurisé */
 export const getToken = async (): Promise<string | null> => {
   if (isWeb) {
     return localStorage.getItem(TOKEN_KEY);
@@ -25,7 +26,6 @@ export const getToken = async (): Promise<string | null> => {
   return SecureStore.getItemAsync(TOKEN_KEY);
 };
 
-/** Supprime le token JWT du stockage sécurisé */
 export const removeToken = async (): Promise<void> => {
   if (isWeb) {
     localStorage.removeItem(TOKEN_KEY);

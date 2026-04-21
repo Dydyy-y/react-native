@@ -5,26 +5,25 @@ import { getErrorMessage } from '../../../shared/utils/errorHandler';
 import { AxiosError } from 'axios';
 
 /**
- * Hook pour les actions de moderation du createur.
- * Kick, ban, delete session, start game.
+ * Hook pour les actions de moderation reservees au createur de la session.
+ * Chaque action appelle l'API puis rafraichit la session localement.
+ * Si la session a ete supprimee entre-temps (404), on nettoie le state.
  */
 export const useModeration = () => {
   const { state, dispatch } = useLobbyContext();
 
-  /** Rafraichit la session apres une action — gere le 404 si supprimee entre-temps */
+  // Gere le 404/403 si la session a ete supprimee entre-temps
   const safeRefreshSession = useCallback(async (sessionId: number) => {
     try {
       const updated = await sessionService.getSession(sessionId);
       dispatch({ type: 'SET_SESSION', payload: updated });
     } catch (error) {
-      // Session supprimee entre-temps (404/403) → nettoyer
       if (error instanceof AxiosError && (error.response?.status === 404 || error.response?.status === 403)) {
         dispatch({ type: 'CLEAR_SESSION' });
       }
     }
   }, [dispatch]);
 
-  /** Expulser un joueur (kick) */
   const kickPlayer = useCallback(async (playerId: number) => {
     if (!state.currentSession) return { success: false as const, error: 'Aucune session' };
     try {
@@ -36,7 +35,6 @@ export const useModeration = () => {
     }
   }, [dispatch, state.currentSession, safeRefreshSession]);
 
-  /** Bannir un joueur (ban) */
   const banPlayer = useCallback(async (playerId: number) => {
     if (!state.currentSession) return { success: false as const, error: 'Aucune session' };
     try {
@@ -48,7 +46,6 @@ export const useModeration = () => {
     }
   }, [dispatch, state.currentSession, safeRefreshSession]);
 
-  /** Supprimer la session */
   const deleteSession = useCallback(async () => {
     if (!state.currentSession) return { success: false as const, error: 'Aucune session' };
     try {
@@ -60,7 +57,6 @@ export const useModeration = () => {
     }
   }, [dispatch, state.currentSession]);
 
-  /** Demarrer la partie */
   const startGame = useCallback(async () => {
     if (!state.currentSession) return { success: false as const, error: 'Aucune session' };
     try {

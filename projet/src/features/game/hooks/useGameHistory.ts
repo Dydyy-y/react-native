@@ -4,8 +4,8 @@ import { GameHistoryEntry, GameStats } from '../types/game.types';
 import { getErrorMessage } from '../../../shared/utils/errorHandler';
 
 /**
- * Hook de récupération de l'historique des parties (paginé).
- * Conforme à la consigne : les requêtes de récupération doivent être sous forme de hooks.
+ * Hook pagine pour l'historique des parties.
+ * Charge la premiere page au montage, puis loadMore() pour la pagination infinie.
  */
 export const useGameHistory = () => {
   const [entries, setEntries] = useState<GameHistoryEntry[]>([]);
@@ -55,8 +55,9 @@ export const useGameHistory = () => {
 };
 
 /**
- * Hook de récupération des stats d'une partie sélectionnée dans l'historique.
- * Gère les clics rapides (ignore les réponses périmées).
+ * Charge les stats d'une partie selectionnee dans l'historique.
+ * lastRequestIdRef gere les race conditions : si le joueur clique vite
+ * sur plusieurs parties, seule la reponse de la derniere requete est prise en compte.
  */
 export const useGameDetail = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);

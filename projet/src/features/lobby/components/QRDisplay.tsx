@@ -7,7 +7,6 @@ interface QRDisplayProps {
   inviteCode: string;
 }
 
-/** Affiche le QR code d'invitation de la session */
 export const QRDisplay = ({ inviteCode }: QRDisplayProps) => (
   <View style={styles.container}>
     <View style={styles.qrWrapper}>
