@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build
+dist/
+build/
+.expo/
+.next/
+
+# Environment
+.env
+.env.local
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Claude / Serena (working files)
+.serena/
+.claude/
+
+# Temp
+space-conquest-tmp/
